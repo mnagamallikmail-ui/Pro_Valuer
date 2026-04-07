@@ -1,0 +1,35 @@
+-- ============================================================
+-- BwVr Report Management System
+-- FILE 4: 04_tables_audit.sql
+-- ============================================================
+
+BEGIN
+   EXECUTE IMMEDIATE 'DROP TABLE BWVR.BWVR_AUDIT_LOG CASCADE CONSTRAINTS';
+EXCEPTION
+   WHEN OTHERS THEN
+      IF SQLCODE != -942 THEN
+         RAISE;
+      END IF;
+END;
+/
+
+CREATE TABLE BWVR.BWVR_AUDIT_LOG (
+  AUDIT_ID            NUMBER(10)      NOT NULL,
+  ENTITY_TYPE         VARCHAR2(50)    NOT NULL,
+  ENTITY_ID           NUMBER(10)      NOT NULL,
+  ACTION              VARCHAR2(50)    NOT NULL,
+  PERFORMED_BY        VARCHAR2(100)   NOT NULL,
+  PERFORMED_AT        TIMESTAMP       DEFAULT SYSTIMESTAMP NOT NULL,
+  OLD_VALUE_JSON      CLOB,
+  NEW_VALUE_JSON      CLOB,
+  IP_ADDRESS          VARCHAR2(50),
+  REMARKS             VARCHAR2(1000),
+  CONSTRAINT PK_BWVR_AUDIT PRIMARY KEY (AUDIT_ID)
+);
+
+CREATE INDEX IDX_AUDIT_ENTITY ON BWVR.BWVR_AUDIT_LOG(ENTITY_TYPE, ENTITY_ID);
+CREATE INDEX IDX_AUDIT_TIME   ON BWVR.BWVR_AUDIT_LOG(PERFORMED_AT);
+
+COMMENT ON TABLE  BWVR.BWVR_AUDIT_LOG IS 'Append-only audit log for all entity changes.';
+
+COMMIT;

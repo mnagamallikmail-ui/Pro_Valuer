@@ -1,0 +1,62 @@
+name: bwvr_frontend
+description: BwVr Report Management System - Flutter Web Frontend
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # HTTP Client
+  dio: ^5.4.0
+  connectivity_plus: ^7.1.0
+
+  # Navigation
+  go_router: ^17.2.0
+
+  # State Management
+  provider: ^6.1.0
+  flutter_riverpod: ^3.3.1
+
+  # File Operations
+  file_picker: ^11.0.2
+  image_picker: ^1.0.7
+  http: ^1.2.1
+
+  # Internationalization & Date Formatting
+  intl: ^0.20.2
+
+  # UI Components
+  table_calendar: ^3.1.0
+  shimmer: ^3.0.0
+  dotted_border: ^3.1.0
+  badges: ^3.1.0
+  data_table_2: ^2.5.0
+  flutter_animate: ^4.5.0
+
+  # Typography
+  google_fonts: ^8.0.2
+
+  # URL launching
+  url_launcher: ^6.2.0
+
+  # Charts
+  fl_chart: ^1.2.0
+
+  # Icons
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/

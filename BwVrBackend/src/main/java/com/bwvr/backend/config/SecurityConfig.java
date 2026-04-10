@@ -56,13 +56,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth ->
-                auth.requestMatchers("/api/v1/auth/register", "/api/v1/auth/login").permitAll()
-                    .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                    // Template upload requires Admin
-                    .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/templates/upload").hasRole("ADMIN")
-                    // All other endpoints require authentication (role enforcement via @PreAuthorize)
-                    .anyRequest().authenticated()
+                // Allow all requests without authentication
+                auth.anyRequest().permitAll()
             );
 
         http.authenticationProvider(authenticationProvider());

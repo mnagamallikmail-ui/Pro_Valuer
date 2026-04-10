@@ -12,7 +12,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -64,8 +63,7 @@ public class BwvrTemplate {
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 
-    @Lob
-    @Column(name = "TEMPLATE_CONTENT")
+    @Column(name = "TEMPLATE_CONTENT", columnDefinition = "bytea")
     private byte[] templateContent;
 
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)

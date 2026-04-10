@@ -61,8 +61,8 @@ public class SecurityConfig {
                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                     // Template upload requires Admin
                     .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/templates/upload").hasRole("ADMIN")
-                    // All other endpoints require authentication (role enforcement via @PreAuthorize)
-                    .anyRequest().authenticated()
+                    // All other endpoints are publicly accessible
+                    .anyRequest().permitAll()
             );
 
         http.authenticationProvider(authenticationProvider());

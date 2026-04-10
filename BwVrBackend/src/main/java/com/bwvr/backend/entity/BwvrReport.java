@@ -12,8 +12,7 @@ import java.util.List;
 public class BwvrReport {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "reportSeq")
-    @SequenceGenerator(name = "reportSeq", sequenceName = "BWVR.SEQ_REPORT_ID", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "REPORT_ID")
     private Long reportId;
 

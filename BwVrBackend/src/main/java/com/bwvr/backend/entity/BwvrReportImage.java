@@ -11,9 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
@@ -21,8 +19,7 @@ import jakarta.persistence.Table;
 public class BwvrReportImage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "reportImageSeq")
-    @SequenceGenerator(name = "reportImageSeq", sequenceName = "BWVR.SEQ_REPORT_IMAGE_ID", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IMAGE_ID")
     private Long imageId;
 
@@ -39,8 +36,7 @@ public class BwvrReportImage {
     @Column(name = "CONTENT_TYPE", length = 100)
     private String contentType;
 
-    @Lob
-    @Column(name = "IMAGE_DATA")
+    @Column(name = "IMAGE_DATA", columnDefinition = "bytea")
     private byte[] imageData;
 
     @CreationTimestamp

@@ -11,8 +11,7 @@ import java.time.LocalDateTime;
 public class BwvrUser {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "userSeq")
-    @SequenceGenerator(name = "userSeq", sequenceName = "BWVR.SEQ_USER_ID", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "USER_ID")
     private Long id;
 

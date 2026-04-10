@@ -22,7 +22,7 @@ public class ReferenceNumberGenerator {
      */
     public String generate() {
         Object nextValObj = entityManager
-                .createNativeQuery("SELECT BWVR.SEQ_REPORT_REF_NUM.NEXTVAL FROM DUAL")
+                .createNativeQuery("SELECT nextval('BWVR.SEQ_REPORT_REF_NUM')")
                 .getSingleResult();
         Long nextVal;
         if (nextValObj instanceof Number n) {

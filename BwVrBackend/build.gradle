@@ -48,7 +48,6 @@ dependencies {
     testImplementation 'com.h2database:h2'
     testImplementation 'org.mockito:mockito-inline:5.2.0'
 }
-
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy jacocoTestReport

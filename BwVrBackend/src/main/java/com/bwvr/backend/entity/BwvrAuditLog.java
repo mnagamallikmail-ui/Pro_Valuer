@@ -10,8 +10,7 @@ import java.time.LocalDateTime;
 public class BwvrAuditLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "auditSeq")
-    @SequenceGenerator(name = "auditSeq", sequenceName = "BWVR.SEQ_AUDIT_ID", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "AUDIT_ID")
     private Long auditId;
 

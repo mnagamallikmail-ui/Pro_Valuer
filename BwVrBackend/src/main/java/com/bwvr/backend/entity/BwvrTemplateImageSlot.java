@@ -10,8 +10,7 @@ import java.time.LocalDateTime;
 public class BwvrTemplateImageSlot {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "imageSlotSeq")
-    @SequenceGenerator(name = "imageSlotSeq", sequenceName = "BWVR.SEQ_IMAGE_SLOT_ID", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IMAGE_SLOT_ID")
     private Long imageSlotId;
 

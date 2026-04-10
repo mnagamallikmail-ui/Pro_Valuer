@@ -12,7 +12,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
@@ -20,8 +19,7 @@ import jakarta.persistence.Table;
 public class BwvrTemplatePlaceholder {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "placeholderSeq")
-    @SequenceGenerator(name = "placeholderSeq", sequenceName = "BWVR.SEQ_PLACEHOLDER_ID", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "PLACEHOLDER_ID")
     private Long placeholderId;
 

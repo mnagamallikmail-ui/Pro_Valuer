@@ -12,9 +12,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -24,8 +22,7 @@ import jakarta.persistence.UniqueConstraint;
 public class BwvrTemplate {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "templateSeq")
-    @SequenceGenerator(name = "templateSeq", sequenceName = "BWVR.SEQ_TEMPLATE_ID", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "TEMPLATE_ID")
     private Long templateId;
 
@@ -64,8 +61,7 @@ public class BwvrTemplate {
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 
-    @Lob
-    @Column(name = "TEMPLATE_CONTENT")
+    @Column(name = "TEMPLATE_CONTENT", columnDefinition = "bytea")
     private byte[] templateContent;
 
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)

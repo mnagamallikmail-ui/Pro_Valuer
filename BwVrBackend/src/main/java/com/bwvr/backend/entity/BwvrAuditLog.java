@@ -30,10 +30,12 @@ public class BwvrAuditLog {
     @Column(name = "PERFORMED_AT", updatable = false)
     private LocalDateTime performedAt;
 
-    @Column(name = "OLD_VALUE_JSON", columnDefinition = "CLOB")
+    @Lob
+    @Column(name = "OLD_VALUE_JSON", columnDefinition = "TEXT")
     private String oldValueJson;
 
-    @Column(name = "NEW_VALUE_JSON", columnDefinition = "CLOB")
+    @Lob
+    @Column(name = "NEW_VALUE_JSON", columnDefinition = "TEXT")
     private String newValueJson;
 
     @Column(name = "IP_ADDRESS", length = 50)

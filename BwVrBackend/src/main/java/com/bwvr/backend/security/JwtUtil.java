@@ -13,8 +13,11 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final String jwtSecret = "BwVrSuperSecretKeyForJWTAuthReplaceThisInProdBwVrSuperSecretKeyForJWTAuth"; // Must be >= 256 bits
-    private final int jwtExpirationMs = 86400000; // 24 hours
+    @Value("${bwvr.jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${bwvr.jwt.expiration-ms:86400000}")
+    private int jwtExpirationMs;
 
     private Key key() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());

@@ -26,7 +26,7 @@ public class OpenApiConfig {
                                 .email("support@bwvr.com"))
                         .license(new License().name("Proprietary")))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("Local Development Server")
+                        new Server().url("/").description("Default Server")
                 ));
     }
 }

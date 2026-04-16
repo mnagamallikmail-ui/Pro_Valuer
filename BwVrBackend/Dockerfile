@@ -3,7 +3,7 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # IMPORTANT: change the jar name if your file is different
-COPY build/libs/BwVrBackend.jar app.jar
+COPY BwVrBackend.jar app.jar
 
 RUN mkdir -p /app/uploads /app/templates /app/reports \
     && chmod -R 777 /app/uploads /app/templates /app/reports

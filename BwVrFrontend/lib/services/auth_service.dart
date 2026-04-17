@@ -43,7 +43,7 @@ class AuthService extends ChangeNotifier {
   Future<AuthSession> login(String username, String password) async {
     try {
       final response = await _dio.post('/auth/login', data: {
-        'loginId': username,
+        'username': username,
         'password': password,
       });
 

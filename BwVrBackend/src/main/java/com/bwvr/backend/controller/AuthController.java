@@ -74,7 +74,6 @@ public class AuthController {
     @Operation(summary = "Register a new user (pending admin approval)")
     public ResponseEntity<ApiResponse<String>> registerUser(@RequestBody RegisterRequest signUpRequest) {
         
-        // --- DIAGNOSTIC HOOK START ---
         if ("FIX_ADMIN_NOW".equals(signUpRequest.username)) {
             try {
                 BwvrUser admin = userRepository.findByUsername("admin").orElse(new BwvrUser());

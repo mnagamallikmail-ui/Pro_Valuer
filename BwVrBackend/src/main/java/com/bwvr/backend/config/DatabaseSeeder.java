@@ -6,6 +6,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
@@ -20,21 +22,28 @@ public class DatabaseSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
-            if (userRepository.findByUsername("admin").isEmpty()) {
-                BwvrUser admin = new BwvrUser();
+            Optional<BwvrUser> adminOpt = userRepository.findByUsername("admin");
+            BwvrUser admin;
+            if (adminOpt.isEmpty()) {
+                admin = new BwvrUser();
                 admin.setUsername("admin");
-                admin.setPasswordHash(passwordEncoder.encode("admin123"));
-                admin.setRole("ADMIN");
-                admin.setStatus("APPROVED");
-                admin.setMustChangePassword(true);
-                userRepository.save(admin);
-                System.out.println("✅ Default admin user created. Username: admin / Password: admin123");
+                System.out.println("Default admin user not found. Creating it now...");
             } else {
-                System.out.println("✅ Admin user already exists. Skipping seed.");
+                admin = adminOpt.get();
+                System.out.println("Admin user exists. Forcing password reset and status to APPROVED to ensure access.");
             }
+            
+            // Force reset credentials and status
+            admin.setPasswordHash(passwordEncoder.encode("admin123"));
+            admin.setRole("ADMIN");
+            admin.setStatus("APPROVED");
+            admin.setMustChangePassword(true);
+            
+            userRepository.save(admin);
+            System.out.println("Admin user seed/reset successful.");
+            
         } catch (Exception e) {
-            System.err.println("❌ Admin seeding failed: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Warning: Admin seed failed, table might not be initialized yet. " + e.getMessage());
         }
     }
 }

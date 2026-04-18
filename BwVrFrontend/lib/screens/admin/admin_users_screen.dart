@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
 import '../../widgets/app_layout.dart';
 import '../../widgets/common_widgets.dart';
 
@@ -47,10 +48,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
         _loading = false;
       });
     } catch (e) {
-      setState(() {
-        _error = e.toString().replaceAll('Exception: ', '');
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString().replaceAll('Exception: ', '');
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -60,17 +63,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("User '${user['username']}' approved."),
-        backgroundColor: AppTheme.success,
-        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.textPrimary,
       ));
       _load();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text(e.toString().replaceAll('Exception: ', '')),
-        backgroundColor: AppTheme.danger,
-        behavior: SnackBarBehavior.floating,
+        content: Text(e.toString().replaceAll('Exception: ', '')),
+        backgroundColor: AppColors.error,
       ));
     }
   }
@@ -79,19 +79,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Reject User'),
-        content: Text(
-            "Are you sure you want to reject '${user['username']}'? They will not be able to login."),
+        title: Text('Reject User', style: AppTypography.heading3),
+        content: Text("Reject '${user['username']}' permanently?", style: AppTypography.bodyMedium),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style:
-                ElevatedButton.styleFrom(backgroundColor: AppTheme.danger),
-            child: const Text('Reject',
-                style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('Reject'),
           ),
         ],
       ),
@@ -102,17 +97,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("User '${user['username']}' rejected."),
-        backgroundColor: AppTheme.warning,
-        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.textPrimary,
       ));
       _load();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text(e.toString().replaceAll('Exception: ', '')),
-        backgroundColor: AppTheme.danger,
-        behavior: SnackBarBehavior.floating,
+        content: Text(e.toString().replaceAll('Exception: ', '')),
+        backgroundColor: AppColors.error,
       ));
     }
   }
@@ -124,14 +116,17 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
       title: 'User Management',
       child: Column(
         children: [
-          // Tab bar
           Container(
-            color: AppTheme.cardBg,
+            decoration: const BoxDecoration(
+              color: AppColors.background,
+              border: Border(bottom: BorderSide(color: AppColors.border)),
+            ),
             child: TabBar(
               controller: _tabController,
-              labelColor: AppTheme.accent,
-              unselectedLabelColor: AppTheme.textSecondary,
-              indicatorColor: AppTheme.accent,
+              labelColor: AppColors.textPrimary,
+              unselectedLabelColor: AppColors.textSecondary,
+              indicatorColor: AppColors.primary,
+              indicatorWeight: 3,
               tabs: [
                 Tab(
                   child: Row(
@@ -139,20 +134,17 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                     children: [
                       const Text('Pending Approvals'),
                       if (_pendingUsers.isNotEmpty) ...[
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppTheme.danger,
+                            color: AppColors.primary,
                             borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppColors.border),
                           ),
                           child: Text(
                             '${_pendingUsers.length}',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700),
+                            style: AppTypography.label.copyWith(fontSize: 11, color: AppColors.textPrimary, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
@@ -166,19 +158,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
 
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator(color: AppColors.textPrimary))
                 : _error != null
                     ? Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.error_outline,
-                                color: AppTheme.danger, size: 48),
-                            const SizedBox(height: 12),
-                            Text(_error!,
-                                style: const TextStyle(
-                                    color: AppTheme.textSecondary)),
-                            const SizedBox(height: 20),
+                            const Icon(Icons.error_outline, color: AppColors.textPrimary, size: 48),
+                            const SizedBox(height: 16),
+                            Text(_error!, style: AppTypography.bodyMedium),
+                            const SizedBox(height: 24),
                             ElevatedButton.icon(
                               onPressed: _load,
                               icon: const Icon(Icons.refresh),
@@ -194,8 +183,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                             users: _pendingUsers,
                             showActions: true,
                             emptyTitle: 'No pending approvals',
-                            emptySubtitle:
-                                'All signup requests have been reviewed.',
+                            emptySubtitle: 'All requests have been reviewed.',
                             onApprove: _approve,
                             onReject: _reject,
                           ),
@@ -203,7 +191,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                             users: _allUsers,
                             showActions: false,
                             emptyTitle: 'No users yet',
-                            emptySubtitle: 'Users will appear here after signup.',
+                            emptySubtitle: 'Registered users appear here.',
                             onApprove: _approve,
                             onReject: _reject,
                           ),
@@ -243,9 +231,9 @@ class _UserList extends StatelessWidget {
       );
     }
     return ListView.separated(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(32),
       itemCount: users.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (context, i) {
         final user = users[i];
         final status = user['status'] as String? ?? 'PENDING';
@@ -254,150 +242,86 @@ class _UserList extends StatelessWidget {
         final fullName = user['fullName'] as String?;
         final createdAt = user['createdAt'] as String?;
 
-        Color statusColor;
-        IconData statusIcon;
+        Color statusBg;
         switch (status) {
-          case 'APPROVED':
-            statusColor = AppTheme.success;
-            statusIcon = Icons.check_circle_rounded;
-            break;
-          case 'REJECTED':
-            statusColor = AppTheme.danger;
-            statusIcon = Icons.cancel_rounded;
-            break;
-          default:
-            statusColor = AppTheme.warning;
-            statusIcon = Icons.pending_rounded;
+          case 'APPROVED': statusBg = AppColors.secondary; break;
+          case 'REJECTED': statusBg = AppColors.error; break;
+          default: statusBg = AppColors.primary;
         }
 
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppTheme.cardBg,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.border),
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
           ),
           child: Row(
             children: [
-              // Avatar
               CircleAvatar(
-                radius: 24,
-                backgroundColor:
-                    role == 'ADMIN' ? const Color(0xFF8B5CF6) : AppTheme.accent,
+                radius: 28,
+                backgroundColor: role == 'ADMIN' ? AppColors.accent : AppColors.primary,
                 child: Text(
                   username.isNotEmpty ? username[0].toUpperCase() : '?',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700),
+                  style: AppTypography.heading3.copyWith(color: AppColors.textPrimary),
                 ),
               ),
-              const SizedBox(width: 16),
-
-              // Info
+              const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Text(
-                          fullName ?? username,
-                          style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.textPrimary),
-                        ),
-                        const SizedBox(width: 8),
+                        Text(fullName ?? username, style: AppTypography.subheading),
+                        const SizedBox(width: 12),
                         if (role == 'ADMIN')
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color:
-                                  const Color(0xFF8B5CF6).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(4),
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppColors.border),
                             ),
-                            child: const Text('ADMIN',
-                                style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF8B5CF6))),
+                            child: Text('ADMIN', style: AppTypography.label.copyWith(fontSize: 9, fontWeight: FontWeight.bold)),
                           ),
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    Text('@$username',
-                        style: const TextStyle(
-                            fontSize: 12, color: AppTheme.textSecondary)),
+                    const SizedBox(height: 4),
+                    Text('@$username', style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
                     if (createdAt != null)
-                      Text(
-                        'Registered: ${createdAt.split('T').first}',
-                        style: const TextStyle(
-                            fontSize: 11, color: AppTheme.textSecondary),
-                      ),
+                      Text('Since ${createdAt.split('T').first}', style: AppTypography.label.copyWith(fontSize: 10)),
                   ],
                 ),
               ),
-
-              // Status chip
+              
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border:
-                      Border.all(color: statusColor.withOpacity(0.3)),
+                  color: statusBg,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.border),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(statusIcon, size: 12, color: statusColor),
-                    const SizedBox(width: 4),
-                    Text(status,
-                        style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: statusColor)),
-                  ],
-                ),
+                child: Text(status.toUpperCase(), style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
               ),
 
-              // Actions for pending
               if (showActions && status == 'PENDING') ...[
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
+                const SizedBox(width: 20),
+                ElevatedButton(
                   onPressed: () => onApprove(user),
-                  icon: const Icon(Icons.check_rounded, size: 14),
-                  label: const Text('Approve'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.success,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
-                    textStyle: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w600),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                    backgroundColor: AppColors.secondary,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
+                  child: const Text('Approve'),
                 ),
-                const SizedBox(width: 8),
-                OutlinedButton.icon(
+                const SizedBox(width: 12),
+                OutlinedButton(
                   onPressed: () => onReject(user),
-                  icon: const Icon(Icons.close_rounded, size: 14),
-                  label: const Text('Reject'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.danger,
-                    side:
-                        BorderSide(color: AppTheme.danger.withOpacity(0.5)),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
-                    textStyle: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w600),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
+                  child: const Text('Reject'),
                 ),
               ],
             ],

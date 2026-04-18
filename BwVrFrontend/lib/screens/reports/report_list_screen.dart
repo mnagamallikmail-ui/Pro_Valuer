@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
 import '../../models/report_model.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
 import '../../widgets/app_layout.dart';
 import '../../widgets/common_widgets.dart';
 
@@ -44,8 +45,7 @@ class _ReportListScreenState extends State<ReportListScreen> {
     });
     try {
       final data = await _api.searchReports(
-        search:
-            _searchController.text.isNotEmpty ? _searchController.text : null,
+        search: _searchController.text.isNotEmpty ? _searchController.text : null,
         status: _selectedStatus,
         page: _currentPage,
         size: _pageSize,
@@ -68,16 +68,13 @@ class _ReportListScreenState extends State<ReportListScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete Report Permanently?'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        content: Text('Are you sure you want to permanently delete report ${r.referenceNumber} from the database? This action cannot be undone.'),
+        title: Text('Delete Report?', style: AppTypography.heading3),
+        content: Text('Delete ${r.referenceNumber} permanently? This cannot be undone.', style: AppTypography.bodyMedium),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.danger),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Delete'),
           ),
         ],
@@ -94,257 +91,158 @@ class _ReportListScreenState extends State<ReportListScreen> {
     return AppLayout(
       currentRoute: '/reports',
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Search / filter bar
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      hintText:
-                          'Search by vendor, location, or reference number...',
-                      prefixIcon: Icon(Icons.search_rounded, size: 18),
-                      suffixIcon: Icon(Icons.close_rounded, size: 16),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: const InputDecoration(
+                        hintText: 'Search vendor, location, or reference...',
+                        prefixIcon: Icon(Icons.search_rounded, size: 20),
+                      ),
+                      onChanged: (_) {
+                        _currentPage = 0;
+                        _load();
+                      },
                     ),
-                    onChanged: (_) {
-                      _currentPage = 0;
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedStatus,
+                      decoration: const InputDecoration(labelText: 'Status'),
+                      items: const [
+                        DropdownMenuItem(value: null, child: Text('All Statuses')),
+                        DropdownMenuItem(value: 'DRAFT', child: Text('Draft')),
+                        DropdownMenuItem(value: 'IN_PROGRESS', child: Text('In Progress')),
+                        DropdownMenuItem(value: 'COMPLETED', child: Text('Completed')),
+                        DropdownMenuItem(value: 'ARCHIVED', child: Text('Archived')),
+                      ],
+                      onChanged: (v) {
+                        setState(() => _selectedStatus = v);
+                        _load();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      await context.push('/reports/new');
                       _load();
                     },
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('New Report'),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: _selectedStatus,
-                    decoration: const InputDecoration(labelText: 'Status'),
-                    items: const [
-                      DropdownMenuItem(
-                          value: null, child: Text('All Statuses')),
-                      DropdownMenuItem(value: 'DRAFT', child: Text('Draft')),
-                      DropdownMenuItem(
-                          value: 'IN_PROGRESS', child: Text('In Progress')),
-                      DropdownMenuItem(
-                          value: 'COMPLETED', child: Text('Completed')),
-                      DropdownMenuItem(
-                          value: 'ARCHIVED', child: Text('Archived')),
-                    ],
-                    onChanged: (v) {
-                      setState(() => _selectedStatus = v);
-                      _load();
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    await context.push('/reports/new');
-                    _load();
-                  },
-                  icon: const Icon(Icons.add_rounded, size: 16),
-                  label: const Text('New Report'),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            Text('$_totalReports reports found',
-                style: const TextStyle(
-                    fontSize: 12, color: AppTheme.textSecondary)),
+            const SizedBox(height: 24),
+            Text('$_totalReports reports found', style: AppTypography.label),
             const SizedBox(height: 16),
 
             // Report list
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.textPrimary))
                   : _error != null
-                      ? Center(child: Text('Error: $_error'))
+                      ? Center(child: Text('Error: $_error', style: AppTypography.bodyMedium))
                       : _reports.isEmpty
                           ? EmptyState(
                               icon: Icons.description_outlined,
                               title: 'No reports found',
-                              subtitle:
-                                  'Create a new report or adjust your search filters',
+                              subtitle: 'Try adjusting your filters or create a new report',
                               action: ElevatedButton(
-                                onPressed: () async {
-                                  await context.push('/reports/new');
-                                  _load();
-                                },
+                                onPressed: () => context.push('/reports/new').then((_) => _load()),
                                 child: const Text('Create New Report'),
                               ),
                             )
                           : Container(
                               decoration: BoxDecoration(
-                                color: AppTheme.cardBg,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppTheme.border),
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: AppColors.border),
                               ),
                               child: ListView.separated(
                                 itemCount: _reports.length,
-                                separatorBuilder: (_, __) =>
-                                    const Divider(height: 1),
+                                separatorBuilder: (_, __) => const Divider(),
                                 itemBuilder: (context, i) {
                                   final r = _reports[i];
                                   final completion = r.completionPercentage;
-                                  return InkWell(
-                                    onTap: () =>
-                                        context.go('/reports/${r.reportId}'),
-                                    borderRadius: i == 0
-                                        ? const BorderRadius.vertical(
-                                            top: Radius.circular(12))
-                                        : BorderRadius.zero,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Row(
-                                        children: [
-                                          // Status icon
-                                          Container(
-                                            width: 44,
-                                            height: 44,
-                                            decoration: BoxDecoration(
-                                              color: AppTheme.chipBlue,
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: const Icon(
-                                                Icons.description_rounded,
-                                                color: AppTheme.accent,
-                                                size: 22),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    ReferenceChip(
-                                                        referenceNumber:
-                                                            r.referenceNumber,
-                                                        fontSize: 11),
-                                                    const SizedBox(width: 10),
-                                                    Expanded(
-                                                      child: Text(r.reportTitle,
-                                                          style: const TextStyle(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600),
-                                                          overflow: TextOverflow
-                                                              .ellipsis),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Row(
-                                                  children: [
-                                                    Text(r.bankName ?? '—',
-                                                        style: const TextStyle(
-                                                            fontSize: 12,
-                                                            color: AppTheme
-                                                                .textSecondary)),
-                                                    if (r.vendorName !=
-                                                        null) ...[
-                                                      const Text(' • ',
-                                                          style: TextStyle(
-                                                              color: AppTheme
-                                                                  .textSecondary)),
-                                                      Text(r.vendorName!,
-                                                          style: const TextStyle(
-                                                              fontSize: 12,
-                                                              color: AppTheme
-                                                                  .textSecondary)),
-                                                    ],
-                                                    if (r.location != null) ...[
-                                                      const Text(' • ',
-                                                          style: TextStyle(
-                                                              color: AppTheme
-                                                                  .textSecondary)),
-                                                      const Icon(
-                                                          Icons
-                                                              .location_on_outlined,
-                                                          size: 12,
-                                                          color: AppTheme
-                                                              .textSecondary),
-                                                      Text(r.location!,
-                                                          style: const TextStyle(
-                                                              fontSize: 12,
-                                                              color: AppTheme
-                                                                  .textSecondary)),
-                                                    ],
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 6),
-                                                // Progress bar
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: ClipRRect(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(4),
-                                                        child:
-                                                            LinearProgressIndicator(
-                                                          value:
-                                                              completion / 100,
-                                                          backgroundColor:
-                                                              AppTheme.border,
-                                                          valueColor:
-                                                              AlwaysStoppedAnimation(
-                                                                  completion ==
-                                                                          100
-                                                                      ? AppTheme
-                                                                          .success
-                                                                      : AppTheme
-                                                                          .accent),
-                                                          minHeight: 4,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    Text('$completion%',
-                                                        style: const TextStyle(
-                                                            fontSize: 11,
-                                                            color: AppTheme
-                                                                .textSecondary)),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              StatusChip(
-                                                  status: r.reportStatus),
-                                              const SizedBox(height: 6),
-                                              Text(
-                                                  r.createdAt != null
-                                                      ? DateFormat('dd MMM yy')
-                                                          .format(r.createdAt!)
-                                                      : '—',
-                                                  style: const TextStyle(
-                                                      fontSize: 11,
-                                                      color: AppTheme
-                                                          .textSecondary)),
-                                            ],
-                                          ),
-                                          const SizedBox(width: 8),
-                                          IconButton(
-                                            onPressed: () => _deleteReport(r),
-                                            icon: const Icon(
-                                                Icons.delete_outline_rounded,
-                                                size: 18,
-                                                color: AppTheme.textSecondary),
-                                          ),
-                                        ],
+                                  return ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                    onTap: () => context.go('/reports/${r.reportId}'),
+                                    leading: Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent.withOpacity(0.5),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
+                                      child: const Icon(Icons.description_rounded, color: AppColors.textPrimary, size: 24),
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        ReferenceChip(referenceNumber: r.referenceNumber, fontSize: 12),
+                                        const SizedBox(width: 12),
+                                        Expanded(child: Text(r.reportTitle, style: AppTypography.subheading, overflow: TextOverflow.ellipsis)),
+                                      ],
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 6),
+                                        Text('${r.bankName ?? '—'} • ${r.vendorName ?? ''} • ${r.location ?? ''}', style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary, fontSize: 13)),
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: LinearProgressIndicator(
+                                                  value: completion / 100,
+                                                  backgroundColor: AppColors.border,
+                                                  valueColor: AlwaysStoppedAnimation(completion == 100 ? AppColors.secondary : AppColors.primary),
+                                                  minHeight: 6,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text('$completion%', style: AppTypography.label),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            StatusChip(status: r.reportStatus),
+                                            const SizedBox(height: 6),
+                                            Text(r.createdAt != null ? DateFormat('dd MMM yyyy').format(r.createdAt!) : '—', style: AppTypography.label.copyWith(fontSize: 10)),
+                                          ],
+                                        ),
+                                        const SizedBox(width: 16),
+                                        IconButton(
+                                          onPressed: () => _deleteReport(r),
+                                          icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.textSecondary),
+                                        ),
+                                      ],
                                     ),
                                   );
                                 },

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/auth_service.dart';
@@ -54,8 +55,20 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       } else {
         throw Exception(response.data?['message'] ?? 'Failed to change password');
       }
+    } on DioException catch (e) {
+      final serverData = e.response?.data;
+      String msg = 'Request failed. Please check your inputs.';
+      if (serverData is Map) {
+        msg = serverData['error'] ?? serverData['message'] ?? msg;
+      }
+      setState(() => _error = msg);
     } catch (e) {
-      setState(() => _error = e.toString().replaceAll('Exception: ', ''));
+      String msg = e.toString().replaceAll('Exception: ', '');
+      // Strip raw DioException noise from the message
+      if (msg.contains('DioException') || msg.contains('status code')) {
+        msg = 'Request failed. Please try again.';
+      }
+      setState(() => _error = msg);
     } finally {
       if (mounted) setState(() => _loading = false);
     }

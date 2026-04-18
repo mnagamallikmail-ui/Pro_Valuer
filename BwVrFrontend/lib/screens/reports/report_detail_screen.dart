@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../services/api_service.dart';
 import '../../models/report_model.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
 import '../../widgets/app_layout.dart';
 import '../../widgets/common_widgets.dart';
 
@@ -41,10 +42,12 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         _loading = false;
       });
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -57,15 +60,14 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       _load();
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Document generated! Ready for download.'),
-          backgroundColor: AppTheme.success,
-          behavior: SnackBarBehavior.floating));
+          backgroundColor: AppColors.textPrimary));
     } catch (e) {
-      setState(() => _generating = false);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Generation failed: $e'),
-          backgroundColor: AppTheme.danger,
-          behavior: SnackBarBehavior.floating));
+      if (mounted) {
+        setState(() => _generating = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Generation failed: $e'),
+            backgroundColor: AppColors.error));
+      }
     }
   }
 
@@ -73,22 +75,19 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   Widget build(BuildContext context) {
     return AppLayout(
       currentRoute: '/reports',
-      title: _report != null ? _report!.referenceNumber : 'Report Detail',
+      title: _report?.referenceNumber ?? 'Report Detail',
       child: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppColors.textPrimary))
           : _error != null
               ? Center(
                   child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline,
-                        color: AppTheme.danger, size: 48),
+                    const Icon(Icons.error_outline, color: AppColors.textPrimary, size: 48),
                     const SizedBox(height: 16),
-                    Text(_error!,
-                        style: const TextStyle(color: AppTheme.textSecondary)),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                        onPressed: _load, child: const Text('Retry')),
+                    Text(_error!, style: AppTypography.bodyMedium),
+                    const SizedBox(height: 24),
+                    ElevatedButton(onPressed: _load, child: const Text('Retry')),
                   ],
                 ))
               : _ReportDetailContent(
@@ -124,103 +123,72 @@ class _ReportDetailContent extends StatelessWidget {
     final totalFields = report.values.length;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(32),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left panel: info + fields
+          // Main Content
           Expanded(
-            flex: 2,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header card
+                // Header Panel
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: AppTheme.cardBg,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.border),
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          ReferenceChip(
-                              referenceNumber: report.referenceNumber),
+                          ReferenceChip(referenceNumber: report.referenceNumber),
                           const SizedBox(width: 12),
                           StatusChip(status: report.reportStatus),
                           const Spacer(),
-                          OutlinedButton.icon(
+                          ElevatedButton.icon(
                             onPressed: onEdit,
-                            icon: const Icon(Icons.edit_rounded, size: 16),
-                            label: const Text('Fill Data'),
+                            icon: const Icon(Icons.edit_rounded, size: 18),
+                            label: const Text('Edit Data'),
+                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(report.reportTitle,
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 24),
+                      Text(report.reportTitle, style: AppTypography.heading2),
+                      const SizedBox(height: 12),
                       Wrap(
-                        spacing: 16,
+                        spacing: 24,
+                        runSpacing: 8,
                         children: [
-                          if (report.bankName != null)
-                            _InfoChip(
-                                icon: Icons.account_balance_rounded,
-                                text: report.bankName!),
-                          if (report.vendorName != null)
-                            _InfoChip(
-                                icon: Icons.business_rounded,
-                                text: report.vendorName!),
-                          if (report.location != null)
-                            _InfoChip(
-                                icon: Icons.location_on_rounded,
-                                text: report.location!),
-                          if (report.templateName != null)
-                            _InfoChip(
-                                icon: Icons.folder_copy_rounded,
-                                text: report.templateName!),
+                          if (report.bankName != null) _InfoItem(Icons.account_balance_rounded, report.bankName!),
+                          if (report.vendorName != null) _InfoItem(Icons.business_rounded, report.vendorName!),
+                          if (report.location != null) _InfoItem(Icons.location_on_rounded, report.location!),
+                          if (report.templateName != null) _InfoItem(Icons.folder_copy_rounded, report.templateName!),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      // Completion bar
-                      Row(
+                      const SizedBox(height: 32),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text('$completion% Complete',
-                                        style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600)),
-                                    const Spacer(),
-                                    Text(
-                                        '$filledValues / $totalFields fields filled',
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            color: AppTheme.textSecondary)),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(6),
-                                  child: LinearProgressIndicator(
-                                    value: completion / 100,
-                                    backgroundColor: AppTheme.border,
-                                    valueColor: AlwaysStoppedAnimation(
-                                        completion == 100
-                                            ? AppTheme.success
-                                            : AppTheme.accent),
-                                    minHeight: 8,
-                                  ),
-                                ),
-                              ],
+                          Row(
+                            children: [
+                              Text('$completion% Complete', style: AppTypography.subheading),
+                              const Spacer(),
+                              Text('$filledValues / $totalFields fields', style: AppTypography.label),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: LinearProgressIndicator(
+                              value: completion / 100,
+                              minHeight: 10,
+                              backgroundColor: AppColors.background,
+                              valueColor: AlwaysStoppedAnimation(completion == 100 ? AppColors.secondary : AppColors.primary),
                             ),
                           ),
                         ],
@@ -228,219 +196,64 @@ class _ReportDetailContent extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 32),
 
-                // Values table
+                // Fields Panel
                 Container(
                   decoration: BoxDecoration(
-                    color: AppTheme.cardBg,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.border),
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
-                        child: Text('Field Values',
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w600)),
+                      Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text('Report Data', style: AppTypography.heading3),
                       ),
-                      const SizedBox(height: 12),
-                      Table(
-                        columnWidths: const {
-                          0: FixedColumnWidth(40),
-                          1: FlexColumnWidth(1.5),
-                          2: FlexColumnWidth(2),
-                          3: FixedColumnWidth(100),
-                        },
-                        children: [
-                          TableRow(
-                            decoration:
-                                const BoxDecoration(color: AppTheme.surface),
-                            children: ['#', 'Section / Field', 'Value', 'Type']
-                                .map((h) => Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 10),
-                                    child: Text(h,
-                                        style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppTheme.textSecondary))))
-                                .toList(),
-                          ),
-                          ...() {
-                            int displayIndex = 1;
-                            Map<String, List<ReportValueModel>> sectionsMap =
-                                {};
-                            for (var v in report.values) {
-                              final sec = (v.sectionName?.isNotEmpty == true)
-                                  ? v.sectionName!
-                                  : 'General Information';
-                              sectionsMap.putIfAbsent(sec, () => []).add(v);
-                            }
-
-                            List<TableRow> rows = [];
-                            sectionsMap.forEach((sectionName, values) {
-                              rows.add(TableRow(
-                                  decoration: const BoxDecoration(
-                                      color: AppTheme.surface),
-                                  children: [
-                                    const SizedBox(), // Empty for #
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 8),
-                                      child: Text(sectionName,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: AppTheme.accent,
-                                              fontSize: 13)),
-                                    ),
-                                    const SizedBox(),
-                                    const SizedBox(),
-                                  ]));
-
-                              for (var v in values) {
-                                rows.add(TableRow(
-                                  decoration: const BoxDecoration(
-                                      border: Border(
-                                          top: BorderSide(
-                                              color: AppTheme.border))),
-                                  children: [
-                                    Padding(
-                                        padding: const EdgeInsets.all(12),
-                                        child: Text('${displayIndex++}',
-                                            style: const TextStyle(
-                                                fontSize: 12,
-                                                color:
-                                                    AppTheme.textSecondary))),
-                                    Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(v.displayLabel,
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w500)),
-                                          Text(v.placeholderKey,
-                                              style: const TextStyle(
-                                                  fontSize: 10,
-                                                  color: AppTheme.accent,
-                                                  fontFamily: 'Courier New')),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: v.hasValue
-                                    ? v.isImage
-                                        ? Row(
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(4),
-                                                child: Image.network(
-                                                  ApiService().getBlobImageUrl(report.reportId, v.placeholderKey),
-                                                  width: 32,
-                                                  height: 32,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error, stackTrace) => 
-                                                    const Icon(Icons.image_rounded, size: 20, color: AppTheme.success),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                v.imageOriginalName ?? 'Uploaded',
-                                                style: const TextStyle(fontSize: 12, color: AppTheme.success),
-                                              ),
-                                            ],
-                                          )
-                                              : Text(v.textValue ?? '',
-                                                  style: const TextStyle(
-                                                      fontSize: 12))
-                                          : const Text('—',
-                                              style: TextStyle(
-                                                  color: AppTheme.textSecondary,
-                                                  fontSize: 12)),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.surface,
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                        ),
-                                        child: Text(v.fieldType,
-                                            style: const TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppTheme.textSecondary)),
-                                      ),
-                                    ),
-                                  ],
-                                ));
-                              }
-                            });
-                            return rows;
-                          }(),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
+                      const Divider(height: 1),
+                      ..._buildSections(),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 32),
 
-          // Right panel: actions
+          // Sidebar Actions
           SizedBox(
-            width: 220,
+            width: 280,
             child: Column(
               children: [
-                _ActionCard(
-                  title: 'Fill Report Data',
-                  subtitle: 'Enter values for all fields',
+                _ActionTile(
+                  title: 'Fill Information',
+                  subtitle: 'Update field values and images',
                   icon: Icons.edit_note_rounded,
-                  color: AppTheme.accent,
+                  color: AppColors.primary,
                   onTap: onEdit,
                 ),
-                const SizedBox(height: 12),
-                _ActionCard(
+                const SizedBox(height: 16),
+                _ActionTile(
                   title: 'Generate Document',
-                  subtitle: completion < 100
-                      ? 'Incomplete: $completion% filled'
-                      : 'Create final .docx',
-                  icon: Icons.play_arrow_rounded,
-                  color: completion < 100 ? AppTheme.warning : AppTheme.success,
+                  subtitle: completion < 100 ? 'Warning: Incomplete' : 'Ready to build .docx',
+                  icon: Icons.bolt_rounded,
+                  color: completion < 100 ? AppColors.primary : AppColors.secondary,
+                  loading: generating,
                   onTap: () {
                     if (completion < 100) {
                       showDialog(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          title: const Text('Generate Incomplete Report?'),
-                          content: const Text(
-                              'Some fields are empty. Missing values will be filled with "—" and a Missing Data Summary will be added to the document.\n\nDo you want to continue?'),
+                          title: Text('Generate Incomplete?', style: AppTypography.heading3),
+                          content: const Text('Some fields are empty. Generate anyway?'),
                           actions: [
-                            TextButton(
-                              autofocus: true,
-                              onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Go fix missing'),
-                            ),
+                            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Go Back')),
                             ElevatedButton(
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                onGenerate();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.danger,
-                                  foregroundColor: Colors.white),
-                              child: const Text('Generate anyway'),
+                              onPressed: () { Navigator.pop(ctx); onGenerate(); },
+                              style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+                              child: const Text('Generate'),
                             ),
                           ],
                         ),
@@ -449,54 +262,36 @@ class _ReportDetailContent extends StatelessWidget {
                       onGenerate();
                     }
                   },
-                  loading: generating,
                 ),
                 if (report.hasGeneratedFile) ...[
-                  const SizedBox(height: 12),
-                  _ActionCard(
-                    title: 'Download Report',
-                    subtitle: 'Save final .docx file',
+                  const SizedBox(height: 16),
+                  _ActionTile(
+                    title: 'Download DOCX',
+                    subtitle: 'Save final report to device',
                     icon: Icons.download_rounded,
-                    color: const Color(0xFF8B5CF6),
+                    color: AppColors.accent,
                     onTap: () async {
                       final url = Uri.parse(downloadUrl);
-                      if (await canLaunchUrl(url)) {
-                        await launchUrl(url);
-                      }
+                      if (await canLaunchUrl(url)) await launchUrl(url);
                     },
-                    externalUrl: downloadUrl,
                   ),
                 ],
-                const SizedBox(height: 20),
-                // Metadata card
+                const SizedBox(height: 32),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: AppTheme.cardBg,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.border),
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Report Info',
-                          style: TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 12),
-                      _MetaRow('Created by', report.createdBy ?? '—'),
-                      _MetaRow(
-                          'Created at',
-                          report.createdAt != null
-                              ? DateFormat('dd MMM yyyy HH:mm')
-                                  .format(report.createdAt!)
-                              : '—'),
-                      if (report.updatedBy != null)
-                        _MetaRow('Last updated by', report.updatedBy!),
-                      if (report.generatedAt != null)
-                        _MetaRow(
-                            'Generated at',
-                            DateFormat('dd MMM yyyy HH:mm')
-                                .format(report.generatedAt!)),
+                      Text('System Info', style: AppTypography.subheading),
+                      const SizedBox(height: 20),
+                      _MetaItem('Author', report.createdBy ?? '—'),
+                      _MetaItem('Date', report.createdAt != null ? DateFormat('dd MMM yyyy').format(report.createdAt!) : '—'),
+                      if (report.generatedAt != null) _MetaItem('Last Built', DateFormat('dd MMM yyyy HH:mm').format(report.generatedAt!)),
                     ],
                   ),
                 ),
@@ -507,115 +302,158 @@ class _ReportDetailContent extends StatelessWidget {
       ),
     );
   }
+
+  List<Widget> _buildSections() {
+    Map<String, List<ReportValueModel>> sectionsMap = {};
+    for (var v in report.values) {
+      final sec = (v.sectionName != null && v.sectionName!.isNotEmpty) ? v.sectionName! : 'General';
+      sectionsMap.putIfAbsent(sec, () => []).add(v);
+    }
+
+    List<Widget> widgets = [];
+    sectionsMap.forEach((name, values) {
+      widgets.add(
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          color: AppColors.background,
+          child: Text(name.toUpperCase(), style: AppTypography.label.copyWith(fontWeight: FontWeight.bold, letterSpacing: 1)),
+        ),
+      );
+      for (var v in values) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(v.displayLabel, style: AppTypography.subheading.copyWith(fontSize: 14)),
+                      const SizedBox(height: 2),
+                      Text(v.placeholderKey, style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textSecondary, fontFamily: 'Courier New')),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: v.hasValue
+                      ? v.isImage
+                          ? Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    ApiService().getBlobImageUrl(report.reportId, v.placeholderKey),
+                                    width: 40, height: 40, fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Icon(Icons.image_rounded, color: AppColors.textSecondary),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(child: Text(v.imageOriginalName ?? 'Image Uploaded', style: AppTypography.bodyMedium)),
+                              ],
+                            )
+                          : Text(v.textValue ?? '', style: AppTypography.bodyMedium)
+                      : Text('—', style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(6)),
+                  child: Text(v.fieldType, style: AppTypography.label.copyWith(fontSize: 9)),
+                ),
+              ],
+            ),
+          ),
+        );
+        widgets.add(const Divider(height: 1, indent: 24, endIndent: 24));
+      }
+    });
+    return widgets;
+  }
 }
 
-class _InfoChip extends StatelessWidget {
+class _InfoItem extends StatelessWidget {
   final IconData icon;
   final String text;
-  const _InfoChip({required this.icon, required this.text});
-
+  const _InfoItem(this.icon, this.text);
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 13, color: AppTheme.textSecondary),
-        const SizedBox(width: 4),
-        Text(text,
-            style:
-                const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+        Icon(icon, size: 16, color: AppColors.textSecondary),
+        const SizedBox(width: 8),
+        Text(text, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
       ],
     );
   }
 }
 
-class _MetaRow extends StatelessWidget {
+class _MetaItem extends StatelessWidget {
   final String label;
   final String value;
-  const _MetaRow(this.label, this.value);
-
+  const _MetaItem(this.label, this.value);
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style:
-                  const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-          Text(value,
-              style:
-                  const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+          Text(label, style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textSecondary)),
+          const SizedBox(height: 4),
+          Text(value, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
         ],
       ),
     );
   }
 }
 
-class _ActionCard extends StatelessWidget {
+class _ActionTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
   final Color color;
   final VoidCallback? onTap;
   final bool loading;
-  final String? externalUrl;
 
-  const _ActionCard({
+  const _ActionTile({
     required this.title,
     required this.subtitle,
     required this.icon,
     required this.color,
     this.onTap,
     this.loading = false,
-    this.externalUrl,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      onTap: loading ? null : onTap,
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppTheme.cardBg,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: onTap != null ? color.withOpacity(0.4) : AppTheme.border),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
         ),
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: loading
-                  ? Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: CircularProgressIndicator(
-                          color: color, strokeWidth: 2))
-                  : Icon(icon, color: color, size: 20),
+              width: 44, height: 44,
+              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+              child: loading ? const Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary)) : Icon(icon, color: AppColors.textPrimary, size: 22),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: onTap != null
-                              ? AppTheme.textPrimary
-                              : AppTheme.textSecondary)),
-                  Text(subtitle,
-                      style: const TextStyle(
-                          fontSize: 11, color: AppTheme.textSecondary)),
+                  Text(title, style: AppTypography.subheading.copyWith(fontWeight: FontWeight.bold)),
+                  Text(subtitle, style: AppTypography.label.copyWith(fontSize: 11)),
                 ],
               ),
             ),

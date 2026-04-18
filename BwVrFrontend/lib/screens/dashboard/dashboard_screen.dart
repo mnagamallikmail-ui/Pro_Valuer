@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../models/report_model.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
 import '../../widgets/app_layout.dart';
 import '../../widgets/common_widgets.dart';
 
@@ -53,7 +54,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return AppLayout(
       currentRoute: '/',
       child: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppColors.textPrimary))
           : _error != null
               ? _ErrorView(error: _error!, onRetry: _load)
               : _DashboardContent(
@@ -77,20 +78,17 @@ class _DashboardContent extends StatelessWidget {
     final displayName = session?.displayName ?? 'User';
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Welcome header
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.primary, AppTheme.primaryLight],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: AppColors.primary,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
             ),
             child: Row(
               children: [
@@ -99,118 +97,115 @@ class _DashboardContent extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isAdmin ? 'Admin Dashboard' : 'Welcome back!',
-                        style:
-                            const TextStyle(color: Colors.white70, fontSize: 14)),
+                        isAdmin ? 'Admin Dashboard' : 'Welcome back,',
+                        style: AppTypography.subheading.copyWith(color: AppColors.textSecondary),
+                      ),
                       const SizedBox(height: 4),
-                      Text(displayName,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 16),
+                      Text(
+                        displayName,
+                        style: AppTypography.heading1.copyWith(color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 24),
                       Row(
                         children: [
                           ElevatedButton.icon(
                             onPressed: () => context.go('/reports/new'),
-                            icon: const Icon(Icons.add_rounded, size: 16),
+                            icon: const Icon(Icons.add_rounded, size: 18),
                             label: const Text('New Report'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.accent,
-                              foregroundColor: Colors.white,
-                            ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 16),
                           OutlinedButton.icon(
                             onPressed: () => context.go('/templates/upload'),
-                            icon: const Icon(Icons.upload_rounded, size: 16),
+                            icon: const Icon(Icons.upload_rounded, size: 18),
                             label: const Text('Upload Template'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: const BorderSide(color: Colors.white30),
-                            ),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.description_rounded,
-                    size: 80, color: Colors.white12),
+                Icon(Icons.description_rounded,
+                    size: 100, color: AppColors.textPrimary.withOpacity(0.05)),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 40),
 
           // Stats cards
-          const Text('Overview',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary)),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                  child: InkWell(
-                onTap: () => context.go('/reports'),
-                borderRadius: BorderRadius.circular(12),
-                child: StatsCard(
-                  title: 'Total Reports',
-                  value: stats.totalReports.toString(),
-                  icon: Icons.description_rounded,
-                  color: AppTheme.accent,
-                ),
-              )),
-              const SizedBox(width: 16),
-              Expanded(
-                  child: InkWell(
-                onTap: () => context.go('/reports'),
-                borderRadius: BorderRadius.circular(12),
-                child: StatsCard(
-                  title: 'This Month',
-                  value: stats.reportsThisMonth.toString(),
-                  icon: Icons.calendar_today_rounded,
-                  color: AppTheme.success,
-                  subtitle: 'New reports',
-                ),
-              )),
-              const SizedBox(width: 16),
-              Expanded(
-                  child: InkWell(
-                onTap: () => context.go('/templates'),
-                borderRadius: BorderRadius.circular(12),
-                child: StatsCard(
-                  title: 'Active Templates',
-                  value: stats.activeTemplates.toString(),
-                  icon: Icons.folder_copy_rounded,
-                  color: AppTheme.warning,
-                ),
-              )),
-              const SizedBox(width: 16),
-              Expanded(
-                  child: InkWell(
-                onTap: () {},
-                borderRadius: BorderRadius.circular(12),
-                child: StatsCard(
-                  title: 'Banks',
-                  value: stats.distinctBanks.toString(),
-                  icon: Icons.account_balance_rounded,
-                  color: const Color(0xFF8B5CF6),
-                ),
-              )),
-            ],
+          Text('Overview', style: AppTypography.heading3),
+          const SizedBox(height: 20),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final double spacing = 20;
+              final double cardWidth = (constraints.maxWidth - (3 * spacing)) / 4;
+              
+              return Wrap(
+                spacing: spacing,
+                runSpacing: spacing,
+                children: [
+                  SizedBox(
+                    width: cardWidth,
+                    child: InkWell(
+                      onTap: () => context.go('/reports'),
+                      borderRadius: BorderRadius.circular(12),
+                      child: StatsCard(
+                        title: 'Total Reports',
+                        value: stats.totalReports.toString(),
+                        icon: Icons.description_rounded,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: cardWidth,
+                    child: InkWell(
+                      onTap: () => context.go('/reports'),
+                      borderRadius: BorderRadius.circular(12),
+                      child: StatsCard(
+                        title: 'This Month',
+                        value: stats.reportsThisMonth.toString(),
+                        icon: Icons.calendar_today_rounded,
+                        color: AppColors.secondary,
+                        subtitle: 'New reports',
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: cardWidth,
+                    child: InkWell(
+                      onTap: () => context.go('/templates'),
+                      borderRadius: BorderRadius.circular(12),
+                      child: StatsCard(
+                        title: 'Active Templates',
+                        value: stats.activeTemplates.toString(),
+                        icon: Icons.folder_copy_rounded,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: cardWidth,
+                    child: InkWell(
+                      onTap: () {},
+                      borderRadius: BorderRadius.circular(12),
+                      child: StatsCard(
+                        title: 'Banks',
+                        value: stats.distinctBanks.toString(),
+                        icon: Icons.account_balance_rounded,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 48),
 
           // Recent reports
           Row(
             children: [
-              const Text('Recent Reports',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary)),
+              Text('Recent Reports', style: AppTypography.heading3),
               const Spacer(),
               TextButton(
                 onPressed: () => context.go('/reports'),
@@ -218,7 +213,7 @@ class _DashboardContent extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           if (recentReports.isEmpty)
             EmptyState(
               icon: Icons.description_outlined,
@@ -232,39 +227,36 @@ class _DashboardContent extends StatelessWidget {
           else
             Container(
               decoration: BoxDecoration(
-                color: AppTheme.cardBg,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.border),
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
               ),
               child: ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: recentReports.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
+                separatorBuilder: (_, __) => const Divider(),
                 itemBuilder: (context, i) {
                   final r = recentReports[i];
                   return ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     leading: Container(
-                      width: 40,
-                      height: 40,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        color: AppTheme.chipBlue,
-                        borderRadius: BorderRadius.circular(8),
+                        color: AppColors.accent.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(Icons.description_rounded,
-                          color: AppTheme.accent, size: 20),
+                          color: AppColors.textPrimary, size: 24),
                     ),
                     title: Row(
                       children: [
-                        ReferenceChip(
-                            referenceNumber: r.referenceNumber, fontSize: 11),
+                        ReferenceChip(referenceNumber: r.referenceNumber, fontSize: 12),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(r.reportTitle,
-                              style: const TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w500),
+                              style: AppTypography.subheading,
                               overflow: TextOverflow.ellipsis),
                         ),
                       ],
@@ -272,8 +264,7 @@ class _DashboardContent extends StatelessWidget {
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text('${r.bankName ?? ''} • ${r.vendorName ?? ''}',
-                          style: const TextStyle(
-                              fontSize: 12, color: AppTheme.textSecondary)),
+                          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
                     ),
                     trailing: StatusChip(status: r.reportStatus),
                     onTap: () => context.go('/reports/${r.reportId}'),
@@ -298,15 +289,12 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline, color: AppTheme.danger, size: 48),
+          const Icon(Icons.error_outline, color: AppColors.textPrimary, size: 48),
           const SizedBox(height: 16),
-          const Text('Failed to load dashboard',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          Text('Failed to load dashboard', style: AppTypography.heading3),
           const SizedBox(height: 8),
-          Text(error,
-              style: const TextStyle(color: AppTheme.textSecondary),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 24),
+          Text(error, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
+          const SizedBox(height: 32),
           ElevatedButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh_rounded),

@@ -1,22 +1,15 @@
 import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
-
 import '../../models/report_model.dart';
 import '../../services/api_service.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
 import '../../widgets/common_widgets.dart';
 
 class ReportEditScreen extends StatefulWidget {
   final int reportId;
-
   const ReportEditScreen({super.key, required this.reportId});
 
   @override
@@ -30,11 +23,7 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
   String? _error;
 
   final Map<int, TextEditingController> _controllers = {};
-  final Map<int, String> _uploadedPaths =
-      {}; // placeholderId -> file name for UI
-  final Map<int, PlatformFile> _stagedFiles =
-      {}; // placeholderId -> actual file to upload
-
+  final Map<int, String> _uploadedPaths = {};
   bool _saving = false;
   bool _hasChanges = false;
 
@@ -47,26 +36,28 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
   Future<void> _loadReport() async {
     try {
       final r = await _apiService.getReport(widget.reportId);
-      setState(() {
-        _report = r;
-        _isLoading = false;
-        _initControllers(r);
-      });
+      if (mounted) {
+        setState(() {
+          _report = r;
+          _isLoading = false;
+          _initControllers(r);
+        });
+      }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
   void _initControllers(ReportDetailModel r) {
     for (var v in r.values) {
-      _controllers[v.placeholderId] =
-          TextEditingController(text: v.textValue ?? '');
+      _controllers[v.placeholderId] = TextEditingController(text: v.textValue ?? '');
       if (v.isImage && (v.imageFilePath != null || v.hasImageData)) {
-        _uploadedPaths[v.placeholderId] =
-            v.imageOriginalName ?? 'Previously uploaded image';
+        _uploadedPaths[v.placeholderId] = v.imageOriginalName ?? 'Image Uploaded';
       }
     }
   }
@@ -102,26 +93,21 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
         await _apiService.saveReportValues(widget.reportId, updateValues);
       }
 
-      setState(() => _hasChanges = false);
-
       if (mounted) {
+        setState(() {
+          _hasChanges = false;
+          _saving = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Report saved successfully'),
-              backgroundColor: AppTheme.success),
+          const SnackBar(content: Text('Report saved successfully'), backgroundColor: AppColors.textPrimary),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Error saving: $e'),
-              backgroundColor: AppTheme.danger),
-        );
-      }
-    } finally {
-      if (mounted) {
         setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving: $e'), backgroundColor: AppColors.error),
+        );
       }
     }
   }
@@ -134,11 +120,9 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
         maxHeight: 1600,
         imageQuality: 70,
       );
-      if (image == null) return; // User cancelled
+      if (image == null) return;
 
       final bytes = await image.readAsBytes();
-      if (bytes.isEmpty) throw Exception('Selected image is empty');
-
       final result = await _apiService.uploadImage(
         fileBytes: bytes,
         fileName: image.name,
@@ -149,11 +133,6 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
       final filePath = result['filePath'] ?? result['imageUrl'];
       final originalName = result['originalName'] ?? image.name;
 
-      if (filePath == null) {
-         throw Exception('Server failed to provide a storage path');
-      }
-
-      // Save the image path to DB immediately so generator picks it up
       await _apiService.saveReportValues(widget.reportId, [
         {
           'placeholderId': v.placeholderId,
@@ -169,24 +148,14 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
           v.imageOriginalName = originalName;
           v.imageFilePath = filePath;
         });
-        
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${v.displayLabel} uploaded successfully'),
-            backgroundColor: AppTheme.success,
-            behavior: SnackBarBehavior.floating,
-          ),
+          const SnackBar(content: Text('Image uploaded!'), backgroundColor: AppColors.textPrimary),
         );
       }
     } catch (e) {
-      debugPrint('Error picking or uploading file: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Upload failed: ${e.toString().replaceAll('Exception: ', '')}'),
-            backgroundColor: AppTheme.danger,
-            behavior: SnackBarBehavior.floating,
-          ),
+          SnackBar(content: Text('Upload failed: $e'), backgroundColor: AppColors.error),
         );
       }
     }
@@ -194,193 +163,83 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (_error != null) {
-      return Scaffold(
-          body: Center(
-              child: Text('Error: $_error',
-                  style: const TextStyle(color: AppTheme.danger))));
-    }
+    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.textPrimary)));
+    if (_error != null) return Scaffold(body: Center(child: Text('Error: $_error', style: AppTypography.bodyMedium)));
 
     final r = _report!;
-
-    final List<Widget> formFields = [];
-    final List<ReportValueModel> allImages = [];
-
-    String? currentSection;
-    List<ReportValueModel> currentTableValues = [];
-
-    void flushTable() {
-      if (currentTableValues.isNotEmpty) {
-        formFields.add(Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _TableFieldsView(
-            values: currentTableValues,
-            reportId: widget.reportId,
-            controllers: _controllers,
-            uploadedPaths: _uploadedPaths,
-            onUpload: _uploadImage,
-            onChanged: () => setState(() => _hasChanges = true),
-          ),
-        ));
-        currentTableValues = [];
-      }
-    }
-
-    for (var v in r.values) {
-      if (v.isImage) {
-        allImages.add(v);
-        continue;
-      }
-
-      final sec = (v.sectionName?.isNotEmpty == true)
-          ? v.sectionName!
-          : 'General Information';
-
-      if (currentSection != sec) {
-        flushTable();
-        if (currentSection != null) {
-          formFields.add(const SizedBox(height: 20));
-        }
-        currentSection = sec;
-        formFields.add(Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionHeader(sec),
-            const SizedBox(height: 12),
-          ],
-        ));
-      }
-
-      if (v.isInTable) {
-        if (currentTableValues.isNotEmpty &&
-            currentTableValues.last.tableContext != v.tableContext) {
-          flushTable();
-        }
-        currentTableValues.add(v);
-      } else {
-        flushTable();
-        formFields.add(_FieldCard(
-          v: v,
-          controller: _controllers[v.placeholderId]!,
-          onChanged: () => setState(() => _hasChanges = true),
-        ));
-      }
-    }
-    flushTable();
-
-    if (allImages.isNotEmpty) {
-      formFields.add(const SizedBox(height: 20));
-      formFields.add(const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _SectionHeader('Image Uploads'),
-          SizedBox(height: 12),
-        ],
-      ));
-      for (var v in allImages) {
-        formFields.add(_ImageFieldCard(
-          v: v,
-          reportId: widget.reportId,
-          uploadedName: _uploadedPaths[v.placeholderId],
-          onUpload: () => _uploadImage(v),
-        ));
-      }
-    }
+    final List<Widget> sections = _buildSections();
 
     return Scaffold(
-      backgroundColor: AppTheme.surface,
+      backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // Top action bar
+          // Toolbar
           Container(
-            color: AppTheme.cardBg,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              border: Border(bottom: BorderSide(color: AppColors.border)),
+            ),
             child: Row(
               children: [
-                TextButton(
+                OutlinedButton.icon(
                   onPressed: () => context.go('/reports/${widget.reportId}'),
-                  child: const Text('← Back to Report'),
+                  icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                  label: const Text('Back'),
                 ),
-                const SizedBox(width: 16),
-                ReferenceChip(
-                    referenceNumber: r.referenceNumber, fontSize: 12),
+                const SizedBox(width: 24),
+                ReferenceChip(referenceNumber: r.referenceNumber),
                 const Spacer(),
-                if (_hasChanges || _saving)
+                if (_hasChanges)
                   Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Text(_saving ? 'Saving...' : 'Unsaved changes',
-                        style: const TextStyle(
-                            fontSize: 12, color: AppTheme.warning)),
+                    padding: const EdgeInsets.only(right: 20),
+                    child: Text('Unsaved changes', style: AppTypography.label.copyWith(color: AppColors.textSecondary)),
                   ),
                 ElevatedButton.icon(
                   onPressed: _saving ? null : _save,
-                  icon: _saving
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2))
-                      : const Icon(Icons.save_rounded, size: 16),
-                  label: const Text('Save'),
+                  icon: _saving ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary)) : const Icon(Icons.check_rounded, size: 18),
+                  label: Text(_saving ? 'Saving...' : 'Save Changes'),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.secondary),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1),
 
-          // Form body
+          // Main Content
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(32),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: formFields,
-                    ),
+                    child: Column(children: sections),
                   ),
                   const SizedBox(width: 32),
-                  // Right side contextual help or mini map
-                  Expanded(
-                    flex: 1,
+                  // Sidebar
+                  SizedBox(
+                    width: 300,
                     child: Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: AppTheme.cardBg,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.border),
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Instructions',
-                              style: TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Provide values for all placeholders mapped from the selected template.\n\n'
-                            '• DATE fields expect yyyy-mm-dd format.\n'
-                            '• Tables automatically fill repeating rows if supported.\n'
-                            '• Save frequently to avoid data loss.',
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.textSecondary,
-                                height: 1.5),
+                          Text('Instructions', style: AppTypography.subheading),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Enter values for all placeholders. Dates should be in yyyy-mm-dd format. Images will be automatically optimized for the document.',
+                            style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 32),
                           const Divider(),
-                          const SizedBox(height: 20),
-                          const Text('Progress',
-                              style: TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 12),
-                          _ProgressCircle(report: r),
+                          const SizedBox(height: 32),
+                          _ProgressCard(report: r),
                         ],
                       ),
                     ),
@@ -393,19 +252,53 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
       ),
     );
   }
-}
 
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  const _SectionHeader(this.title);
+  List<Widget> _buildSections() {
+    final List<Widget> widgets = [];
+    final Map<String, List<ReportValueModel>> sectionsMap = {};
+    final List<ReportValueModel> allImages = [];
 
-  @override
-  Widget build(BuildContext context) {
-    return Text(title,
-        style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary));
+    for (var v in _report!.values) {
+      if (v.isImage) {
+        allImages.add(v);
+        continue;
+      }
+      final sec = (v.sectionName?.isNotEmpty == true) ? v.sectionName! : 'General Information';
+      sectionsMap.putIfAbsent(sec, () => []).add(v);
+    }
+
+    sectionsMap.forEach((name, values) {
+      widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 24, top: 12),
+        child: Text(name.toUpperCase(), style: AppTypography.label.copyWith(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+      ));
+      
+      for (var v in values) {
+        widgets.add(_FieldCard(
+          v: v,
+          controller: _controllers[v.placeholderId]!,
+          onChanged: () => setState(() => _hasChanges = true),
+        ));
+      }
+      widgets.add(const SizedBox(height: 24));
+    });
+
+    if (allImages.isNotEmpty) {
+      widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 24, top: 12),
+        child: Text('IMAGE UPLOADS', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+      ));
+      for (var v in allImages) {
+        widgets.add(_ImageFieldCard(
+          v: v,
+          reportId: widget.reportId,
+          uploadedName: _uploadedPaths[v.placeholderId],
+          onUpload: () => _uploadImage(v),
+        ));
+      }
+    }
+
+    return widgets;
   }
 }
 
@@ -414,80 +307,44 @@ class _FieldCard extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onChanged;
 
-  const _FieldCard({
-    required this.v,
-    required this.controller,
-    required this.onChanged,
-  });
+  const _FieldCard({required this.v, required this.controller, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.cardBg,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.border),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: _fieldTypeColor(v.fieldType).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(v.fieldType,
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: _fieldTypeColor(v.fieldType))),
-              ),
-              const SizedBox(width: 8),
-              Text(v.placeholderKey,
-                  style: const TextStyle(
-                      fontFamily: 'Courier New',
-                      fontSize: 11,
-                      color: AppTheme.accent)),
+              Text(v.displayLabel, style: AppTypography.subheading),
+              const Spacer(),
+              Text(v.placeholderKey, style: AppTypography.label.copyWith(fontFamily: 'Courier New', fontSize: 10)),
             ],
           ),
-          const SizedBox(height: 10),
-          Text(v.questionText,
-              style:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
+          Text(v.questionText, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          const SizedBox(height: 20),
           TextFormField(
             controller: controller,
-            onChanged: (_) => onChanged(),
+            onChanged: (val) => onChanged(),
             decoration: InputDecoration(
-              hintText: 'Enter ${v.displayLabel.toLowerCase()}...',
-              hintStyle: const TextStyle(color: AppTheme.textSecondary),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              hintText: 'Enter value...',
+              fillColor: AppColors.background,
+              filled: true,
             ),
-            maxLines: v.fieldType == 'TEXT' ? 1 : 3,
-            style: const TextStyle(fontSize: 14),
+            maxLines: v.fieldType == 'TEXT' ? 1 : 4,
           ),
         ],
       ),
     );
-  }
-
-  Color _fieldTypeColor(String type) {
-    switch (type) {
-      case 'DATE':
-        return AppTheme.warning;
-      case 'IMAGE':
-        return const Color(0xFF8B5CF6);
-      case 'NUMBER':
-        return AppTheme.success;
-      default:
-        return AppTheme.accent;
-    }
   }
 }
 
@@ -497,93 +354,61 @@ class _ImageFieldCard extends StatelessWidget {
   final String? uploadedName;
   final VoidCallback onUpload;
 
-  const _ImageFieldCard({
-    required this.v,
-    required this.reportId,
-    this.uploadedName,
-    required this.onUpload,
-  });
+  const _ImageFieldCard({required this.v, required this.reportId, this.uploadedName, required this.onUpload});
 
   @override
   Widget build(BuildContext context) {
     final hasImage = uploadedName != null || v.hasImageData;
-    final imageUrl = hasImage ? ApiService().getBlobImageUrl(v.valueId ?? 0, v.placeholderKey) : null;
-    
-    // Fallback: If we just uploaded it but don't have a valueId yet, we might not have a URL easily.
-    // However, in our system, saveReportValues creates the record if it doesn't exist.
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.cardBg,
-        borderRadius: BorderRadius.circular(10),
-        border:
-            Border.all(color: hasImage ? AppTheme.success : AppTheme.border),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: hasImage ? AppColors.secondary : AppColors.border),
       ),
       child: Row(
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 80, height: 80,
             decoration: BoxDecoration(
-              color: hasImage ? AppTheme.chipGreen : AppTheme.surface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                  color: hasImage ? AppTheme.success : AppTheme.border),
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
             ),
             child: hasImage
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     child: Image.network(
                       ApiService().getBlobImageUrl(reportId, v.placeholderKey),
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                        Icons.check_circle_rounded,
-                        color: AppTheme.success,
-                        size: 28,
-                      ),
+                      errorBuilder: (_, __, ___) => const Icon(Icons.check_circle_rounded, color: AppColors.secondary, size: 32),
                     ),
                   )
-                : Icon(
-                    Icons.image_outlined,
-                    color: AppTheme.textSecondary,
-                    size: 28,
-                  ),
+                : const Icon(Icons.image_outlined, color: AppColors.textSecondary, size: 32),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 24),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(v.questionText,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w500)),
+                Text(v.questionText, style: AppTypography.subheading),
                 const SizedBox(height: 4),
-                Text(v.placeholderKey,
-                    style: const TextStyle(
-                        fontFamily: 'Courier New',
-                        fontSize: 11,
-                        color: AppTheme.accent)),
+                Text(v.placeholderKey, style: AppTypography.label.copyWith(fontFamily: 'Courier New', fontSize: 10)),
                 if (hasImage) ...[
-                  const SizedBox(height: 4),
-                  Text(uploadedName!,
-                      style: const TextStyle(
-                          fontSize: 12, color: AppTheme.success)),
+                  const SizedBox(height: 8),
+                  Text(uploadedName ?? 'Image Uploaded', style: AppTypography.label.copyWith(color: AppColors.secondary, fontWeight: FontWeight.bold)),
                 ],
               ],
             ),
           ),
-          const SizedBox(width: 16),
-          Container(
-            child: ElevatedButton(
-              onPressed: onUpload,
-              child: Text('📤 Select ${v.displayLabel} Image'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4285F4),
-                foregroundColor: Colors.white,
-              ),
-            ),
+          const SizedBox(width: 24),
+          ElevatedButton.icon(
+            onPressed: onUpload,
+            icon: const Icon(Icons.upload_rounded, size: 18),
+            label: const Text('Choose Image'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
           ),
         ],
       ),
@@ -591,163 +416,9 @@ class _ImageFieldCard extends StatelessWidget {
   }
 }
 
-class _TableFieldsView extends StatelessWidget {
-  final List<ReportValueModel> values;
-  final int reportId;
-  final Map<int, TextEditingController> controllers;
-  final Map<int, String> uploadedPaths;
-  final Function(ReportValueModel) onUpload;
-  final VoidCallback onChanged;
-
-  const _TableFieldsView({
-    required this.values,
-    required this.reportId,
-    required this.controllers,
-    required this.uploadedPaths,
-    required this.onUpload,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Group by table context
-    final Map<String, List<ReportValueModel>> byTable = {};
-    for (final v in values) {
-      final key = v.tableContext ?? 'unknown';
-      byTable.putIfAbsent(key, () => []).add(v);
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.cardBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: Table(
-        columnWidths: const {
-          0: FixedColumnWidth(40),
-          1: FlexColumnWidth(1.5),
-          2: FlexColumnWidth(2),
-        },
-        children: [
-          TableRow(
-            decoration: const BoxDecoration(color: AppTheme.surface),
-            children: ['#', 'Field', 'Value']
-                .map((h) => Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
-                    child: Text(h,
-                        style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textSecondary))))
-                .toList(),
-          ),
-          ...values.asMap().entries.map((entry) {
-            final i = entry.key;
-            final v = entry.value;
-            return TableRow(
-              decoration: const BoxDecoration(
-                  border: Border(top: BorderSide(color: AppTheme.border))),
-              children: [
-                Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Text('${i + 1}',
-                        style: const TextStyle(
-                            fontSize: 12, color: AppTheme.textSecondary))),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(v.displayLabel,
-                          style: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w500)),
-                      if (v.col1Header != null || v.col2Header != null)
-                        Text('${v.col1Header ?? ''} | ${v.col2Header ?? ''}',
-                            style: const TextStyle(
-                                fontSize: 10, color: AppTheme.textSecondary)),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  child: v.isImage
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                             if (uploadedPaths[v.placeholderId] != null || v.hasImageData)
-                               Expanded(
-                                 child: Row(
-                                   children: [
-                                     ClipRRect(
-                                       borderRadius: BorderRadius.circular(4),
-                                       child: Image.network(
-                                         ApiService().getBlobImageUrl(reportId, v.placeholderKey),
-                                         width: 24,
-                                         height: 24,
-                                         fit: BoxFit.cover,
-                                         errorBuilder: (context, error, stackTrace) => 
-                                           const Icon(Icons.check_circle, color: AppTheme.success, size: 16),
-                                       ),
-                                     ),
-                                     const SizedBox(width: 4),
-                                     Expanded(
-                                       child: Text(
-                                         uploadedPaths[v.placeholderId] ?? 'Image uploaded',
-                                         style: const TextStyle(fontSize: 10, color: AppTheme.success),
-                                         overflow: TextOverflow.ellipsis,
-                                       ),
-                                     ),
-                                   ],
-                                 ),
-                               )
-                            else
-                               const Expanded(
-                                 child: Text(
-                                   'No image',
-                                   style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
-                                   overflow: TextOverflow.ellipsis,
-                                 ),
-                               ),
-                            const SizedBox(width: 8),
-                            ElevatedButton.icon(
-                              onPressed: () => onUpload(v),
-                              icon: const Icon(Icons.upload_rounded, size: 14),
-                              label: const Text('Upload', style: TextStyle(fontSize: 11)),
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                            ),
-                          ],
-                        )
-                      : TextFormField(
-                          controller: controllers[v.placeholderId],
-                          onChanged: (_) => onChanged(),
-                          decoration: const InputDecoration(
-                            isDense: true,
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                          ),
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                ),
-              ],
-            );
-          }),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProgressCircle extends StatelessWidget {
+class _ProgressCard extends StatelessWidget {
   final ReportDetailModel report;
-
-  const _ProgressCircle({required this.report});
+  const _ProgressCard({required this.report});
 
   @override
   Widget build(BuildContext context) {
@@ -755,34 +426,26 @@ class _ProgressCircle extends StatelessWidget {
     final total = report.values.length;
     final pct = total == 0 ? 0.0 : filled / total;
 
-    return Center(
-      child: Column(
-        children: [
-          SizedBox(
-            width: 80,
-            height: 80,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                CircularProgressIndicator(
-                  value: pct,
-                  backgroundColor: AppTheme.border,
-                  color: pct == 1.0 ? AppTheme.success : AppTheme.accent,
-                  strokeWidth: 8,
-                ),
-                Center(
-                    child: Text('${(pct * 100).toInt()}%',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16))),
-              ],
-            ),
+    return Column(
+      children: [
+        SizedBox(
+          width: 100, height: 100,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CircularProgressIndicator(
+                value: pct,
+                backgroundColor: AppColors.background,
+                color: pct == 1.0 ? AppColors.secondary : AppColors.primary,
+                strokeWidth: 10,
+              ),
+              Center(child: Text('${(pct * 100).toInt()}%', style: AppTypography.heading3)),
+            ],
           ),
-          const SizedBox(height: 12),
-          Text('$filled of $total filled',
-              style:
-                  const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-        ],
-      ),
+        ),
+        const SizedBox(height: 20),
+        Text('$filled of $total complete', style: AppTypography.label),
+      ],
     );
   }
 }

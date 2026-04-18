@@ -16,20 +16,32 @@ public interface ReportRepository extends JpaRepository<BwvrReport, Long> {
 
     Optional<BwvrReport> findByReferenceNumberAndIsDeleted(String referenceNumber, String isDeleted);
 
-    @Query("""
-        SELECT r FROM BwvrReport r
-        WHERE r.isDeleted = 'N'
+    @Query(value = """
+        SELECT r.* FROM bwvr.bwvr_report r
+        WHERE r.is_deleted = 'N'
         AND (:search IS NULL OR
-             LOWER(r.reportTitle) LIKE LOWER(CONCAT('%',:search,'%')) OR
-             LOWER(r.referenceNumber) LIKE LOWER(CONCAT('%',:search,'%')) OR
-             LOWER(r.vendorName) LIKE LOWER(CONCAT('%',:search,'%')) OR
-             LOWER(r.location) LIKE LOWER(CONCAT('%',:search,'%')))
-        AND (:vendorName IS NULL OR LOWER(r.vendorName) LIKE LOWER(CONCAT('%',:vendorName,'%')))
-        AND (:location IS NULL OR LOWER(r.location) LIKE LOWER(CONCAT('%',:location,'%')))
-        AND (:bankName IS NULL OR LOWER(r.bankName) LIKE LOWER(CONCAT('%',:bankName,'%')))
-        AND (:status IS NULL OR r.reportStatus = :status)
-        ORDER BY r.createdAt DESC
-        """)
+             LOWER(r.report_title) LIKE LOWER('%' || :search || '%') OR
+             LOWER(r.reference_number) LIKE LOWER('%' || :search || '%') OR
+             LOWER(COALESCE(r.vendor_name,'')) LIKE LOWER('%' || :search || '%') OR
+             LOWER(COALESCE(r.location,'')) LIKE LOWER('%' || :search || '%'))
+        AND (:vendorName IS NULL OR LOWER(COALESCE(r.vendor_name,'')) LIKE LOWER('%' || :vendorName || '%'))
+        AND (:location IS NULL OR LOWER(COALESCE(r.location,'')) LIKE LOWER('%' || :location || '%'))
+        AND (:bankName IS NULL OR LOWER(COALESCE(r.bank_name,'')) LIKE LOWER('%' || :bankName || '%'))
+        AND (:status IS NULL OR r.report_status = :status)
+        ORDER BY r.created_at DESC
+        """, countQuery = """
+        SELECT COUNT(*) FROM bwvr.bwvr_report r
+        WHERE r.is_deleted = 'N'
+        AND (:search IS NULL OR
+             LOWER(r.report_title) LIKE LOWER('%' || :search || '%') OR
+             LOWER(r.reference_number) LIKE LOWER('%' || :search || '%') OR
+             LOWER(COALESCE(r.vendor_name,'')) LIKE LOWER('%' || :search || '%') OR
+             LOWER(COALESCE(r.location,'')) LIKE LOWER('%' || :search || '%'))
+        AND (:vendorName IS NULL OR LOWER(COALESCE(r.vendor_name,'')) LIKE LOWER('%' || :vendorName || '%'))
+        AND (:location IS NULL OR LOWER(COALESCE(r.location,'')) LIKE LOWER('%' || :location || '%'))
+        AND (:bankName IS NULL OR LOWER(COALESCE(r.bank_name,'')) LIKE LOWER('%' || :bankName || '%'))
+        AND (:status IS NULL OR r.report_status = :status)
+        """, nativeQuery = true)
     Page<BwvrReport> searchReports(
             @Param("search") String search,
             @Param("vendorName") String vendorName,
@@ -39,21 +51,34 @@ public interface ReportRepository extends JpaRepository<BwvrReport, Long> {
             Pageable pageable
     );
 
-    @Query("""
-        SELECT r FROM BwvrReport r
-        WHERE r.isDeleted = 'N'
-        AND (:createdBy IS NULL OR r.createdBy = :createdBy)
+    @Query(value = """
+        SELECT r.* FROM bwvr.bwvr_report r
+        WHERE r.is_deleted = 'N'
+        AND (:createdBy IS NULL OR r.created_by = :createdBy)
         AND (:search IS NULL OR
-             LOWER(r.reportTitle) LIKE LOWER(CONCAT('%',:search,'%')) OR
-             LOWER(r.referenceNumber) LIKE LOWER(CONCAT('%',:search,'%')) OR
-             LOWER(r.vendorName) LIKE LOWER(CONCAT('%',:search,'%')) OR
-             LOWER(r.location) LIKE LOWER(CONCAT('%',:search,'%')))
-        AND (:vendorName IS NULL OR LOWER(r.vendorName) LIKE LOWER(CONCAT('%',:vendorName,'%')))
-        AND (:location IS NULL OR LOWER(r.location) LIKE LOWER(CONCAT('%',:location,'%')))
-        AND (:bankName IS NULL OR LOWER(r.bankName) LIKE LOWER(CONCAT('%',:bankName,'%')))
-        AND (:status IS NULL OR r.reportStatus = :status)
-        ORDER BY r.createdAt DESC
-        """)
+             LOWER(r.report_title) LIKE LOWER('%' || :search || '%') OR
+             LOWER(r.reference_number) LIKE LOWER('%' || :search || '%') OR
+             LOWER(COALESCE(r.vendor_name,'')) LIKE LOWER('%' || :search || '%') OR
+             LOWER(COALESCE(r.location,'')) LIKE LOWER('%' || :search || '%'))
+        AND (:vendorName IS NULL OR LOWER(COALESCE(r.vendor_name,'')) LIKE LOWER('%' || :vendorName || '%'))
+        AND (:location IS NULL OR LOWER(COALESCE(r.location,'')) LIKE LOWER('%' || :location || '%'))
+        AND (:bankName IS NULL OR LOWER(COALESCE(r.bank_name,'')) LIKE LOWER('%' || :bankName || '%'))
+        AND (:status IS NULL OR r.report_status = :status)
+        ORDER BY r.created_at DESC
+        """, countQuery = """
+        SELECT COUNT(*) FROM bwvr.bwvr_report r
+        WHERE r.is_deleted = 'N'
+        AND (:createdBy IS NULL OR r.created_by = :createdBy)
+        AND (:search IS NULL OR
+             LOWER(r.report_title) LIKE LOWER('%' || :search || '%') OR
+             LOWER(r.reference_number) LIKE LOWER('%' || :search || '%') OR
+             LOWER(COALESCE(r.vendor_name,'')) LIKE LOWER('%' || :search || '%') OR
+             LOWER(COALESCE(r.location,'')) LIKE LOWER('%' || :search || '%'))
+        AND (:vendorName IS NULL OR LOWER(COALESCE(r.vendor_name,'')) LIKE LOWER('%' || :vendorName || '%'))
+        AND (:location IS NULL OR LOWER(COALESCE(r.location,'')) LIKE LOWER('%' || :location || '%'))
+        AND (:bankName IS NULL OR LOWER(COALESCE(r.bank_name,'')) LIKE LOWER('%' || :bankName || '%'))
+        AND (:status IS NULL OR r.report_status = :status)
+        """, nativeQuery = true)
     Page<BwvrReport> searchReportsFiltered(
             @Param("createdBy") String createdBy,
             @Param("search") String search,

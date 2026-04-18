@@ -145,7 +145,7 @@ class _ReportDetailContent extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          ReferenceChip(referenceNumber: report.referenceNumber),
+                          ReferenceChip(label: report.referenceNumber),
                           const SizedBox(width: 12),
                           StatusChip(status: report.reportStatus),
                           const Spacer(),

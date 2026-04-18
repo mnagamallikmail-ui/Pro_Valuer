@@ -188,7 +188,7 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
                   label: const Text('Back'),
                 ),
                 const SizedBox(width: 24),
-                ReferenceChip(referenceNumber: r.referenceNumber),
+                ReferenceChip(label: r.referenceNumber),
                 const Spacer(),
                 if (_hasChanges)
                   Padding(

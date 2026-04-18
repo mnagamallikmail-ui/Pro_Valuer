@@ -322,23 +322,25 @@ class _DeleteDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-              'This will permanently remove the template and all its parsed data.'),
+      title: const Text('Remove Blueprint?'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('This will permanently remove the template and all its parsed data.'),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.chipRed,
+              color: AppColors.error.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppTheme.danger.withOpacity(0.3)),
+              border: Border.all(color: AppColors.error.withOpacity(0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(templateName,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                Text(bankName,
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 12)),
+                Text(templateName, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                Text(bankName, style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textSecondary)),
               ],
             ),
           ),
@@ -346,14 +348,16 @@ class _DeleteDialog extends StatelessWidget {
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel')),
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
+        ),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.danger),
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
           child: const Text('Delete'),
         ),
       ],
     );
   }
 }
+

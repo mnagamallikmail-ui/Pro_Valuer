@@ -289,7 +289,7 @@ class _SignupScreenState extends State<SignupScreen>
                             const SizedBox(width: 8),
                             Text(
                               'New accounts require admin approval.',
-                              style: AppTypography.bodySmall,
+                              style: AppTypography.bodyMedium.copyWith(fontSize: 12),
                             ),
                           ],
                         ),
@@ -306,6 +306,4 @@ class _SignupScreenState extends State<SignupScreen>
   }
 }
 
-extension on AppTypography {
-  static TextStyle get bodySmall => AppTypography.bodyMedium.copyWith(fontSize: 12);
-}
+

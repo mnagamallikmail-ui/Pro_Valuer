@@ -2,7 +2,37 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
+/// AppTheme — exposes both a ThemeData for MaterialApp AND
+/// static color/chip constants for screens that reference them directly.
 class AppTheme {
+  // ──────────────────────────────────────────────
+  // Static color tokens (used directly in screen files)
+  // ──────────────────────────────────────────────
+  static const Color primary       = AppColors.primary;
+  static const Color secondary     = AppColors.secondary;
+  static const Color accent        = AppColors.accent;
+  static const Color background    = AppColors.background;
+  static const Color surface       = AppColors.surface;
+  static const Color border        = AppColors.border;
+  static const Color textPrimary   = AppColors.textPrimary;
+  static const Color textSecondary = AppColors.textSecondary;
+
+  // Semantic feedback colors
+  static const Color success = AppColors.secondary;        // Pastel Sage for success
+  static const Color warning = AppColors.warning;          // Pastel Amber
+  static const Color danger  = Color(0xFFE57373);          // Subtle red, readable
+  static const Color error   = AppColors.error;
+
+  // Chip / badge backgrounds
+  static const Color cardBg    = AppColors.surface;
+  static const Color chipGreen = AppColors.secondary;      // Pastel Sage
+  static const Color chipBlue  = AppColors.accent;         // Soft Sky
+  static const Color chipAmber = AppColors.warning;        // Pastel Amber
+  static const Color chipRed   = Color(0xFFF6DDE0);        // Subtle pastel red bg
+
+  // ──────────────────────────────────────────────
+  // ThemeData
+  // ──────────────────────────────────────────────
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
@@ -15,14 +45,16 @@ class AppTheme {
         onSecondary: AppColors.textPrimary,
         surface: AppColors.surface,
         onSurface: AppColors.textPrimary,
+        // ignore: deprecated_member_use
         background: AppColors.background,
+        // ignore: deprecated_member_use
         onBackground: AppColors.textPrimary,
-        error: Color(0xFFE57373), // Subtle red for error text
+        error: Color(0xFFE57373),
         onError: Colors.white,
         outline: AppColors.border,
       ),
       textTheme: AppTypography.textTheme,
-      
+
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
@@ -36,7 +68,7 @@ class AppTheme {
           fontFamily: 'Inter',
         ),
       ),
-      
+
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
@@ -46,11 +78,11 @@ class AppTheme {
         ),
         margin: EdgeInsets.zero,
       ),
-      
+
       buttonTheme: const ButtonThemeData(
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
-      
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -63,7 +95,7 @@ class AppTheme {
           textStyle: AppTypography.subheading,
         ),
       ),
-      
+
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.textPrimary,
@@ -113,7 +145,7 @@ class AppTheme {
         thickness: 1,
         space: 1,
       ),
-      
+
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.accent,
         labelStyle: AppTypography.label.copyWith(color: AppColors.textPrimary),
@@ -124,7 +156,7 @@ class AppTheme {
         side: BorderSide.none,
       ),
 
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.background,
         elevation: 0,
         shape: RoundedRectangleBorder(

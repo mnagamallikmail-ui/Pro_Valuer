@@ -45,13 +45,16 @@ public class ReportService {
     private final DocxGeneratorService docxGeneratorService;
     private final AuditService auditService;
 
+    private final NotificationService notificationService;
+
     public ReportService(ReportRepository reportRepository,
             ReportValueRepository reportValueRepository,
             TemplateRepository templateRepository,
             TemplatePlaceholderRepository placeholderRepository,
             ReferenceNumberGenerator referenceNumberGenerator,
             DocxGeneratorService docxGeneratorService,
-            AuditService auditService) {
+            AuditService auditService,
+            NotificationService notificationService) {
         this.reportRepository = reportRepository;
         this.reportValueRepository = reportValueRepository;
         this.templateRepository = templateRepository;
@@ -59,6 +62,7 @@ public class ReportService {
         this.referenceNumberGenerator = referenceNumberGenerator;
         this.docxGeneratorService = docxGeneratorService;
         this.auditService = auditService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -87,6 +91,9 @@ public class ReportService {
                 "Report created: " + refNum);
 
         log.info("Created report {} with reference {}", report.getReportId(), refNum);
+        
+        notificationService.notifyChange("REPORT", "CREATE", report.getReportId());
+        
         return toReportResponse(report);
     }
 
@@ -153,6 +160,8 @@ public class ReportService {
                 "{\"status\":\"" + report.getReportStatus() + "\"}",
                 null, "Report updated");
 
+        notificationService.notifyChange("REPORT", "UPDATE", reportId);
+
         return toReportResponse(report);
     }
 
@@ -192,6 +201,8 @@ public class ReportService {
 
         auditService.log("REPORT", reportId, "UPDATE", request.getUpdatedBy(),
                 null, null, null, "Values saved");
+        
+        notificationService.notifyChange("REPORT", "UPDATE_VALUES", reportId);
     }
 
     @Transactional
@@ -206,6 +217,9 @@ public class ReportService {
 
         auditService.log("REPORT", reportId, "GENERATE", "SYSTEM",
                 null, null, null, "Document generated: " + outputPath);
+        
+        notificationService.notifyChange("REPORT", "GENERATE", reportId);
+        
         return outputPath;
     }
 
@@ -216,6 +230,8 @@ public class ReportService {
             reportRepository.delete(report);
             auditService.log("REPORT", reportId, "DELETE", deletedBy,
                     null, null, null, "Hard deleted");
+            
+            notificationService.notifyChange("REPORT", "DELETE", reportId);
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
             throw new com.bwvr.backend.exception.ConflictException("Cannot delete report due to constraints.");
         }

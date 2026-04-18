@@ -20,14 +20,14 @@ class StatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = color ?? AppColors.primaryText;
+    final themeColor = color ?? AppColors.primary;
     
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border, width: 1.5),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,28 +36,28 @@ class StatsCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: themeColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                child: Icon(icon, color: themeColor, size: 24),
+                child: Icon(icon, color: themeColor, size: 20),
               ),
               if (trend != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Text(trend!, style: AppTypography.label.copyWith(color: AppColors.primaryText, fontSize: 10)),
+                Text(
+                  trend!, 
+                  style: AppTypography.label.copyWith(
+                    color: AppColors.success, 
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600
+                  )
                 ),
             ],
           ),
-          const SizedBox(height: 20),
-          Text(value, style: AppTypography.heading1.copyWith(fontSize: 28)),
+          const Spacer(),
+          Text(value, style: AppTypography.heading1.copyWith(fontSize: 28, color: AppColors.primaryText)),
           const SizedBox(height: 4),
-          Text(title, style: AppTypography.heading3.copyWith(fontSize: 14, color: AppColors.accent)),
+          Text(title, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
         ],
       ),
     );
@@ -74,39 +74,41 @@ class StatusChip extends StatelessWidget {
     Color text;
 
     switch (status.toUpperCase()) {
+      case 'DRAFT':
       case 'PENDING':
       case 'IN_PROGRESS':
-        bg = AppColors.secondary.withOpacity(0.2); // Corn Yellow
-        text = AppColors.primaryText;
+        bg = AppColors.warning.withOpacity(0.1);
+        text = AppColors.warning;
         break;
       case 'COMPLETED':
       case 'APPROVED':
-        bg = AppColors.primaryText.withOpacity(0.1); // Turquoise
-        text = AppColors.primaryText;
+      case 'PARSED':
+      case 'CONFIRMED':
+        bg = AppColors.success.withOpacity(0.1);
+        text = AppColors.success;
         break;
       case 'REJECTED':
       case 'ERROR':
-        bg = AppColors.primary.withOpacity(0.1); // Salmon Pink
-        text = AppColors.primary;
+        bg = AppColors.error.withOpacity(0.1);
+        text = AppColors.error;
         break;
       default:
         bg = AppColors.surface;
-        text = AppColors.accent;
+        text = AppColors.textSecondary;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: text.withOpacity(0.3), width: 1),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         status.replaceAll('_', ' '),
         style: AppTypography.label.copyWith(
           color: text,
           fontSize: 10,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -120,19 +122,19 @@ class ReferenceChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: AppColors.border, width: 1),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.tag_rounded, size: 12, color: AppColors.primaryText),
-          const SizedBox(width: 4),
-          Text(label, style: AppTypography.label.copyWith(color: AppColors.primaryText)),
-        ],
+      child: Text(
+        label, 
+        style: AppTypography.label.copyWith(
+          color: AppColors.primaryText,
+          fontSize: 10,
+          fontWeight: FontWeight.w600
+        )
       ),
     );
   }
@@ -160,13 +162,13 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 80, color: AppColors.border),
+            Icon(icon, size: 60, color: AppColors.border),
             const SizedBox(height: 24),
-            Text(title, style: AppTypography.heading2),
+            Text(title, style: AppTypography.heading3),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: AppTypography.bodyLarge.copyWith(color: AppColors.accent),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             if (action != null) ...[
@@ -189,14 +191,15 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: AppTypography.heading2),
+          Text(title, style: AppTypography.heading3.copyWith(fontWeight: FontWeight.w600)),
           if (trailing != null) trailing!,
         ],
       ),
     );
   }
 }
+

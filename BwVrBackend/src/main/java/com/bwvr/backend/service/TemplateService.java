@@ -42,13 +42,16 @@ public class TemplateService {
     private final FileStorageConfig fileStorageConfig;
     private final ReportRepository reportRepository;
 
+    private final NotificationService notificationService;
+
     public TemplateService(TemplateRepository templateRepository,
             TemplatePlaceholderRepository placeholderRepository,
             TemplateImageSlotRepository imageSlotRepository,
             DocxParserService docxParserService,
             AuditService auditService,
             FileStorageConfig fileStorageConfig,
-            ReportRepository reportRepository) {
+            ReportRepository reportRepository,
+            NotificationService notificationService) {
         this.templateRepository = templateRepository;
         this.placeholderRepository = placeholderRepository;
         this.imageSlotRepository = imageSlotRepository;
@@ -56,6 +59,7 @@ public class TemplateService {
         this.auditService = auditService;
         this.fileStorageConfig = fileStorageConfig;
         this.reportRepository = reportRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -106,6 +110,8 @@ public class TemplateService {
 
         auditService.log("TEMPLATE", template.getTemplateId(), "CREATE",
                 uploadedBy, null, null, null, "Template uploaded and parsed");
+
+        notificationService.notifyChange("TEMPLATE", "CREATE", template.getTemplateId());
 
         return buildParsedResponse(template);
     }
@@ -170,6 +176,8 @@ public class TemplateService {
 
         auditService.log("TEMPLATE", templateId, "CONFIRM",
                 request.getConfirmedBy(), null, null, null, "Placeholders confirmed");
+        
+        notificationService.notifyChange("TEMPLATE", "CONFIRM", templateId);
     }
 
     @Transactional
@@ -185,6 +193,8 @@ public class TemplateService {
         try {
             templateRepository.delete(template);
             auditService.log("TEMPLATE", templateId, "DELETE", deletedBy, null, null, null, "Hard deleted");
+            
+            notificationService.notifyChange("TEMPLATE", "DELETE", templateId);
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
             throw new com.bwvr.backend.exception.ConflictException("Cannot delete template because it is still referenced by reports in the database.");
         }

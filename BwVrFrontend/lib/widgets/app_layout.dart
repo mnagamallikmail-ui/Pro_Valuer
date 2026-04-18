@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
@@ -23,11 +24,14 @@ class AppLayout extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: isMobile ? AppBar(
-        title: Text(title ?? _getTitle(currentRoute), style: AppTypography.heading2.copyWith(color: AppColors.primaryText)),
+        title: Text(title ?? _getTitle(currentRoute), style: AppTypography.heading3.copyWith(color: AppColors.primaryText)),
         backgroundColor: AppColors.background,
         iconTheme: const IconThemeData(color: AppColors.primaryText),
       ) : null,
-      drawer: isMobile ? Drawer(child: _Sidebar(currentRoute: currentRoute)) : null,
+      drawer: isMobile ? Drawer(
+        backgroundColor: AppColors.background,
+        child: _Sidebar(currentRoute: currentRoute)
+      ) : null,
       body: Row(
         children: [
           if (!isMobile) _Sidebar(currentRoute: currentRoute),
@@ -79,34 +83,40 @@ class _Sidebar extends StatelessWidget {
       width: 280,
       height: double.infinity,
       decoration: const BoxDecoration(
-        color: AppColors.surface, // Ghost White
-        border: Border(right: BorderSide(color: AppColors.border, width: 1.5)),
+        color: AppColors.surface, 
+        border: Border(right: BorderSide(color: AppColors.border, width: 1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Logo & Branding
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryText, // Turquoise
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.primary, 
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 24),
+                  child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 20),
                 ),
-                const SizedBox(width: 16),
-                Text('BwVr', style: AppTypography.heading2.copyWith(color: AppColors.primaryText)),
+                const SizedBox(width: 12),
+                Text(
+                  'BwVr', 
+                  style: AppTypography.heading2.copyWith(
+                    color: AppColors.primaryText,
+                    fontWeight: FontWeight.w600,
+                  )
+                ),
               ],
             ),
           ),
           
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               children: navItems.map((item) => _SidebarItem(
                 item: item,
                 isActive: currentRoute == item.route || (item.route != '/' && currentRoute.startsWith(item.route)),
@@ -116,7 +126,7 @@ class _Sidebar extends StatelessWidget {
 
           // User info Card at bottom
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(16),
             child: Builder(builder: (context) {
               final session = AuthService().session;
               final displayName = session?.displayName ?? 'User';
@@ -125,46 +135,56 @@ class _Sidebar extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border, width: 1.5),
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.border, width: 1),
                 ),
                 child: Column(
                   children: [
                     Row(
                       children: [
                         CircleAvatar(
-                          radius: 18,
-                          backgroundColor: isAdm ? AppColors.primary : AppColors.secondary,
-                          child: Icon(Icons.person_outline_rounded, size: 20, color: isAdm ? Colors.white : AppColors.primaryText),
+                          radius: 16,
+                          backgroundColor: isAdm ? AppColors.action : AppColors.primary.withOpacity(0.1),
+                          child: Icon(
+                            isAdm ? Icons.admin_panel_settings_rounded : Icons.person_rounded, 
+                            size: 16, 
+                            color: isAdm ? Colors.white : AppColors.primary
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(displayName, style: AppTypography.heading3.copyWith(fontSize: 14), overflow: TextOverflow.ellipsis),
-                              Text(isAdm ? 'Admin Access' : 'Staff Member', 
-                                style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.accent)),
+                              Text(displayName, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                              Text(isAdm ? 'Administrator' : 'Valuer', 
+                                style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textSecondary)),
                             ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    Divider(color: AppColors.border.withOpacity(0.5)),
+                    const SizedBox(height: 12),
+                    Divider(color: AppColors.border),
                     const SizedBox(height: 8),
-                    TextButton.icon(
+                    TextButton(
                       onPressed: () {
                         AuthService().logout();
                         context.go('/login');
                       },
-                      icon: const Icon(Icons.logout_rounded, size: 16, color: AppColors.primary),
-                      label: Text('Logout', style: AppTypography.bodyMedium.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold)),
                       style: TextButton.styleFrom(
+                        foregroundColor: AppColors.error,
                         padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        minimumSize: const Size(double.infinity, 36),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.logout_rounded, size: 14),
+                          const SizedBox(width: 8),
+                          Text('Sign Out', style: AppTypography.bodyMedium.copyWith(color: AppColors.error, fontWeight: FontWeight.w600)),
+                        ],
                       ),
                     ),
                   ],
@@ -187,35 +207,38 @@ class _SidebarItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 4),
       child: InkWell(
         onTap: () => context.go(item.route),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         hoverColor: AppColors.primary.withOpacity(0.05),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            border: isActive ? Border.all(color: AppColors.primaryText, width: 1.5) : null,
+            color: isActive ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
             children: [
-              Icon(item.icon, size: 22, color: isActive ? AppColors.primaryText : AppColors.accent),
-              const SizedBox(width: 16),
+              Icon(
+                item.icon, 
+                size: 20, 
+                color: isActive ? AppColors.primary : AppColors.textSecondary
+              ),
+              const SizedBox(width: 12),
               Text(
                 item.label,
-                style: AppTypography.heading3.copyWith(
-                  fontSize: 15,
-                  color: isActive ? AppColors.primaryText : AppColors.accent,
+                style: AppTypography.bodyMedium.copyWith(
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  color: isActive ? AppColors.primary : AppColors.textSecondary,
                 ),
               ),
               if (isActive) ...[
                 const Spacer(),
                 Container(
-                  width: 6,
-                  height: 6,
+                  width: 4,
+                  height: 4,
                   decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
                 ),
               ],
@@ -234,31 +257,49 @@ class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 90,
+      height: 70,
       decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(bottom: BorderSide(color: AppColors.border, width: 1.5)),
+        color: AppColors.white,
+        border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 40),
+      padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Row(
         children: [
-          Text(title, style: AppTypography.heading2.copyWith(color: AppColors.primaryText)),
+          Text(title, style: AppTypography.heading3.copyWith(color: AppColors.primaryText)),
           const Spacer(),
-          // Placeholder for streaming status / notifications
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.secondary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: AppColors.secondary.withOpacity(0.5)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.sync_rounded, color: AppColors.secondary, size: 16),
-                const SizedBox(width: 8),
-                Text('Real-time Data Active', style: AppTypography.label.copyWith(color: AppColors.primaryText)),
-              ],
-            ),
+          // Streaming status indicator
+          StreamBuilder<String>(
+            stream: NotificationService().changeStream,
+            builder: (context, snapshot) {
+              final active = snapshot.connectionState == ConnectionState.active;
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: (active ? AppColors.success : AppColors.textSecondary).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: active ? AppColors.success : AppColors.textSecondary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      active ? 'Live Sync' : 'Sync Offline', 
+                      style: AppTypography.label.copyWith(
+                        color: active ? AppColors.success : AppColors.textSecondary, 
+                        fontSize: 10
+                      )
+                    ),
+                  ],
+                ),
+              );
+            }
           ),
         ],
       ),
@@ -272,3 +313,4 @@ class _NavItem {
   final String route;
   const _NavItem({required this.icon, required this.label, required this.route});
 }
+

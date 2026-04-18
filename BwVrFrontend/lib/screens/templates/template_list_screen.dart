@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
+import '../../services/notification_service.dart';
 import '../../models/template_model.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_typography.dart';
 import '../../widgets/app_layout.dart';
 import '../../widgets/common_widgets.dart';
-import 'package:intl/intl.dart';
 
 class TemplateListScreen extends StatefulWidget {
   const TemplateListScreen({super.key});
@@ -16,32 +19,47 @@ class TemplateListScreen extends StatefulWidget {
 
 class _TemplateListScreenState extends State<TemplateListScreen> {
   final _api = ApiService();
+  final _notifications = NotificationService();
   List<TemplateModel> _templates = [];
   List<String> _banks = [];
   String? _selectedBank;
   bool _loading = true;
   String? _error;
+  StreamSubscription? _changeSubscription;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _changeSubscription = _notifications.changeStream.listen((_) {
+      _load(silent: true);
+    });
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  @override
+  void dispose() {
+    _changeSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final templates = await _api.getTemplateList(bankName: _selectedBank);
       final banks = await _api.getBankNames();
+      if (!mounted) return;
       setState(() {
         _templates = templates;
         _banks = banks;
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _loading = false;
@@ -52,111 +70,152 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
   Future<void> _deleteTemplate(TemplateModel t) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) =>
-          _DeleteDialog(templateName: t.templateName, bankName: t.bankName),
+      builder: (_) => _DeleteDialog(templateName: t.templateName, bankName: t.bankName),
     );
     if (confirmed == true) {
       try {
         await _api.deleteTemplate(t.templateId);
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Template deleted'),
-            behavior: SnackBarBehavior.floating));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Blueprint deleted'), behavior: SnackBarBehavior.floating)
+        );
         _load();
       } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Failed: $e'),
-            backgroundColor: AppTheme.danger,
-            behavior: SnackBarBehavior.floating));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed: $e'), backgroundColor: AppColors.error, behavior: SnackBarBehavior.floating)
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
     return AppLayout(
       currentRoute: '/templates',
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(isMobile ? 24 : 40),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Toolbar
-            Row(
-              children: [
-                Expanded(
-                  child: _banks.isEmpty
-                      ? const SizedBox.shrink()
-                      : DropdownButtonFormField<String>(
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.border, width: 1),
+              ),
+              child: isMobile 
+                ? Column(
+                    children: [
+                      DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(labelText: 'Filter Bank'),
+                        value: _selectedBank,
+                        items: [
+                          const DropdownMenuItem(value: null, child: Text('All Institutions')),
+                          ..._banks.map((b) => DropdownMenuItem(value: b, child: Text(b))),
+                        ],
+                        onChanged: (v) {
+                          setState(() => _selectedBank = v);
+                          _load();
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => context.push('/templates/upload').then((_) => _load()),
+                          icon: const Icon(Icons.upload_rounded, size: 18),
+                          label: const Text('Upload Docx'),
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
                           decoration: const InputDecoration(
-                            labelText: 'Filter by Bank',
-                            prefixIcon:
-                                Icon(Icons.account_balance_rounded, size: 18),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 10),
+                            labelText: 'Institutional Filter',
+                            prefixIcon: Icon(Icons.account_balance_rounded, size: 18),
                           ),
                           value: _selectedBank,
                           items: [
-                            const DropdownMenuItem(
-                                value: null, child: Text('All Banks')),
-                            ..._banks.map((b) =>
-                                DropdownMenuItem(value: b, child: Text(b))),
+                            const DropdownMenuItem(value: null, child: Text('All Institutions')),
+                            ..._banks.map((b) => DropdownMenuItem(value: b, child: Text(b))),
                           ],
                           onChanged: (v) {
                             setState(() => _selectedBank = v);
                             _load();
                           },
                         ),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    await context.push('/templates/upload');
-                    _load();
-                  },
-                  icon: const Icon(Icons.upload_rounded, size: 16),
-                  label: const Text('Upload Template'),
-                ),
+                      ),
+                      const SizedBox(width: 24),
+                      ElevatedButton.icon(
+                        onPressed: () => context.push('/templates/upload').then((_) => _load()),
+                        icon: const Icon(Icons.upload_rounded, size: 18),
+                        label: const Text('Upload Blueprint'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                        ),
+                      ),
+                    ],
+                  ),
+            ),
+            const SizedBox(height: 32),
+
+            // Results Heading
+            Row(
+              children: [
+                Text('${_templates.length} Blueprints', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                const Spacer(),
+                const Icon(Icons.sync_rounded, size: 14, color: AppColors.success),
+                const SizedBox(width: 8),
+                Text('Real-time sync active', style: AppTypography.label.copyWith(color: AppColors.success)),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // Content
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
                   : _error != null
-                      ? Center(child: Text('Error: $_error'))
+                      ? Center(child: Text('Error: $_error', style: AppTypography.bodyMedium.copyWith(color: AppColors.error)))
                       : _templates.isEmpty
                           ? EmptyState(
                               icon: Icons.folder_copy_outlined,
-                              title: 'No templates found',
-                              subtitle:
-                                  'Upload a .docx template to get started',
+                              title: 'No Blueprints',
+                              subtitle: 'Upload a .docx template to get started',
                               action: ElevatedButton(
-                                onPressed: () async {
-                                  await context.push('/templates/upload');
-                                  _load();
-                                },
-                                child: const Text('Upload Template'),
+                                onPressed: () => context.push('/templates/upload').then((_) => _load()),
+                                child: const Text('Upload Draft'),
                               ),
                             )
                           : Container(
                               decoration: BoxDecoration(
-                                color: AppTheme.cardBg,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppTheme.border),
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.border, width: 1),
                               ),
-                              child: SingleChildScrollView(
-                                child: _TemplateTable(
-                                  templates: _templates,
-                                  onDelete: _deleteTemplate,
-                                  onConfirm: (t) async {
-                                    await context.push(
-                                        '/templates/${t.templateId}/confirm');
-                                    _load();
-                                  },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(minWidth: 900),
+                                    child: _TemplateTable(
+                                      templates: _templates,
+                                      onDelete: _deleteTemplate,
+                                      onConfirm: (t) async {
+                                        await context.push('/templates/${t.templateId}/confirm');
+                                        _load();
+                                      },
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -183,84 +242,58 @@ class _TemplateTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Table(
       columnWidths: const {
-        0: FlexColumnWidth(2),
-        1: FlexColumnWidth(2.5),
-        2: FixedColumnWidth(100),
+        0: FlexColumnWidth(1.5),
+        1: FlexColumnWidth(2),
+        2: FixedColumnWidth(80),
         3: FixedColumnWidth(120),
-        4: FixedColumnWidth(150),
-        5: FixedColumnWidth(120),
+        4: FixedColumnWidth(140),
+        5: FixedColumnWidth(100),
       },
       children: [
         // Header row
         TableRow(
-          decoration: const BoxDecoration(
-            color: AppTheme.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-          ),
+          decoration: const BoxDecoration(color: AppColors.surface),
           children: [
-            'Bank',
-            'Template Name',
-            'Fields',
-            'Status',
-            'Created',
-            'Actions'
-          ]
-              .map((h) => Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    child: Text(h,
-                        style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textSecondary)),
-                  ))
-              .toList(),
+            _th('INSTITUTION'),
+            _th('BLUEPRINT NAME'),
+            _th('FIELDS'),
+            _th('PARSING'),
+            _th('CREATED'),
+            _th('ACTIONS'),
+          ],
         ),
         // Data rows
         ...templates.map((t) => TableRow(
-              decoration: BoxDecoration(
-                border: const Border(top: BorderSide(color: AppTheme.border)),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: AppColors.border)),
               ),
               children: [
-                _cell(Text(t.bankName,
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w500))),
-                _cell(Column(
+                _td(Text(t.bankName, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600))),
+                _td(Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(t.templateName,
-                        style: const TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w500)),
-                    Text(t.templateFileName,
-                        style: const TextStyle(
-                            fontSize: 11, color: AppTheme.textSecondary)),
+                    Text(t.templateName, style: AppTypography.bodyMedium),
+                    Text(t.templateFileName, style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textSecondary)),
                   ],
                 )),
-                _cell(Text('${t.placeholderCount ?? 0}',
-                    style: const TextStyle(fontSize: 13))),
-                _cell(StatusChip(status: t.parsedStatus)),
-                _cell(Text(
-                    t.createdAt != null
-                        ? DateFormat('dd MMM yyyy').format(t.createdAt!)
-                        : '—',
-                    style: const TextStyle(
-                        fontSize: 12, color: AppTheme.textSecondary))),
-                _cell(Row(
+                _td(Text('${t.placeholderCount ?? 0}', style: AppTypography.bodyMedium)),
+                _td(StatusChip(status: t.parsedStatus)),
+                _td(Text(
+                    t.createdAt != null ? DateFormat('dd MMM yyyy').format(t.createdAt!) : '—',
+                    style: AppTypography.label.copyWith(fontSize: 11, color: AppColors.textSecondary))),
+                _td(Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     if (!t.isConfirmed)
                       IconButton(
                         onPressed: () => onConfirm(t),
-                        icon: const Icon(Icons.check_circle_outline_rounded),
-                        tooltip: 'Confirm Placeholders',
-                        color: AppTheme.success,
-                        iconSize: 18,
+                        icon: const Icon(Icons.settings_suggest_rounded, color: AppColors.primary, size: 18),
+                        tooltip: 'Configure',
                       ),
                     IconButton(
                       onPressed: () => onDelete(t),
-                      icon: const Icon(Icons.delete_outline_rounded),
-                      tooltip: 'Delete',
-                      color: AppTheme.danger,
-                      iconSize: 18,
+                      icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 18),
+                      tooltip: 'Remove',
                     ),
                   ],
                 )),
@@ -270,10 +303,15 @@ class _TemplateTable extends StatelessWidget {
     );
   }
 
-  Widget _cell(Widget child) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: child,
-      );
+  Widget _th(String label) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    child: Text(label, style: AppTypography.label.copyWith(fontSize: 10, letterSpacing: 1)),
+  );
+
+  Widget _td(Widget child) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+    child: child,
+  );
 }
 
 class _DeleteDialog extends StatelessWidget {
@@ -284,13 +322,6 @@ class _DeleteDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Delete Template?'),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
               'This will permanently remove the template and all its parsed data.'),
           const SizedBox(height: 16),
           Container(

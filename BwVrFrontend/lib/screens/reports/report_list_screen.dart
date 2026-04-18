@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
+import '../../services/notification_service.dart';
 import '../../models/report_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -18,6 +19,7 @@ class ReportListScreen extends StatefulWidget {
 
 class _ReportListScreenState extends State<ReportListScreen> {
   final _api = ApiService();
+  final _notifications = NotificationService();
   final _searchController = TextEditingController();
   List<ReportModel> _reports = [];
   String? _selectedStatus;
@@ -27,22 +29,21 @@ class _ReportListScreenState extends State<ReportListScreen> {
   int _currentPage = 0;
   static const int _pageSize = 20;
 
-  Timer? _refreshTimer;
+  StreamSubscription? _changeSubscription;
 
   @override
   void initState() {
     super.initState();
     _load();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 15), (_) {
-      if (mounted) {
-        _load(silent: true);
-      }
+    // Reactive: Listen to real-time changes
+    _changeSubscription = _notifications.changeStream.listen((_) {
+      _load(silent: true);
     });
   }
 
   @override
   void dispose() {
-    _refreshTimer?.cancel();
+    _changeSubscription?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -84,28 +85,28 @@ class _ReportListScreenState extends State<ReportListScreen> {
     return AppLayout(
       currentRoute: '/reports',
       child: Padding(
-        padding: EdgeInsets.all(isMobile ? 16 : 48),
+        padding: EdgeInsets.all(isMobile ? 24 : 40),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Filter Toolbar
             Container(
-              padding: EdgeInsets.all(isMobile ? 16 : 24),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.border, width: 1.5),
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.border, width: 1),
               ),
               child: isMobile 
                 ? Column(
                     children: [
                       TextField(
                         controller: _searchController,
-                        style: AppTypography.bodyLarge,
+                        style: AppTypography.bodyMedium,
                         decoration: const InputDecoration(
                           filled: false,
-                          hintText: 'Filter by vendor, location...',
-                          prefixIcon: Icon(Icons.search_rounded, color: AppColors.primaryText),
+                          hintText: 'Search asset or reference...',
+                          prefixIcon: Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 20),
                         ),
                         onChanged: (_) {
                           _currentPage = 0;
@@ -133,8 +134,8 @@ class _ReportListScreenState extends State<ReportListScreen> {
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           onPressed: () => context.push('/reports/new').then((_) => _load()),
-                          icon: const Icon(Icons.add_rounded, size: 20),
-                          label: const Text('New Valuation'),
+                          icon: const Icon(Icons.add_rounded, size: 18),
+                          label: const Text('Add Valuation'),
                         ),
                       ),
                     ],
@@ -148,8 +149,8 @@ class _ReportListScreenState extends State<ReportListScreen> {
                           style: AppTypography.bodyLarge,
                           decoration: const InputDecoration(
                             filled: false,
-                            hintText: 'Filter by vendor, location or reference...',
-                            prefixIcon: Icon(Icons.search_rounded, color: AppColors.primaryText),
+                            hintText: 'Filter valuations by keyword...',
+                            prefixIcon: Icon(Icons.search_rounded, color: AppColors.textSecondary, size: 22),
                           ),
                           onChanged: (_) {
                             _currentPage = 0;
@@ -157,12 +158,12 @@ class _ReportListScreenState extends State<ReportListScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 24),
+                      const SizedBox(width: 20),
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: _selectedStatus,
                           style: AppTypography.bodyMedium,
-                          decoration: const InputDecoration(filled: false, labelText: 'Report Status'),
+                          decoration: const InputDecoration(filled: false, labelText: 'Status Filter'),
                           items: const [
                             DropdownMenuItem(value: null, child: Text('All Records')),
                             DropdownMenuItem(value: 'DRAFT', child: Text('Drafts')),
@@ -175,40 +176,40 @@ class _ReportListScreenState extends State<ReportListScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 32),
+                      const SizedBox(width: 24),
                       ElevatedButton.icon(
                         onPressed: () => context.push('/reports/new').then((_) => _load()),
-                        icon: const Icon(Icons.add_rounded, size: 20),
+                        icon: const Icon(Icons.add_rounded, size: 18),
                         label: const Text('New Valuation'),
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                         ),
                       ),
                     ],
                   ),
             ),
-            SizedBox(height: isMobile ? 16 : 32),
+            SizedBox(height: isMobile ? 24 : 32),
             
             Row(
               children: [
-                Text('$_totalReports Valuations', style: AppTypography.heading3.copyWith(fontSize: 16)),
+                Text('$_totalReports Records Matching', style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
                 const Spacer(),
-                Text('Page ${_currentPage + 1}', style: AppTypography.label),
+                Text('Page ${_currentPage + 1}', style: AppTypography.label.copyWith(color: AppColors.textSecondary)),
               ],
             ),
-            SizedBox(height: isMobile ? 16 : 24),
+            const SizedBox(height: 16),
 
             // Records List
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primaryText))
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
                   : _error != null
-                      ? Center(child: Text('Data fetch failed: $_error', style: AppTypography.bodyMedium))
+                      ? Center(child: Text('Interrupted: $_error', style: AppTypography.bodyMedium.copyWith(color: AppColors.error)))
                       : _reports.isEmpty
                           ? const EmptyState(
                               icon: Icons.search_off_rounded,
-                              title: 'No Matches Found',
-                              subtitle: 'Adjust your search parameters.',
+                              title: 'No Matches',
+                              subtitle: 'Try a different keyword.',
                             )
                           : ListView.builder(
                               itemCount: _reports.length,
@@ -237,16 +238,16 @@ class _ReportListItem extends StatelessWidget {
     final isMobile = MediaQuery.of(context).size.width < 800;
     
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: EdgeInsets.all(isMobile ? 16 : 24),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border, width: 1.5),
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border, width: 1),
           ),
           child: isMobile 
             ? Column(
@@ -254,36 +255,23 @@ class _ReportListItem extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.description_rounded, color: AppColors.primaryText, size: 20),
-                      ),
-                      const SizedBox(width: 16),
+                      const Icon(Icons.description_outlined, color: AppColors.primary, size: 20),
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(report.reportTitle, style: AppTypography.heading3.copyWith(fontSize: 16)),
-                            const SizedBox(height: 4),
-                            ReferenceChip(label: report.referenceNumber),
-                          ],
-                        ),
+                        child: Text(report.reportTitle, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  ReferenceChip(label: report.referenceNumber),
                   const SizedBox(height: 16),
-                  Text('${report.bankName ?? 'Unknown FI'} • ${report.location ?? 'Global'}', 
-                    style: AppTypography.bodyMedium.copyWith(color: AppColors.accent)),
+                  Text('${report.bankName ?? 'Independent'} • ${report.location ?? 'India'}', 
+                    style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('COMPLETION: $completion%', style: AppTypography.label.copyWith(fontSize: 10)),
+                      Text('$completion% COMPLETE', style: AppTypography.label.copyWith(fontSize: 10, fontWeight: FontWeight.w600)),
                       StatusChip(status: report.reportStatus),
                     ],
                   ),
@@ -294,7 +282,7 @@ class _ReportListItem extends StatelessWidget {
                       value: completion / 100,
                       backgroundColor: AppColors.surface,
                       valueColor: AlwaysStoppedAnimation(completion == 100 ? AppColors.success : AppColors.primary),
-                      minHeight: 4,
+                      minHeight: 2,
                     ),
                   ),
                 ],
@@ -302,70 +290,70 @@ class _ReportListItem extends StatelessWidget {
             : Row(
                 children: [
                   Container(
-                    width: 56,
-                    height: 56,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Icon(Icons.description_rounded, color: AppColors.primaryText, size: 24),
+                    child: const Icon(Icons.description_outlined, color: AppColors.primary, size: 20),
                   ),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 20),
                   Expanded(
                     flex: 4,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(report.reportTitle, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 6),
                         Row(
                           children: [
-                            Text(report.reportTitle, style: AppTypography.heading3.copyWith(fontSize: 16)),
-                            const SizedBox(width: 12),
                             ReferenceChip(label: report.referenceNumber),
+                            const SizedBox(width: 8),
+                            Text('• ${report.bankName ?? 'Independent'}', 
+                              style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary, fontSize: 13)),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        Text('${report.bankName ?? 'Unknown FI'} • ${report.location ?? 'Global'}', 
-                          style: AppTypography.bodyMedium.copyWith(color: AppColors.accent)),
                       ],
                     ),
                   ),
                   Expanded(
-                    flex: 3,
+                    flex: 2,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('COMPLETION', style: AppTypography.label.copyWith(fontSize: 9)),
-                            Text('$completion%', style: AppTypography.label.copyWith(fontSize: 9, color: AppColors.primaryText)),
+                            Text(completion == 100 ? 'READY' : 'PROGRESS', style: AppTypography.label.copyWith(fontSize: 9)),
+                            Text('$completion%', style: AppTypography.label.copyWith(fontSize: 9, fontWeight: FontWeight.w700)),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
                             value: completion / 100,
                             backgroundColor: AppColors.surface,
                             valueColor: AlwaysStoppedAnimation(completion == 100 ? AppColors.success : AppColors.primary),
-                            minHeight: 4,
+                            minHeight: 2,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 48),
+                  const SizedBox(width: 40),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       StatusChip(status: report.reportStatus),
                       const SizedBox(height: 6),
-                      Text(report.createdAt != null ? DateFormat('MMMM dd, yyyy').format(report.createdAt!) : '', 
-                        style: AppTypography.label.copyWith(fontSize: 10)),
+                      Text(report.createdAt != null ? DateFormat('dd MMM yyyy').format(report.createdAt!) : '-', 
+                        style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textSecondary)),
                     ],
                   ),
-                  const SizedBox(width: 24),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.border),
+                  const SizedBox(width: 20),
+                  const Icon(Icons.chevron_right_rounded, color: AppColors.border, size: 20),
                 ],
               ),
         ),
@@ -373,3 +361,4 @@ class _ReportListItem extends StatelessWidget {
     );
   }
 }
+

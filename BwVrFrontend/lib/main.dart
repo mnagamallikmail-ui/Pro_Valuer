@@ -2,16 +2,23 @@ import 'package:flutter/material.dart';
 
 import 'router.dart';
 import 'services/api_service.dart';
+import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 
 void main() {
-  // Hook 401 interceptor to trigger GoRouter redirect (authService.notifyListeners already called)
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Hook 401 interceptor
   ApiService.onUnauthorized = () {
     // AuthService.clearSessionOnUnauthorized() is already called in the interceptor.
-    // GoRouter listens to AuthService (refreshListenable), so it will auto-redirect to /login.
   };
+
+  // Initialize Real-time synchronization service
+  NotificationService().init();
+
   runApp(const BwVrApp());
 }
+
 
 class BwVrApp extends StatelessWidget {
   const BwVrApp({super.key});

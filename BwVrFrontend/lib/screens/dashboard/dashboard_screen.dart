@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/notification_service.dart';
 import '../../models/report_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
@@ -18,23 +19,27 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final _api = ApiService();
+  final _notifications = NotificationService();
   DashboardStats? _stats;
   List<ReportModel> _recentReports = [];
   bool _loading = true;
   String? _error;
-  Timer? _refreshTimer;
+  StreamSubscription? _changeSubscription;
 
   @override
   void initState() {
     super.initState();
     _load();
-    // Reactive: Setup periodic refresh to reflect backend updates instantly
-    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) => _load(silent: true));
+    // Reactive: Listen to real-time changes instead of polling
+    _changeSubscription = _notifications.changeStream.listen((event) {
+      debugPrint('[Dashboard] Reacting to: $event');
+      _load(silent: true);
+    });
   }
 
   @override
   void dispose() {
-    _refreshTimer?.cancel();
+    _changeSubscription?.cancel();
     super.dispose();
   }
 
@@ -68,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return AppLayout(
       currentRoute: '/',
       child: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primaryText))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : _error != null
               ? _ErrorView(error: _error!, onRetry: _load)
               : _DashboardContent(
@@ -93,211 +98,167 @@ class _DashboardContent extends StatelessWidget {
     final isMobile = width < 800;
 
     return SingleChildScrollView(
-      padding: EdgeInsets.all(isMobile ? 24 : 48),
+      padding: EdgeInsets.all(isMobile ? 24 : 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header Section
-          if (isMobile) ...[
-            Text('VALUATION INSIGHTS', style: AppTypography.label.copyWith(color: AppColors.primary, letterSpacing: 2)),
-            const SizedBox(height: 8),
-            Text('Welcome, \n$displayName', style: AppTypography.heading1.copyWith(fontSize: 32)),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => context.go('/reports/new'),
-              icon: const Icon(Icons.add_rounded, size: 20),
-              label: const Text('Initiate Valuation'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              ),
-            ),
-          ] else ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('VALUATION INSIGHTS', style: AppTypography.label.copyWith(color: AppColors.primary, letterSpacing: 2)),
-                    const SizedBox(height: 8),
-                    Text('Welcome, $displayName', style: AppTypography.heading1.copyWith(fontSize: 40)),
-                  ],
+          Text(
+            'LUMINOUS INSIGHTS', 
+            style: AppTypography.label.copyWith(
+              color: AppColors.primary, 
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.w600
+            )
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  isMobile ? 'Welcome, \n$displayName' : 'Welcome back, $displayName', 
+                  style: AppTypography.heading1.copyWith(fontSize: isMobile ? 32 : 36)
                 ),
-                const Spacer(),
+              ),
+              if (!isMobile)
                 ElevatedButton.icon(
                   onPressed: () => context.go('/reports/new'),
-                  icon: const Icon(Icons.add_rounded, size: 20),
-                  label: const Text('Initiate Valuation'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                  ),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text('New Valuation'),
                 ),
-              ],
+            ],
+          ),
+          if (isMobile) ...[
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () => context.go('/reports/new'),
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: const Text('New Valuation'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
             ),
           ],
-          SizedBox(height: isMobile ? 32 : 48),
+
+          SizedBox(height: isMobile ? 32 : 40),
 
           // Stats Grid
           GridView.count(
             crossAxisCount: isMobile ? 1 : (width < 1200 ? 2 : 4),
             shrinkWrap: true,
-            crossAxisSpacing: 24,
-            mainAxisSpacing: 24,
-            childAspectRatio: isMobile ? 2.0 : 1.4,
+            crossAxisSpacing: 20,
+            mainAxisSpacing: 20,
+            childAspectRatio: isMobile ? 2.2 : 1.6,
             physics: const NeverScrollableScrollPhysics(),
             children: [
               StatsCard(
-                title: 'Active Valuations',
+                title: 'Total Valuations',
                 value: stats.totalReports.toString(),
                 icon: Icons.assignment_outlined,
                 color: AppColors.primaryText,
-                trend: '+12% this week',
+                trend: '+5%',
               ),
               StatsCard(
-                title: 'Monthly Throughput',
+                title: 'Monthly Progress',
                 value: stats.reportsThisMonth.toString(),
-                icon: Icons.trending_up_rounded,
+                icon: Icons.show_chart_rounded,
                 color: AppColors.primary,
-                trend: 'Stable',
+                trend: 'Active',
               ),
               StatsCard(
-                title: 'Templates Utilized',
+                title: 'Active Blueprints',
                 value: stats.activeTemplates.toString(),
-                icon: Icons.layers_outlined,
-                color: AppColors.accent,
-                trend: '4 new',
+                icon: Icons.style_outlined,
+                color: AppColors.action,
+                trend: 'Updated',
               ),
               StatsCard(
-                title: 'Connected FIs',
+                title: 'Financial Partners',
                 value: stats.distinctBanks.toString(),
                 icon: Icons.account_balance_outlined,
-                color: AppColors.secondary,
-                trend: 'Global',
+                color: AppColors.textSecondary,
+                trend: 'Verified',
               ),
             ],
           ),
-          SizedBox(height: isMobile ? 40 : 64),
+          SizedBox(height: isMobile ? 40 : 56),
 
           // Main Content Region
-          if (isMobile) ...[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SectionHeader(title: 'Recent Activity'),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: AppColors.border, width: 1.5),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(minWidth: 600),
-                        child: _RecentTable(reports: recentReports)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left: Recent Table
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SectionHeader(title: 'Recent Activity'),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.border, width: 1),
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                const SectionHeader(title: 'System Board'),
-                _SystemBoardItem(
-                  title: 'Auto-Sync Active',
-                  subtitle: 'Oracle DB connection healthy',
-                  icon: Icons.sync_rounded,
-                  color: AppColors.primaryText,
-                ),
-                const SizedBox(height: 16),
-                _SystemBoardItem(
-                  title: 'New Template Added',
-                  subtitle: 'HDFC General - v2.4',
-                  icon: Icons.add_to_photos_rounded,
-                  color: AppColors.accent,
-                ),
-                const SizedBox(height: 16),
-                _SystemBoardItem(
-                  title: 'API Status',
-                  subtitle: 'All endpoints responding',
-                  icon: Icons.bolt_rounded,
-                  color: AppColors.secondary,
-                ),
-              ],
-            )
-          ] else ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left: Recent Table
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SectionHeader(title: 'Recent Activity'),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: AppColors.border, width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryText.withOpacity(0.03),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(minWidth: 800),
-                              child: _RecentTable(reports: recentReports),
-                            ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(minWidth: isMobile ? 600 : 800),
+                            child: _RecentTable(reports: recentReports),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 48),
-                // Right: System Board
+              ),
+              if (!isMobile) ...[
+                const SizedBox(width: 32),
+                // Right: System Alerts
                 Expanded(
                   flex: 1,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SectionHeader(title: 'System Board'),
+                      const SectionHeader(title: 'Alerts'),
                       _SystemBoardItem(
-                        title: 'Auto-Sync Active',
-                        subtitle: 'Oracle DB connection healthy',
-                        icon: Icons.sync_rounded,
-                        color: AppColors.primaryText,
+                        title: 'Oracle Synchronized',
+                        subtitle: 'Database pulse normal',
+                        icon: Icons.check_circle_outline_rounded,
+                        color: AppColors.success,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _SystemBoardItem(
-                        title: 'New Template Added',
-                        subtitle: 'HDFC General - v2.4',
-                        icon: Icons.add_to_photos_rounded,
-                        color: AppColors.accent,
+                        title: 'Template Update',
+                        subtitle: 'RBI Compliance v3.0',
+                        icon: Icons.info_outline_rounded,
+                        color: AppColors.primary,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _SystemBoardItem(
-                        title: 'API Status',
-                        subtitle: 'All endpoints responding',
-                        icon: Icons.bolt_rounded,
-                        color: AppColors.secondary,
+                        title: 'Memory Usage',
+                        subtitle: 'System load minimal',
+                        icon: Icons.speed_rounded,
+                        color: AppColors.textSecondary,
                       ),
                     ],
                   ),
                 ),
               ],
+            ],
+          ),
+          if (isMobile) ...[
+            const SizedBox(height: 32),
+            const SectionHeader(title: 'System Alerts'),
+            _SystemBoardItem(
+              title: 'Oracle Synchronized',
+              subtitle: 'Database pulse normal',
+              icon: Icons.check_circle_outline_rounded,
+              color: AppColors.success,
             ),
-          ],
+          ]
         ],
       ),
     );
@@ -313,8 +274,8 @@ class _RecentTable extends StatelessWidget {
     if (reports.isEmpty) {
       return const EmptyState(
         icon: Icons.description_outlined,
-        title: 'Queue Empty',
-        subtitle: 'Start a new report to see results here',
+        title: 'Empty Queue',
+        subtitle: 'No valuations found',
       );
     }
 
@@ -322,15 +283,15 @@ class _RecentTable extends StatelessWidget {
       columnWidths: const {
         0: FlexColumnWidth(2),
         1: FlexColumnWidth(1.5),
-        2: FixedColumnWidth(140),
+        2: FixedColumnWidth(120),
       },
       children: [
         TableRow(
           decoration: const BoxDecoration(color: AppColors.surface),
           children: [
-            _th('Valuation Details'),
-            _th('Bank / Vendor'),
-            _th('Status'),
+            _th('VALUATION ASSET'),
+            _th('INSTITUTION'),
+            _th('STATUS'),
           ],
         ),
         ...reports.map((r) => TableRow(
@@ -338,14 +299,17 @@ class _RecentTable extends StatelessWidget {
                 _td(Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(r.reportTitle, style: AppTypography.heading3.copyWith(fontSize: 14)),
+                    Text(r.reportTitle, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
                     ReferenceChip(label: r.referenceNumber),
                   ],
                 )),
-                _td(Text('${r.bankName ?? 'N/A'}\n${r.vendorName ?? 'N/A'}',
-                    style: AppTypography.bodyMedium.copyWith(color: AppColors.accent))),
-                _td(StatusChip(status: r.reportStatus)),
+                _td(Text(r.bankName ?? 'Independent',
+                    style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary))),
+                _td(Padding(
+                  padding: const EdgeInsets.only(top: 14),
+                  child: Center(child: StatusChip(status: r.reportStatus)),
+                )),
               ],
             )),
       ],
@@ -354,15 +318,19 @@ class _RecentTable extends StatelessWidget {
 
   Widget _th(String label) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Text(label, style: AppTypography.label.copyWith(color: AppColors.primaryText)),
+        child: Text(
+          label, 
+          style: AppTypography.label.copyWith(
+            color: AppColors.textSecondary,
+            fontSize: 10,
+            letterSpacing: 1
+          )
+        ),
       );
 
-  Widget _td(Widget child) => InkWell(
-        onTap: () {}, // Detail navigation
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: child,
-        ),
+  Widget _td(Widget child) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        child: child,
       );
 }
 
@@ -382,22 +350,22 @@ class _SystemBoardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(width: 16),
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTypography.heading3.copyWith(fontSize: 14)),
-                Text(subtitle, style: AppTypography.bodyMedium.copyWith(fontSize: 12, color: AppColors.accent)),
+                Text(title, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, fontSize: 13)),
+                Text(subtitle, style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textSecondary)),
               ],
             ),
           ),
@@ -418,15 +386,16 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.cloud_off_rounded, color: AppColors.primary, size: 64),
+          const Icon(Icons.cloud_off_rounded, color: AppColors.error, size: 48),
           const SizedBox(height: 24),
-          Text('Streaming Disrupted', style: AppTypography.heading2),
+          Text('Sync Interrupted', style: AppTypography.heading3),
           const SizedBox(height: 12),
-          Text(error, style: AppTypography.bodyMedium, textAlign: TextAlign.center),
+          Text(error, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
           const SizedBox(height: 32),
-          ElevatedButton(onPressed: onRetry, child: const Text('Re-initialize Stream')),
+          ElevatedButton(onPressed: onRetry, child: const Text('Retry Connection')),
         ],
       ),
     );
   }
 }
+

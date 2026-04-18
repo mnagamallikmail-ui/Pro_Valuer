@@ -83,7 +83,7 @@ class AuthService extends ChangeNotifier {
   }) async {
     try {
       final response = await _dio.post('/auth/register', data: {
-        'loginId': username,
+        'username': username,
         'fullName': fullName,
         'password': password,
       });

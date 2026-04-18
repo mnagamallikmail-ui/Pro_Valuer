@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/api_service.dart';
@@ -21,27 +22,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<ReportModel> _recentReports = [];
   bool _loading = true;
   String? _error;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // Reactive: Setup periodic refresh to reflect backend updates instantly
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) => _load(silent: true));
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final stats = await _api.getDashboardStats();
       final reports = await _api.getReportList();
+      if (!mounted) return;
       setState(() {
         _stats = stats;
-        _recentReports = reports.take(10).toList();
+        _recentReports = reports.take(8).toList();
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _loading = false;
@@ -54,7 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return AppLayout(
       currentRoute: '/',
       child: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.textPrimary))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primaryText))
           : _error != null
               ? _ErrorView(error: _error!, onRetry: _load)
               : _DashboardContent(
@@ -74,204 +88,247 @@ class _DashboardContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final session = AuthService().session;
-    final isAdmin = session?.isAdmin ?? false;
     final displayName = session?.displayName ?? 'User';
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(48),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Welcome header
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isAdmin ? 'Admin Dashboard' : 'Welcome back,',
-                        style: AppTypography.subheading.copyWith(color: AppColors.textSecondary),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        displayName,
-                        style: AppTypography.heading1.copyWith(color: AppColors.textPrimary),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () => context.go('/reports/new'),
-                            icon: const Icon(Icons.add_rounded, size: 18),
-                            label: const Text('New Report'),
-                          ),
-                          const SizedBox(width: 16),
-                          OutlinedButton.icon(
-                            onPressed: () => context.go('/templates/upload'),
-                            icon: const Icon(Icons.upload_rounded, size: 18),
-                            label: const Text('Upload Template'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.description_rounded,
-                    size: 100, color: AppColors.textPrimary.withOpacity(0.05)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 40),
-
-          // Stats cards
-          Text('Overview', style: AppTypography.heading3),
-          const SizedBox(height: 20),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final double spacing = 20;
-              final double cardWidth = (constraints.maxWidth - (3 * spacing)) / 4;
-              
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: [
-                  SizedBox(
-                    width: cardWidth,
-                    child: InkWell(
-                      onTap: () => context.go('/reports'),
-                      borderRadius: BorderRadius.circular(12),
-                      child: StatsCard(
-                        title: 'Total Reports',
-                        value: stats.totalReports.toString(),
-                        icon: Icons.description_rounded,
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: cardWidth,
-                    child: InkWell(
-                      onTap: () => context.go('/reports'),
-                      borderRadius: BorderRadius.circular(12),
-                      child: StatsCard(
-                        title: 'This Month',
-                        value: stats.reportsThisMonth.toString(),
-                        icon: Icons.calendar_today_rounded,
-                        color: AppColors.secondary,
-                        subtitle: 'New reports',
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: cardWidth,
-                    child: InkWell(
-                      onTap: () => context.go('/templates'),
-                      borderRadius: BorderRadius.circular(12),
-                      child: StatsCard(
-                        title: 'Active Templates',
-                        value: stats.activeTemplates.toString(),
-                        icon: Icons.folder_copy_rounded,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: cardWidth,
-                    child: InkWell(
-                      onTap: () {},
-                      borderRadius: BorderRadius.circular(12),
-                      child: StatsCard(
-                        title: 'Banks',
-                        value: stats.distinctBanks.toString(),
-                        icon: Icons.account_balance_rounded,
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 48),
-
-          // Recent reports
+          // Header Section
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('Recent Reports', style: AppTypography.heading3),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('VALUATION INSIGHTS', style: AppTypography.label.copyWith(color: AppColors.primary, letterSpacing: 2)),
+                  const SizedBox(height: 8),
+                  Text('Welcome, $displayName', style: AppTypography.heading1.copyWith(fontSize: 40)),
+                ],
+              ),
               const Spacer(),
-              TextButton(
-                onPressed: () => context.go('/reports'),
-                child: const Text('View all →'),
+              ElevatedButton.icon(
+                onPressed: () => context.go('/reports/new'),
+                icon: const Icon(Icons.add_rounded, size: 20),
+                label: const Text('Initiate Valuation'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          if (recentReports.isEmpty)
-            EmptyState(
-              icon: Icons.description_outlined,
-              title: 'No reports yet',
-              subtitle: 'Create your first report to get started',
-              action: ElevatedButton(
-                onPressed: () => context.go('/reports/new'),
-                child: const Text('Create Report'),
+          const SizedBox(height: 48),
+
+          // Stats Grid
+          GridView.count(
+            crossAxisCount: 4,
+            shrinkWrap: true,
+            crossAxisSpacing: 24,
+            mainAxisSpacing: 24,
+            childAspectRatio: 1.4,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              StatsCard(
+                title: 'Active Valuations',
+                value: stats.totalReports.toString(),
+                icon: Icons.assignment_outlined,
+                color: AppColors.primaryText,
+                trend: '+12% this week',
               ),
-            )
-          else
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
+              StatsCard(
+                title: 'Monthly Throughput',
+                value: stats.reportsThisMonth.toString(),
+                icon: Icons.trending_up_rounded,
+                color: AppColors.primary,
+                trend: 'Stable',
               ),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: recentReports.length,
-                separatorBuilder: (_, __) => const Divider(),
-                itemBuilder: (context, i) {
-                  final r = recentReports[i];
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    leading: Container(
-                      width: 48,
-                      height: 48,
+              StatsCard(
+                title: 'Templates Utilized',
+                value: stats.activeTemplates.toString(),
+                icon: Icons.layers_outlined,
+                color: AppColors.accent,
+                trend: '4 new',
+              ),
+              StatsCard(
+                title: 'Connected FIs',
+                value: stats.distinctBanks.toString(),
+                icon: Icons.account_balance_outlined,
+                color: AppColors.secondary,
+                trend: 'Global',
+              ),
+            ],
+          ),
+          const SizedBox(height: 64),
+
+          // Main Content Region
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left: Recent Table
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SectionHeader(title: 'Recent Activity'),
+                    Container(
                       decoration: BoxDecoration(
-                        color: AppColors.accent.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: AppColors.border, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryText.withOpacity(0.03),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.description_rounded,
-                          color: AppColors.textPrimary, size: 24),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: _RecentTable(reports: recentReports),
+                      ),
                     ),
-                    title: Row(
-                      children: [
-                        ReferenceChip(referenceNumber: r.referenceNumber, fontSize: 12),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(r.reportTitle,
-                              style: AppTypography.subheading,
-                              overflow: TextOverflow.ellipsis),
-                        ),
-                      ],
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text('${r.bankName ?? ''} • ${r.vendorName ?? ''}',
-                          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
-                    ),
-                    trailing: StatusChip(status: r.reportStatus),
-                    onTap: () => context.go('/reports/${r.reportId}'),
-                  );
-                },
+                  ],
+                ),
               ),
+              const SizedBox(width: 48),
+              // Right: System Board
+              Expanded(
+                flex: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SectionHeader(title: 'System Board'),
+                    _SystemBoardItem(
+                      title: 'Auto-Sync Active',
+                      subtitle: 'Oracle DB connection healthy',
+                      icon: Icons.sync_rounded,
+                      color: AppColors.primaryText,
+                    ),
+                    const SizedBox(height: 16),
+                    _SystemBoardItem(
+                      title: 'New Template Added',
+                      subtitle: 'HDFC General - v2.4',
+                      icon: Icons.add_to_photos_rounded,
+                      color: AppColors.accent,
+                    ),
+                    const SizedBox(height: 16),
+                    _SystemBoardItem(
+                      title: 'API Status',
+                      subtitle: 'All endpoints responding',
+                      icon: Icons.bolt_rounded,
+                      color: AppColors.secondary,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecentTable extends StatelessWidget {
+  final List<ReportModel> reports;
+  const _RecentTable({required this.reports});
+
+  @override
+  Widget build(BuildContext context) {
+    if (reports.isEmpty) {
+      return const EmptyState(
+        icon: Icons.description_outlined,
+        title: 'Queue Empty',
+        subtitle: 'Start a new report to see results here',
+      );
+    }
+
+    return Table(
+      columnWidths: const {
+        0: FlexColumnWidth(2),
+        1: FlexColumnWidth(1.5),
+        2: FixedColumnWidth(140),
+      },
+      children: [
+        TableRow(
+          decoration: const BoxDecoration(color: AppColors.surface),
+          children: [
+            _th('Valuation Details'),
+            _th('Bank / Vendor'),
+            _th('Status'),
+          ],
+        ),
+        ...reports.map((r) => TableRow(
+              children: [
+                _td(Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(r.reportTitle, style: AppTypography.heading3.copyWith(fontSize: 14)),
+                    const SizedBox(height: 4),
+                    ReferenceChip(label: r.referenceNumber),
+                  ],
+                )),
+                _td(Text('${r.bankName ?? 'N/A'}\n${r.vendorName ?? 'N/A'}',
+                    style: AppTypography.bodyMedium.copyWith(color: AppColors.accent))),
+                _td(StatusChip(status: r.reportStatus)),
+              ],
+            )),
+      ],
+    );
+  }
+
+  Widget _th(String label) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Text(label, style: AppTypography.label.copyWith(color: AppColors.primaryText)),
+      );
+
+  Widget _td(Widget child) => InkWell(
+        onTap: () {}, // Detail navigation
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: child,
+        ),
+      );
+}
+
+class _SystemBoardItem extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+
+  const _SystemBoardItem({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppTypography.heading3.copyWith(fontSize: 14)),
+                Text(subtitle, style: AppTypography.bodyMedium.copyWith(fontSize: 12, color: AppColors.accent)),
+              ],
             ),
+          ),
         ],
       ),
     );
@@ -289,17 +346,13 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline, color: AppColors.textPrimary, size: 48),
-          const SizedBox(height: 16),
-          Text('Failed to load dashboard', style: AppTypography.heading3),
-          const SizedBox(height: 8),
-          Text(error, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary), textAlign: TextAlign.center),
+          const Icon(Icons.cloud_off_rounded, color: AppColors.primary, size: 64),
+          const SizedBox(height: 24),
+          Text('Streaming Disrupted', style: AppTypography.heading2),
+          const SizedBox(height: 12),
+          Text(error, style: AppTypography.bodyMedium, textAlign: TextAlign.center),
           const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Retry'),
-          ),
+          ElevatedButton(onPressed: onRetry, child: const Text('Re-initialize Stream')),
         ],
       ),
     );

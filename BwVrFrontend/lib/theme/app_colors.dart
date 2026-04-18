@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Base Colors
-  static const Color background = Color(0xFFFAFAF8); // Soft Ivory
-  static const Color surface = Color(0xFFF1F1ED);    // Warm Cloud
-  static const Color border = Color(0xFFE4E4E1);     // Linen Gray
-
-  // Brand / Accents
-  static const Color primary = Color(0xFFE7D8C9);    // Blush Beige
-  static const Color secondary = Color(0xFFCFE1D6);  // Pastel Sage
-  static const Color accent = Color(0xFFDDEAF6);     // Soft Sky
-
-  // Text
-  static const Color textPrimary = Color(0xFF5C5F62);   // Warm Slate
-  static const Color textSecondary = Color(0xFF7A7D80); // Ash Gray
-
-  // Feedback Colors (Derived from palette where possible, kept subtle)
-  static const Color success = Color(0xFFCFE1D6); // Same as secondary
-  static const Color error = Color(0xFFF6DDE0);   // Subtle pastel red
-  static const Color warning = Color(0xFFF6EFDD); // Subtle pastel amber
+  // Backgrounds & Surfaces
+  static const Color background = Color(0xFFFFFFFF);     // Pure White
+  static const Color surface = Color(0xFFF2F5FF);        // Ghost White
+  
+  // Primary Text, Headers & Icons
+  static const Color primaryText = Color(0xFF55D6C2);    // Turquoise - Crisp for headers
+  
+  // Brand / Primary Action
+  static const Color primary = Color(0xFFF49097);        // Salmon Pink - Buttons
+  
+  // Highlights
+  static const Color secondary = Color(0xFFF5E960);      // Corn Yellow - Accents
+  
+  // Subtle Elements
+  static const Color accent = Color(0xFFDFB2F4);         // Lilac - Dividers / Secondary text
+  static const Color border = Color(0xFFDFB2F4);         // Lilac
+  
+  // Semantic for continuity
+  static const Color error = Color(0xFFF49097);          // Salmon Pink
+  static const Color success = Color(0xFF55D6C2);        // Turquoise
+  static const Color warning = Color(0xFFF5E960);        // Corn Yellow
 }

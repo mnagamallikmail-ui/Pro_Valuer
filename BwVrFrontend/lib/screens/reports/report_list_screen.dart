@@ -51,38 +51,18 @@ class _ReportListScreenState extends State<ReportListScreen> {
         size: _pageSize,
       );
       final content = data['content'] as List? ?? [];
+      if (!mounted) return;
       setState(() {
         _reports = content.map((r) => ReportModel.fromJson(r)).toList();
         _totalReports = data['totalElements'] ?? 0;
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _loading = false;
       });
-    }
-  }
-
-  Future<void> _deleteReport(ReportModel r) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('Delete Report?', style: AppTypography.heading3),
-        content: Text('Delete ${r.referenceNumber} permanently? This cannot be undone.', style: AppTypography.bodyMedium),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      await _api.deleteReport(r.reportId);
-      _load();
     }
   }
 
@@ -91,17 +71,17 @@ class _ReportListScreenState extends State<ReportListScreen> {
     return AppLayout(
       currentRoute: '/reports',
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(48),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search / filter bar
+            // Filter Toolbar
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppColors.border, width: 1.5),
               ),
               child: Row(
                 children: [
@@ -109,9 +89,11 @@ class _ReportListScreenState extends State<ReportListScreen> {
                     flex: 3,
                     child: TextField(
                       controller: _searchController,
+                      style: AppTypography.bodyLarge,
                       decoration: const InputDecoration(
-                        hintText: 'Search vendor, location, or reference...',
-                        prefixIcon: Icon(Icons.search_rounded, size: 20),
+                        filled: false,
+                        hintText: 'Filter by vendor, location or reference...',
+                        prefixIcon: Icon(Icons.search_rounded, color: AppColors.primaryText),
                       ),
                       onChanged: (_) {
                         _currentPage = 0;
@@ -119,17 +101,17 @@ class _ReportListScreenState extends State<ReportListScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 24),
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: _selectedStatus,
-                      decoration: const InputDecoration(labelText: 'Status'),
+                      style: AppTypography.bodyMedium,
+                      decoration: const InputDecoration(filled: false, labelText: 'Report Status'),
                       items: const [
-                        DropdownMenuItem(value: null, child: Text('All Statuses')),
-                        DropdownMenuItem(value: 'DRAFT', child: Text('Draft')),
+                        DropdownMenuItem(value: null, child: Text('All Records')),
+                        DropdownMenuItem(value: 'DRAFT', child: Text('Drafts')),
                         DropdownMenuItem(value: 'IN_PROGRESS', child: Text('In Progress')),
-                        DropdownMenuItem(value: 'COMPLETED', child: Text('Completed')),
-                        DropdownMenuItem(value: 'ARCHIVED', child: Text('Archived')),
+                        DropdownMenuItem(value: 'COMPLETED', child: Text('Finalized')),
                       ],
                       onChanged: (v) {
                         setState(() => _selectedStatus = v);
@@ -137,119 +119,147 @@ class _ReportListScreenState extends State<ReportListScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 32),
                   ElevatedButton.icon(
-                    onPressed: () async {
-                      await context.push('/reports/new');
-                      _load();
-                    },
-                    icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('New Report'),
+                    onPressed: () => context.push('/reports/new').then((_) => _load()),
+                    icon: const Icon(Icons.add_rounded, size: 20),
+                    label: const Text('New Valuation'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 32),
+            
+            Row(
+              children: [
+                Text('$_totalReports Valuations Found', style: AppTypography.heading3.copyWith(fontSize: 16)),
+                const Spacer(),
+                Text('Showing Page ${_currentPage + 1}', style: AppTypography.label),
+              ],
+            ),
             const SizedBox(height: 24),
-            Text('$_totalReports reports found', style: AppTypography.label),
-            const SizedBox(height: 16),
 
-            // Report list
+            // Records List
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.textPrimary))
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primaryText))
                   : _error != null
-                      ? Center(child: Text('Error: $_error', style: AppTypography.bodyMedium))
+                      ? Center(child: Text('Data fetch failed: $_error', style: AppTypography.bodyMedium))
                       : _reports.isEmpty
-                          ? EmptyState(
-                              icon: Icons.description_outlined,
-                              title: 'No reports found',
-                              subtitle: 'Try adjusting your filters or create a new report',
-                              action: ElevatedButton(
-                                onPressed: () => context.push('/reports/new').then((_) => _load()),
-                                child: const Text('Create New Report'),
-                              ),
+                          ? const EmptyState(
+                              icon: Icons.search_off_rounded,
+                              title: 'No Matches Found',
+                              subtitle: 'Adjust your search parameters to find the records.',
                             )
-                          : Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppColors.border),
-                              ),
-                              child: ListView.separated(
-                                itemCount: _reports.length,
-                                separatorBuilder: (_, __) => const Divider(),
-                                itemBuilder: (context, i) {
-                                  final r = _reports[i];
-                                  final completion = r.completionPercentage;
-                                  return ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                    onTap: () => context.go('/reports/${r.reportId}'),
-                                    leading: Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.accent.withOpacity(0.5),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Icon(Icons.description_rounded, color: AppColors.textPrimary, size: 24),
-                                    ),
-                                    title: Row(
-                                      children: [
-                                        ReferenceChip(referenceNumber: r.referenceNumber, fontSize: 12),
-                                        const SizedBox(width: 12),
-                                        Expanded(child: Text(r.reportTitle, style: AppTypography.subheading, overflow: TextOverflow.ellipsis)),
-                                      ],
-                                    ),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 6),
-                                        Text('${r.bankName ?? '—'} • ${r.vendorName ?? ''} • ${r.location ?? ''}', style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary, fontSize: 13)),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: ClipRRect(
-                                                borderRadius: BorderRadius.circular(8),
-                                                child: LinearProgressIndicator(
-                                                  value: completion / 100,
-                                                  backgroundColor: AppColors.border,
-                                                  valueColor: AlwaysStoppedAnimation(completion == 100 ? AppColors.secondary : AppColors.primary),
-                                                  minHeight: 6,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Text('$completion%', style: AppTypography.label),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          crossAxisAlignment: CrossAxisAlignment.end,
-                                          children: [
-                                            StatusChip(status: r.reportStatus),
-                                            const SizedBox(height: 6),
-                                            Text(r.createdAt != null ? DateFormat('dd MMM yyyy').format(r.createdAt!) : '—', style: AppTypography.label.copyWith(fontSize: 10)),
-                                          ],
-                                        ),
-                                        const SizedBox(width: 16),
-                                        IconButton(
-                                          onPressed: () => _deleteReport(r),
-                                          icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.textSecondary),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
+                          : ListView.builder(
+                              itemCount: _reports.length,
+                              itemBuilder: (context, i) {
+                                final r = _reports[i];
+                                return _ReportListItem(report: r, onTap: () => context.go('/reports/${r.reportId}'));
+                              },
                             ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReportListItem extends StatelessWidget {
+  final ReportModel report;
+  final VoidCallback onTap;
+
+  const _ReportListItem({required this.report, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final completion = report.completionPercentage;
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.border, width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(Icons.description_rounded, color: AppColors.primaryText, size: 24),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                flex: 4,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(report.reportTitle, style: AppTypography.heading3.copyWith(fontSize: 16)),
+                        const SizedBox(width: 12),
+                        ReferenceChip(label: report.referenceNumber),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text('${report.bankName ?? 'Unknown FI'} • ${report.location ?? 'Global'}', 
+                      style: AppTypography.bodyMedium.copyWith(color: AppColors.accent)),
+                  ],
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('COMPLETION', style: AppTypography.label.copyWith(fontSize: 9)),
+                        Text('$completion%', style: AppTypography.label.copyWith(fontSize: 9, color: AppColors.primaryText)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: completion / 100,
+                        backgroundColor: AppColors.surface,
+                        valueColor: AlwaysStoppedAnimation(completion == 100 ? AppColors.success : AppColors.primary),
+                        minHeight: 4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 48),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  StatusChip(status: report.reportStatus),
+                  const SizedBox(height: 6),
+                  Text(report.createdAt != null ? DateFormat('MMMM dd, yyyy').format(report.createdAt!) : '', 
+                    style: AppTypography.label.copyWith(fontSize: 10)),
+                ],
+              ),
+              const SizedBox(width: 24),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.border),
+            ],
+          ),
         ),
       ),
     );

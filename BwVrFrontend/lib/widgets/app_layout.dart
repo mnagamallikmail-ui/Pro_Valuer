@@ -37,13 +37,13 @@ class AppLayout extends StatelessWidget {
   }
 
   String _getTitle(String route) {
-    if (route == '/admin/users') return 'User Management';
-    if (route.startsWith('/reports/new')) return 'Create New Report';
+    if (route == '/admin/users') return 'Management';
+    if (route.startsWith('/reports/new')) return 'New Report';
     if (route.startsWith('/reports/') && route.contains('/edit')) return 'Edit Report';
-    if (route.startsWith('/reports/')) return 'Report Detail';
+    if (route.startsWith('/reports/')) return 'Valuation Review';
     if (route.startsWith('/reports')) return 'Reports';
-    if (route.startsWith('/templates/upload')) return 'Upload Template';
-    if (route.startsWith('/templates/') && route.contains('/confirm')) return 'Confirm Placeholders';
+    if (route.startsWith('/templates/upload')) return 'New Template';
+    if (route.startsWith('/templates/') && route.contains('/confirm')) return 'Configuration';
     if (route.startsWith('/templates')) return 'Templates';
     return 'Dashboard';
   }
@@ -60,49 +60,45 @@ class _Sidebar extends StatelessWidget {
     final isAdmin = auth.session?.isAdmin ?? false;
 
     final navItems = <_NavItem>[
-      const _NavItem(icon: Icons.dashboard_rounded, label: 'Dashboard', route: '/'),
-      const _NavItem(icon: Icons.folder_copy_rounded, label: 'Templates', route: '/templates'),
+      const _NavItem(icon: Icons.grid_view_rounded, label: 'Dashboard', route: '/'),
+      const _NavItem(icon: Icons.layers_rounded, label: 'Templates', route: '/templates'),
+      const _NavItem(icon: Icons.assignment_rounded, label: 'Reports', route: '/reports'),
       if (isAdmin)
-        const _NavItem(icon: Icons.upload_file_rounded, label: 'Upload Template', route: '/templates/upload'),
-      const _NavItem(icon: Icons.description_rounded, label: 'Reports', route: '/reports'),
-      if (isAdmin)
-        const _NavItem(icon: Icons.people_rounded, label: 'User Management', route: '/admin/users'),
+        const _NavItem(icon: Icons.manage_accounts_rounded, label: 'User Admin', route: '/admin/users'),
     ];
 
     return Container(
-      width: 250,
+      width: 280,
       height: double.infinity,
       decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(right: BorderSide(color: AppColors.border)),
+        color: AppColors.surface, // Ghost White
+        border: Border(right: BorderSide(color: AppColors.border, width: 1.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Logo
-          Container(
-            padding: const EdgeInsets.all(32),
+          // Logo & Branding
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
             child: Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.border),
+                    color: AppColors.primaryText, // Turquoise
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.article_rounded, color: AppColors.textPrimary, size: 22),
+                  child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 24),
                 ),
-                const SizedBox(width: 14),
-                Text('BwVr', style: AppTypography.heading3),
+                const SizedBox(width: 16),
+                Text('BwVr', style: AppTypography.heading2.copyWith(color: AppColors.primaryText)),
               ],
             ),
           ),
           
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               children: navItems.map((item) => _SidebarItem(
                 item: item,
                 isActive: currentRoute == item.route || (item.route != '/' && currentRoute.startsWith(item.route)),
@@ -110,47 +106,58 @@ class _Sidebar extends StatelessWidget {
             ),
           ),
 
-          const Divider(),
-
-          // User info + logout
+          // User info Card at bottom
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             child: Builder(builder: (context) {
               final session = AuthService().session;
               final displayName = session?.displayName ?? 'User';
               final isAdm = session?.isAdmin ?? false;
               
               return Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.border, width: 1.5),
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundColor: isAdm ? AppColors.primary : AppColors.accent,
-                      child: const Icon(Icons.person_rounded, size: 18, color: AppColors.textPrimary),
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundColor: isAdm ? AppColors.primary : AppColors.secondary,
+                          child: Icon(Icons.person_outline_rounded, size: 20, color: isAdm ? Colors.white : AppColors.primaryText),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(displayName, style: AppTypography.heading3.copyWith(fontSize: 14), overflow: TextOverflow.ellipsis),
+                              Text(isAdm ? 'Admin Access' : 'Staff Member', 
+                                style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.accent)),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(displayName, style: AppTypography.label.copyWith(color: AppColors.textPrimary), overflow: TextOverflow.ellipsis),
-                          if (isAdm)
-                            Text('Admin', style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textSecondary)),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.logout_rounded, size: 18, color: AppColors.textSecondary),
+                    const SizedBox(height: 16),
+                    Divider(color: AppColors.border.withOpacity(0.5)),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
                       onPressed: () {
                         AuthService().logout();
                         context.go('/login');
                       },
+                      icon: const Icon(Icons.logout_rounded, size: 16, color: AppColors.primary),
+                      label: Text('Logout', style: AppTypography.bodyMedium.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                     ),
                   ],
                 ),
@@ -172,28 +179,38 @@ class _SidebarItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.only(bottom: 8),
       child: InkWell(
         onTap: () => context.go(item.route),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
+        hoverColor: AppColors.primary.withOpacity(0.05),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: isActive ? AppColors.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
+            color: isActive ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: isActive ? Border.all(color: AppColors.primaryText, width: 1.5) : null,
           ),
           child: Row(
             children: [
-              Icon(item.icon, size: 20, color: isActive ? AppColors.textPrimary : AppColors.textSecondary),
+              Icon(item.icon, size: 22, color: isActive ? AppColors.primaryText : AppColors.accent),
               const SizedBox(width: 16),
               Text(
                 item.label,
-                style: AppTypography.subheading.copyWith(
-                  color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                style: AppTypography.heading3.copyWith(
+                  fontSize: 15,
+                  color: isActive ? AppColors.primaryText : AppColors.accent,
                 ),
               ),
+              if (isActive) ...[
+                const Spacer(),
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                ),
+              ],
             ],
           ),
         ),
@@ -209,17 +226,32 @@ class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80,
+      height: 90,
       decoration: const BoxDecoration(
         color: AppColors.background,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
+        border: Border(bottom: BorderSide(color: AppColors.border, width: 1.5)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Row(
         children: [
-          Text(title, style: AppTypography.heading2),
+          Text(title, style: AppTypography.heading2.copyWith(color: AppColors.primaryText)),
           const Spacer(),
-          // Breadcrumbs can go here if needed
+          // Placeholder for streaming status / notifications
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: AppColors.secondary.withOpacity(0.5)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.sync_rounded, color: AppColors.secondary, size: 16),
+                const SizedBox(width: 8),
+                Text('Real-time Data Active', style: AppTypography.label.copyWith(color: AppColors.primaryText)),
+              ],
+            ),
+          ),
         ],
       ),
     );

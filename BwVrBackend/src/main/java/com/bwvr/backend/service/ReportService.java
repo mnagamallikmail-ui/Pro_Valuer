@@ -93,7 +93,7 @@ public class ReportService {
     @Transactional(readOnly = true)
     public Page<ReportResponse> searchReports(String search, String vendorName, String location,
             String bankName, String status, int page, int size, String createdByFilter) {
-        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        PageRequest pageable = PageRequest.of(page, size); // ORDER BY is inside the native SQL query
         if (createdByFilter != null) {
             // User can only see their own reports
             return reportRepository.searchReportsFiltered(

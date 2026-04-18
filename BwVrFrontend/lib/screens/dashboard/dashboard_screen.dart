@@ -89,44 +89,61 @@ class _DashboardContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = AuthService().session;
     final displayName = session?.displayName ?? 'User';
+    final width = MediaQuery.of(context).size.width;
+    final isMobile = width < 800;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(48),
+      padding: EdgeInsets.all(isMobile ? 24 : 48),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header Section
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('VALUATION INSIGHTS', style: AppTypography.label.copyWith(color: AppColors.primary, letterSpacing: 2)),
-                  const SizedBox(height: 8),
-                  Text('Welcome, $displayName', style: AppTypography.heading1.copyWith(fontSize: 40)),
-                ],
+          if (isMobile) ...[
+            Text('VALUATION INSIGHTS', style: AppTypography.label.copyWith(color: AppColors.primary, letterSpacing: 2)),
+            const SizedBox(height: 8),
+            Text('Welcome, \n$displayName', style: AppTypography.heading1.copyWith(fontSize: 32)),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => context.go('/reports/new'),
+              icon: const Icon(Icons.add_rounded, size: 20),
+              label: const Text('Initiate Valuation'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
-              const Spacer(),
-              ElevatedButton.icon(
-                onPressed: () => context.go('/reports/new'),
-                icon: const Icon(Icons.add_rounded, size: 20),
-                label: const Text('Initiate Valuation'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+            ),
+          ] else ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('VALUATION INSIGHTS', style: AppTypography.label.copyWith(color: AppColors.primary, letterSpacing: 2)),
+                    const SizedBox(height: 8),
+                    Text('Welcome, $displayName', style: AppTypography.heading1.copyWith(fontSize: 40)),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 48),
+                const Spacer(),
+                ElevatedButton.icon(
+                  onPressed: () => context.go('/reports/new'),
+                  icon: const Icon(Icons.add_rounded, size: 20),
+                  label: const Text('Initiate Valuation'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          SizedBox(height: isMobile ? 32 : 48),
 
           // Stats Grid
           GridView.count(
-            crossAxisCount: 4,
+            crossAxisCount: isMobile ? 1 : (width < 1200 ? 2 : 4),
             shrinkWrap: true,
             crossAxisSpacing: 24,
             mainAxisSpacing: 24,
-            childAspectRatio: 1.4,
+            childAspectRatio: isMobile ? 2.0 : 1.4,
             physics: const NeverScrollableScrollPhysics(),
             children: [
               StatsCard(
@@ -159,73 +176,128 @@ class _DashboardContent extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 64),
+          SizedBox(height: isMobile ? 40 : 64),
 
           // Main Content Region
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Left: Recent Table
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SectionHeader(title: 'Recent Activity'),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: AppColors.border, width: 1.5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primaryText.withOpacity(0.03),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
+          if (isMobile) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SectionHeader(title: 'Recent Activity'),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppColors.border, width: 1.5),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minWidth: 600),
+                        child: _RecentTable(reports: recentReports)
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                const SectionHeader(title: 'System Board'),
+                _SystemBoardItem(
+                  title: 'Auto-Sync Active',
+                  subtitle: 'Oracle DB connection healthy',
+                  icon: Icons.sync_rounded,
+                  color: AppColors.primaryText,
+                ),
+                const SizedBox(height: 16),
+                _SystemBoardItem(
+                  title: 'New Template Added',
+                  subtitle: 'HDFC General - v2.4',
+                  icon: Icons.add_to_photos_rounded,
+                  color: AppColors.accent,
+                ),
+                const SizedBox(height: 16),
+                _SystemBoardItem(
+                  title: 'API Status',
+                  subtitle: 'All endpoints responding',
+                  icon: Icons.bolt_rounded,
+                  color: AppColors.secondary,
+                ),
+              ],
+            )
+          ] else ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left: Recent Table
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SectionHeader(title: 'Recent Activity'),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: AppColors.border, width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryText.withOpacity(0.03),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(minWidth: 800),
+                              child: _RecentTable(reports: recentReports),
+                            ),
                           ),
-                        ],
+                        ),
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: _RecentTable(reports: recentReports),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 48),
+                // Right: System Board
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SectionHeader(title: 'System Board'),
+                      _SystemBoardItem(
+                        title: 'Auto-Sync Active',
+                        subtitle: 'Oracle DB connection healthy',
+                        icon: Icons.sync_rounded,
+                        color: AppColors.primaryText,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      _SystemBoardItem(
+                        title: 'New Template Added',
+                        subtitle: 'HDFC General - v2.4',
+                        icon: Icons.add_to_photos_rounded,
+                        color: AppColors.accent,
+                      ),
+                      const SizedBox(height: 16),
+                      _SystemBoardItem(
+                        title: 'API Status',
+                        subtitle: 'All endpoints responding',
+                        icon: Icons.bolt_rounded,
+                        color: AppColors.secondary,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 48),
-              // Right: System Board
-              Expanded(
-                flex: 1,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SectionHeader(title: 'System Board'),
-                    _SystemBoardItem(
-                      title: 'Auto-Sync Active',
-                      subtitle: 'Oracle DB connection healthy',
-                      icon: Icons.sync_rounded,
-                      color: AppColors.primaryText,
-                    ),
-                    const SizedBox(height: 16),
-                    _SystemBoardItem(
-                      title: 'New Template Added',
-                      subtitle: 'HDFC General - v2.4',
-                      icon: Icons.add_to_photos_rounded,
-                      color: AppColors.accent,
-                    ),
-                    const SizedBox(height: 16),
-                    _SystemBoardItem(
-                      title: 'API Status',
-                      subtitle: 'All endpoints responding',
-                      icon: Icons.bolt_rounded,
-                      color: AppColors.secondary,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ],
       ),
     );

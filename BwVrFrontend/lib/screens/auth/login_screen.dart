@@ -54,144 +54,138 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Row(
+    final isMobile = MediaQuery.of(context).size.width < 900;
+
+    final infoSection = Container(
+      color: AppColors.surface,
+      padding: EdgeInsets.all(isMobile ? 32 : 64),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Left Side: Branding & Info
-          Expanded(
-            flex: 4,
-            child: Container(
-              color: AppColors.surface,
-              padding: const EdgeInsets.all(64),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primaryText,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 48),
+          ),
+          const SizedBox(height: 32),
+          Text('BwVr', style: AppTypography.heading1.copyWith(fontSize: 48, color: AppColors.primaryText)),
+          const SizedBox(height: 16),
+          Text(
+            'Precision Valuation & Reporting System',
+            style: AppTypography.heading3.copyWith(color: AppColors.primaryText.withOpacity(0.8)),
+          ),
+          SizedBox(height: isMobile ? 32 : 48),
+          _InfoItem(icon: Icons.check_circle_outline_rounded, text: 'Real-time property data syncing'),
+          _InfoItem(icon: Icons.check_circle_outline_rounded, text: 'Automated document generation'),
+          _InfoItem(icon: Icons.check_circle_outline_rounded, text: 'Secure multi-role management'),
+        ],
+      ),
+    );
+
+    final formSection = Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Padding(
+          padding: EdgeInsets.all(isMobile ? 24 : 40),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Welcome Back', style: AppTypography.heading2),
+                const SizedBox(height: 8),
+                Text('Please sign in to your account', 
+                  style: AppTypography.bodyLarge.copyWith(color: AppColors.accent)),
+                const SizedBox(height: 48),
+
+                if (_errorMessage != null) ...[
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryText,
-                      borderRadius: BorderRadius.circular(16),
+                      color: AppColors.error.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.error),
                     ),
-                    child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 48),
-                  ),
-                  const SizedBox(height: 32),
-                  Text('BwVr', style: AppTypography.heading1.copyWith(fontSize: 48, color: AppColors.primaryText)),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Precision Valuation & Reporting System',
-                    style: AppTypography.heading3.copyWith(color: AppColors.primaryText.withOpacity(0.8)),
-                  ),
-                  const SizedBox(height: 48),
-                  _InfoItem(icon: Icons.check_circle_outline_rounded, text: 'Real-time property data syncing'),
-                  _InfoItem(icon: Icons.check_circle_outline_rounded, text: 'Automated document generation'),
-                  _InfoItem(icon: Icons.check_circle_outline_rounded, text: 'Secure multi-role management'),
-                ],
-              ),
-            ),
-          ),
-          
-          // Right Side: Login Form
-          Expanded(
-            flex: 5,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: Padding(
-                  padding: const EdgeInsets.all(40),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                    child: Row(
                       children: [
-                        Text('Welcome Back', style: AppTypography.heading2),
-                        const SizedBox(height: 8),
-                        Text('Please sign in to your account', 
-                          style: AppTypography.bodyLarge.copyWith(color: AppColors.accent)),
-                        const SizedBox(height: 48),
-
-                        if (_errorMessage != null) ...[
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.primary),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.error_outline_rounded, color: AppColors.primary, size: 20),
-                                const SizedBox(width: 12),
-                                Expanded(child: Text(_errorMessage!, style: AppTypography.bodyMedium.copyWith(color: AppColors.primary))),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-                        ],
-
-                        Text('Username', style: AppTypography.label.copyWith(color: AppColors.primaryText)),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _usernameController,
-                          style: AppTypography.bodyLarge,
-                          decoration: const InputDecoration(
-                            hintText: 'Enter your ID',
-                            prefixIcon: Icon(Icons.alternate_email_rounded, size: 20),
-                          ),
-                          validator: (v) => (v?.isEmpty ?? true) ? 'Username required' : null,
-                        ),
-                        const SizedBox(height: 24),
-
-                        Text('Password', style: AppTypography.label.copyWith(color: AppColors.primaryText)),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          style: AppTypography.bodyLarge,
-                          decoration: InputDecoration(
-                            hintText: '••••••••',
-                            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                            suffixIcon: IconButton(
-                              icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                            ),
-                          ),
-                          validator: (v) => (v?.isEmpty ?? true) ? 'Password required' : null,
-                          onFieldSubmitted: (_) => _login(),
-                        ),
-                        const SizedBox(height: 48),
-
-                        SizedBox(
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _login,
-                            child: _isLoading
-                                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                : const Text('Access Dashboard'),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('Don\'t have an account?', style: AppTypography.bodyMedium),
-                            TextButton(
-                              onPressed: () => context.go('/signup'),
-                              child: Text('Register', style: AppTypography.bodyMedium.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold)),
-                            ),
-                          ],
-                        ),
+                        const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(child: Text(_errorMessage!, style: AppTypography.bodyMedium.copyWith(color: AppColors.error))),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 32),
+                ],
+
+                Text('Username', style: AppTypography.label.copyWith(color: AppColors.primaryText)),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _usernameController,
+                  style: AppTypography.bodyLarge,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your ID',
+                    prefixIcon: Icon(Icons.alternate_email_rounded, size: 20),
+                  ),
+                  validator: (v) => (v?.isEmpty ?? true) ? 'Username required' : null,
                 ),
-              ),
+                const SizedBox(height: 24),
+
+                Text('Password', style: AppTypography.label.copyWith(color: AppColors.primaryText)),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  style: AppTypography.bodyLarge,
+                  decoration: InputDecoration(
+                    hintText: '••••••••',
+                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
+                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    ),
+                  ),
+                  validator: (v) => (v?.isEmpty ?? true) ? 'Password required' : null,
+                  onFieldSubmitted: (_) => _login(),
+                ),
+                const SizedBox(height: 48),
+
+                SizedBox(
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _login,
+                    child: _isLoading
+                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('Access Dashboard'),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Don\'t have an account?', style: AppTypography.bodyMedium),
+                    TextButton(
+                      onPressed: () => context.go('/signup'),
+                      child: Text('Register', style: AppTypography.bodyMedium.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
+    );
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: isMobile 
+        ? SingleChildScrollView(child: Column(children: [infoSection, formSection]))
+        : Row(children: [Expanded(flex: 4, child: infoSection), Expanded(flex: 5, child: formSection)]),
     );
   }
 }

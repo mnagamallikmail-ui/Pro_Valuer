@@ -18,15 +18,23 @@ class AppLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: isMobile ? AppBar(
+        title: Text(title ?? _getTitle(currentRoute), style: AppTypography.heading2.copyWith(color: AppColors.primaryText)),
+        backgroundColor: AppColors.background,
+        iconTheme: const IconThemeData(color: AppColors.primaryText),
+      ) : null,
+      drawer: isMobile ? Drawer(child: _Sidebar(currentRoute: currentRoute)) : null,
       body: Row(
         children: [
-          _Sidebar(currentRoute: currentRoute),
+          if (!isMobile) _Sidebar(currentRoute: currentRoute),
           Expanded(
             child: Column(
               children: [
-                _TopBar(title: title ?? _getTitle(currentRoute)),
+                if (!isMobile) _TopBar(title: title ?? _getTitle(currentRoute)),
                 Expanded(child: child),
               ],
             ),

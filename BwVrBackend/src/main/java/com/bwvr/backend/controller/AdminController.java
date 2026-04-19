@@ -88,7 +88,7 @@ public class AdminController {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_INPUT", "Username/Email is required."));
         }
         if (userRepository.findByUsername(request.username).isPresent()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("TAKEn", "User already exists."));
+            return ResponseEntity.badRequest().body(ApiResponse.error("TAKEN", "User already exists."));
         }
 
         BwvrUser user = new BwvrUser();

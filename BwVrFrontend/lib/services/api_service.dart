@@ -60,8 +60,8 @@ class ApiService {
           }
 
           String msg = 'Request failed (Error ${response.statusCode})';
-          if (response.data is Map && response.data['message'] != null) {
-            msg = response.data['message'];
+          if (response.data is Map) {
+            msg = response.data['message'] ?? response.data['error'] ?? msg;
           } else if (response.data is String &&
               response.data.toString().isNotEmpty) {
             msg = response.data.toString();
@@ -142,6 +142,7 @@ class ApiService {
         return 'Could not reach server — check your connection';
       default:
         final msg = e.response?.data?['message']?.toString() ??
+                    e.response?.data?['error']?.toString() ??
                     e.message ??
                     'Unknown network error';
         return msg;
@@ -166,7 +167,7 @@ class ApiService {
         'uploadedBy': uploadedBy,
       });
 
-      final response = await _dio.post('/templates/upload',
+      final response = await _dio.post('templates/upload',
           data: formData, options: Options(contentType: 'multipart/form-data'));
           
       if (response.statusCode != null && response.statusCode! >= 400) {
@@ -183,7 +184,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getTemplates(
       {String? bankName, int page = 0, int size = 20}) async {
-    final response = await _dio.get('/templates', queryParameters: {
+    final response = await _dio.get('templates', queryParameters: {
       if (bankName != null && bankName.isNotEmpty) 'bankName': bankName,
       'page': page,
       'size': size,
@@ -198,12 +199,12 @@ class ApiService {
   }
 
   Future<TemplateModel> getTemplate(int templateId) async {
-    final response = await _dio.get('/templates/$templateId');
+    final response = await _dio.get('templates/$templateId');
     return TemplateModel.fromJson(response.data['data']);
   }
 
   Future<List<PlaceholderModel>> getPlaceholders(int templateId) async {
-    final response = await _dio.get('/templates/$templateId/placeholders');
+    final response = await _dio.get('templates/$templateId/placeholders');
     final list = response.data['data'] as List? ?? [];
     return list.map((p) => PlaceholderModel.fromJson(p)).toList();
   }
@@ -211,7 +212,7 @@ class ApiService {
   Future<void> confirmPlaceholders(
       int templateId, List<Map<String, dynamic>> placeholders,
       {String confirmedBy = 'SYSTEM'}) async {
-    await _dio.post('/templates/$templateId/confirm-placeholders', data: {
+    await _dio.post('templates/$templateId/confirm-placeholders', data: {
       'placeholders': placeholders,
       'confirmedBy': confirmedBy,
     });
@@ -219,12 +220,12 @@ class ApiService {
 
   Future<void> deleteTemplate(int templateId,
       {String deletedBy = 'SYSTEM'}) async {
-    await _dio.delete('/templates/$templateId',
+    await _dio.delete('templates/$templateId',
         queryParameters: {'deletedBy': deletedBy});
   }
 
   Future<List<String>> getBankNames() async {
-    final response = await _dio.get('/templates/banks');
+    final response = await _dio.get('templates/banks');
     return List<String>.from(response.data['data'] ?? []);
   }
 
@@ -237,7 +238,7 @@ class ApiService {
     String? location,
     String createdBy = 'SYSTEM',
   }) async {
-    final response = await _dio.post('/reports', data: {
+    final response = await _dio.post('reports', data: {
       'templateId': templateId,
       'reportTitle': reportTitle,
       'vendorName': vendorName,
@@ -255,7 +256,7 @@ class ApiService {
       String? status,
       int page = 0,
       int size = 20}) async {
-    final response = await _dio.get('/reports', queryParameters: {
+    final response = await _dio.get('reports', queryParameters: {
       if (search != null && search.isNotEmpty) 'search': search,
       if (vendorName != null && vendorName.isNotEmpty) 'vendorName': vendorName,
       if (location != null && location.isNotEmpty) 'location': location,
@@ -274,12 +275,12 @@ class ApiService {
   }
 
   Future<ReportDetailModel> getReport(int reportId) async {
-    final response = await _dio.get('/reports/$reportId');
+    final response = await _dio.get('reports/$reportId');
     return ReportDetailModel.fromJson(response.data['data']);
   }
 
   Future<ReportDetailModel> getReportByRef(String referenceNumber) async {
-    final response = await _dio.get('/reports/ref/$referenceNumber');
+    final response = await _dio.get('reports/ref/$referenceNumber');
     return ReportDetailModel.fromJson(response.data['data']);
   }
 
@@ -289,7 +290,7 @@ class ApiService {
       String? location,
       String? status,
       String updatedBy = 'SYSTEM'}) async {
-    final response = await _dio.put('/reports/$reportId', data: {
+    final response = await _dio.put('reports/$reportId', data: {
       if (reportTitle != null) 'reportTitle': reportTitle,
       if (vendorName != null) 'vendorName': vendorName,
       if (location != null) 'location': location,
@@ -301,14 +302,14 @@ class ApiService {
 
   Future<void> saveReportValues(int reportId, List<Map<String, dynamic>> values,
       {String updatedBy = 'SYSTEM'}) async {
-    await _dio.post('/reports/$reportId/values', data: {
+    await _dio.post('reports/$reportId/values', data: {
       'values': values,
       'updatedBy': updatedBy,
     });
   }
 
   Future<String> generateReport(int reportId) async {
-    final response = await _dio.post('/reports/$reportId/generate');
+    final response = await _dio.post('reports/$reportId/generate');
     return response.data['data'] ?? '';
   }
 
@@ -319,12 +320,12 @@ class ApiService {
   }
 
   Future<void> deleteReport(int reportId, {String deletedBy = 'SYSTEM'}) async {
-    await _dio.delete('/reports/$reportId',
+    await _dio.delete('reports/$reportId',
         queryParameters: {'deletedBy': deletedBy});
   }
 
   Future<DashboardStats> getDashboardStats() async {
-    final response = await _dio.get('/reports/dashboard/stats');
+    final response = await _dio.get('reports/dashboard/stats');
     return DashboardStats.fromJson(response.data['data']);
   }
 
@@ -348,7 +349,7 @@ class ApiService {
         'reportId': reportId,
         'placeholderKey': placeholderKey,
       });
-      return _dio.post('/files/upload-image',
+      return _dio.post('files/upload-image',
           data: formData,
           options: Options(contentType: 'multipart/form-data'));
     });
@@ -371,28 +372,28 @@ class ApiService {
   // ── Admin User Management ──────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> getAdminUsers() async {
-    final response = await _withRetry(() => _dio.get('/admin/users'));
+    final response = await _withRetry(() => _dio.get('admin/users'));
     final data = response.data['data'] as List? ?? [];
     return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
 
   Future<List<Map<String, dynamic>>> getPendingUsers() async {
     final response =
-        await _withRetry(() => _dio.get('/admin/users/pending'));
+        await _withRetry(() => _dio.get('admin/users/pending'));
     final data = response.data['data'] as List? ?? [];
     return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
 
   Future<void> approveUser(int userId) async {
-    await _withRetry(() => _dio.post('/admin/users/$userId/approve'));
+    await _withRetry(() => _dio.post('admin/users/$userId/approve'));
   }
 
   Future<void> rejectUser(int userId) async {
-    await _withRetry(() => _dio.post('/admin/users/$userId/reject'));
+    await _withRetry(() => _dio.post('admin/users/$userId/reject'));
   }
 
   Future<void> addAdminUser({required String email, required String fullName, required String password, String role = 'USER'}) async {
-    await _withRetry(() => _dio.post('/admin/users', data: {
+    await _withRetry(() => _dio.post('admin/users', data: {
       'username': email,
       'fullName': fullName,
       'password': password,
@@ -401,6 +402,6 @@ class ApiService {
   }
 
   Future<void> deleteUser(int userId) async {
-    await _withRetry(() => _dio.delete('/admin/users/$userId'));
+    await _withRetry(() => _dio.delete('admin/users/$userId'));
   }
 }

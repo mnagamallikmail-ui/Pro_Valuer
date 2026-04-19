@@ -42,7 +42,7 @@ class AuthService extends ChangeNotifier {
 
   Future<AuthSession> login(String username, String password) async {
     try {
-      final response = await _dio.post('/auth/login', data: {
+      final response = await _dio.post('auth/login', data: {
         'username': username,
         'password': password,
       });
@@ -68,7 +68,7 @@ class AuthService extends ChangeNotifier {
       final serverData = e.response?.data;
       String msg = 'Login failed. Check your credentials.';
       if (serverData is Map) {
-        msg = serverData['message'] ?? msg;
+        msg = serverData['message'] ?? serverData['error'] ?? msg;
       }
       throw Exception(msg);
     }
@@ -82,7 +82,7 @@ class AuthService extends ChangeNotifier {
     String? fullName,
   }) async {
     try {
-      final response = await _dio.post('/auth/signup', data: {
+      final response = await _dio.post('auth/signup', data: {
         'email': username,
         'fullName': fullName,
         'password': password,
@@ -98,7 +98,7 @@ class AuthService extends ChangeNotifier {
       final serverData = e.response?.data;
       String msg = 'Signup failed. Please try again.';
       if (serverData is Map) {
-        msg = serverData['message'] ?? msg;
+        msg = serverData['message'] ?? serverData['error'] ?? msg;
       }
       throw Exception(msg);
     }

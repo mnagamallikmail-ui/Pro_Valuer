@@ -40,7 +40,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       if (token == null) throw Exception('Not authenticated');
 
       final dio = authService.createAuthenticatedDio();
-      final response = await dio.post('/auth/change-password', data: {
+      final response = await dio.post('auth/change-password', data: {
         'currentPassword': _currentPwdCtrl.text,
         'newPassword': _newPwdCtrl.text,
       });

@@ -130,7 +130,10 @@ class ReportValueModel {
       imageFilePath != null ||
       hasImageData;
   bool get isImage => placeholderPrefix == 'IMG';
-  bool get isDate => placeholderPrefix == 'DATE';
+  bool get isDate => 
+      placeholderPrefix == 'DATE' || 
+      displayLabel.toLowerCase().contains('date') || 
+      placeholderKey.toLowerCase().contains('date');
   bool get isInTable => tableContext != null && tableContext!.isNotEmpty;
 
   Map<String, dynamic> toJson() => {

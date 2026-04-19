@@ -390,13 +390,41 @@ class _FieldCard extends StatelessWidget {
           const SizedBox(height: 20),
           TextFormField(
             controller: controller,
+            readOnly: v.isDate,
+            onTap: v.isDate ? () async {
+              DateTime initialDate = DateTime.tryParse(controller.text) ?? DateTime.now();
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: initialDate,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: const ColorScheme.light(
+                        primary: AppColors.primary,
+                        onPrimary: Colors.white,
+                        onSurface: AppColors.textPrimary,
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+              if (pickedDate != null) {
+                String formattedDate = "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                controller.text = formattedDate;
+                onChanged();
+              }
+            } : null,
             onChanged: (val) => onChanged(),
-            decoration: const InputDecoration(
-              hintText: 'Enter value...',
+            decoration: InputDecoration(
+              hintText: v.isDate ? 'Select date...' : 'Enter value...',
               fillColor: AppColors.background,
               filled: true,
+              suffixIcon: v.isDate ? const Icon(Icons.calendar_today_rounded, size: 18, color: AppColors.textSecondary) : null,
             ),
-            maxLines: v.fieldType == 'TEXT' ? 1 : 4,
+            maxLines: v.fieldType == 'TEXT' ? 1 : (v.isDate ? 1 : 4),
           ),
         ],
       ),

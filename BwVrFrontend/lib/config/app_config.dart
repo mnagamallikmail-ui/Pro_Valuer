@@ -1,6 +1,6 @@
 class AppConfig {
   static const String baseUrl =
-      'https://bwvrbackend-production.up.railway.app/api/v1';
+      'https://bwvrbackend-production.up.railway.app/api/v1/';
 
   static const String apiBaseUrl = baseUrl;
 

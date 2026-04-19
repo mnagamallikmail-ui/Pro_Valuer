@@ -270,14 +270,10 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
   List<Widget> _buildSections() {
     final List<Widget> widgets = [];
     final Map<String, List<ReportValueModel>> sectionsMap = {};
-    final List<ReportValueModel> allImages = [];
 
+    // Group fields by section, keeping order
     for (var v in _report!.values) {
       if (!v.isUserVisible) continue;
-      if (v.isImage) {
-        allImages.add(v);
-        continue;
-      }
       final sec = (v.sectionName?.isNotEmpty == true) ? v.sectionName! : 'General Information';
       sectionsMap.putIfAbsent(sec, () => []).add(v);
     }
@@ -289,30 +285,24 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
       ));
       
       for (var v in values) {
-        widgets.add(_FieldCard(
-          v: v,
-          controller: _controllers[v.placeholderId]!,
-          onChanged: () => setState(() => _hasChanges = true),
-        ));
+        if (v.isImage) {
+          widgets.add(_ImageFieldCard(
+            v: v,
+            reportId: widget.reportId,
+            uploadedName: _uploadedPaths[v.placeholderId] ?? v.imageOriginalName,
+            previewBytes: _previewBytes[v.placeholderId],
+            onUpload: () => _uploadImage(v),
+          ));
+        } else {
+          widgets.add(_FieldCard(
+            v: v,
+            controller: _controllers[v.placeholderId]!,
+            onChanged: () => setState(() => _hasChanges = true),
+          ));
+        }
       }
       widgets.add(const SizedBox(height: 24));
     });
-
-    if (allImages.isNotEmpty) {
-      widgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 24, top: 12),
-        child: Text('IMAGE UPLOADS', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-      ));
-      for (var v in allImages) {
-        widgets.add(_ImageFieldCard(
-          v: v,
-          reportId: widget.reportId,
-          uploadedName: _uploadedPaths[v.placeholderId],
-          previewBytes: _previewBytes[v.placeholderId],
-          onUpload: () => _uploadImage(v),
-        ));
-      }
-    }
 
     return widgets;
   }

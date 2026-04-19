@@ -13,10 +13,10 @@ public class PlaceholderExtractor {
      */
     public static String extractPrefix(String placeholderKey) {
         String upper = placeholderKey.trim().toUpperCase();
-        if (upper.contains("_IMAGE")) {
-            return "IMG"; // match _image anywhere
+        if (upper.startsWith("IMG_") || upper.contains("_IMAGE") || upper.contains("IMAGE_")) {
+            return "IMG";
         }
-        if (upper.startsWith("IMG_")) {
+        if (upper.contains("PHOTO") || upper.contains("PICTURE") || upper.contains("ATTACHMENT") || upper.contains("SITE_IMG")) {
             return "IMG";
         }
         if (upper.startsWith("DATE_") || upper.endsWith("_DATE")) {

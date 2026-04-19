@@ -282,11 +282,20 @@ public class ReportService {
         List<ReportDetailResponse.ReportValueResponse> valueResponses = allPlaceholders.stream()
                 .map(ph -> {
                     BwvrReportValue val = valueByPlaceholderId.get(ph.getPlaceholderId());
+                    
+                    String phKey = ph.getPlaceholderKey().toUpperCase();
+                    boolean suggestsImage = phKey.contains("IMG_") || phKey.contains("_IMAGE") || phKey.contains("IMAGE_") 
+                                         || phKey.contains("PHOTO") || phKey.contains("PICTURE") || phKey.contains("ATTACHMENT");
+                    
+                    String confirmedType = ph.getFieldType();
+                    String inputTypeFinal = (ph.getPlaceholderPrefix() != null && ph.getPlaceholderPrefix().equalsIgnoreCase("IMG")) || suggestsImage || "IMAGE".equalsIgnoreCase(confirmedType) 
+                                       ? "IMAGE" : confirmedType;
+
                     return ReportDetailResponse.ReportValueResponse.builder()
                             .valueId(val != null ? val.getValueId() : null)
                             .placeholderId(ph.getPlaceholderId())
                             .hiddenInternalKey(ph.getPlaceholderKey())
-                            .inputType(ph.getPlaceholderPrefix() != null && ph.getPlaceholderPrefix().equals("IMG") ? "IMAGE" : ph.getFieldType())
+                            .inputType(inputTypeFinal)
                             .questionText(ph.getQuestionText())
                             .sectionName(ph.getSectionName())
                             .textValue(val != null ? val.getTextValue() : null)

@@ -126,8 +126,8 @@ class ReportValueModel {
       (textValue != null && textValue!.isNotEmpty) ||
       imageFilePath != null ||
       hasImageData;
-  bool get isImage => inputType == 'IMAGE';
-  bool get isDate => inputType == 'DATE';
+  bool get isImage => inputType.toUpperCase() == 'IMAGE';
+  bool get isDate => inputType.toUpperCase() == 'DATE';
   bool get isInTable => tableContext != null && tableContext!.isNotEmpty;
 
   Map<String, dynamic> toJson() => {

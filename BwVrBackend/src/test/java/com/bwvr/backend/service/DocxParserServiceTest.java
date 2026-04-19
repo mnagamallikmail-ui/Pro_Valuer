@@ -21,6 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
@@ -48,6 +49,9 @@ class DocxParserServiceTest {
     @TempDir
     Path tempDir;
 
+    @Captor
+    private ArgumentCaptor<Iterable<BwvrTemplatePlaceholder>> captor;
+
     @BeforeEach
     public void setUp() {
         docxParserService = new DocxParserService(placeholderRepository, imageSlotRepository, intelligenceService);
@@ -70,10 +74,9 @@ class DocxParserServiceTest {
 
         verify(placeholderRepository).deleteByTemplate_TemplateId(1L);
 
-        ArgumentCaptor<Collection<BwvrTemplatePlaceholder>> captor = ArgumentCaptor.forClass(Collection.class);
         verify(placeholderRepository).saveAll(captor.capture());
 
-        Collection<BwvrTemplatePlaceholder> saved = captor.getValue();
+        Iterable<BwvrTemplatePlaceholder> saved = captor.getValue();
         // Placeholders in doc: <<VENDOR_NAME>>, <<DATE_REPORT>>, <<TABLE_VAL>>, <<HDR_VAL>>, <<FTR_VAL>>, and image placeholder
         assertThat(saved).hasSize(6);
 

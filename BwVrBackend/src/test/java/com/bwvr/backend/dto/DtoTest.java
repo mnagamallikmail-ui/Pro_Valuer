@@ -103,10 +103,10 @@ class DtoTest {
     @Test
     void testReportDetailResponse() {
         ReportDetailResponse.ReportValueResponse val = ReportDetailResponse.ReportValueResponse.builder()
-                .valueId(10L).placeholderId(20L).placeholderKey("K").placeholderPrefix("P")
-                .displayLabel("L").questionText("Q").fieldType("F").textValue("V")
+                .valueId(10L).placeholderId(20L).hiddenInternalKey("K").inputType("P")
+                .sectionName("S").questionText("Q").textValue("V")
                 .imageFilePath("P").imageOriginalName("O").displayOrder(1)
-                .tableContext("T").col1Header("C1").col2Header("C2").hasImageData(true)
+                .tableContext("T").col1Header("C1").col2Header("C2").hasImageData(true).isUserVisible(true)
                 .build();
 
         ReportDetailResponse detail = ReportDetailResponse.builder()
@@ -142,15 +142,15 @@ class DtoTest {
         ReportDetailResponse.ReportValueResponse v2 = new ReportDetailResponse.ReportValueResponse();
         v2.setValueId(1L);
         v2.setPlaceholderId(1L);
-        v2.setPlaceholderKey("K");
-        v2.setPlaceholderPrefix("P");
-        v2.setDisplayLabel("L");
+        v2.setHiddenInternalKey("K");
+        v2.setSectionName("S");
         v2.setQuestionText("Q");
-        v2.setFieldType("F");
+        v2.setInputType("F");
         v2.setTextValue("V");
         v2.setImageFilePath("P");
         v2.setImageOriginalName("O");
         v2.setHasImageData(false);
+        v2.setIsUserVisible(true);
         v2.setDisplayOrder(1);
         v2.setTableContext("T");
         v2.setCol1Header("C");

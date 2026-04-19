@@ -109,11 +109,123 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     }
   }
 
+  Future<void> _deleteUser(Map<String, dynamic> user) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Delete User', style: AppTypography.heading3),
+        content: Text("Are you sure you want to delete '${user['username']}'? This action cannot be undone.", style: AppTypography.bodyMedium),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await _api.deleteUser(user['id'] as int);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("User '${user['username']}' deleted."),
+        backgroundColor: AppColors.textPrimary,
+      ));
+      _load();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.toString().replaceAll('Exception: ', '')),
+        backgroundColor: AppColors.error,
+      ));
+    }
+  }
+
+  Future<void> _showCreateUserDialog() async {
+    final usernameCtrl = TextEditingController();
+    final fullNameCtrl = TextEditingController();
+    final passwordCtrl = TextEditingController();
+    String role = 'USER';
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setInternalState) => AlertDialog(
+          title: Text('Create New User', style: AppTypography.heading3),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: usernameCtrl,
+                  decoration: const InputDecoration(labelText: 'Username', hintText: 'e.g. jdoe'),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: fullNameCtrl,
+                  decoration: const InputDecoration(labelText: 'Full Name', hintText: 'e.g. John Doe'),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: passwordCtrl,
+                  decoration: const InputDecoration(labelText: 'Password'),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: role,
+                  decoration: const InputDecoration(labelText: 'Role'),
+                  items: const [
+                    DropdownMenuItem(value: 'USER', child: Text('USER')),
+                    DropdownMenuItem(value: 'ADMIN', child: Text('ADMIN')),
+                  ],
+                  onChanged: (v) => setInternalState(() => role = v!),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Create User'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (result == true) {
+      try {
+        await _api.createAdminUser(
+          username: usernameCtrl.text.trim(),
+          password: passwordCtrl.text,
+          fullName: fullNameCtrl.text.trim(),
+          role: role,
+        );
+        _load();
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: AppColors.error,
+        ));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppLayout(
       currentRoute: '/admin/users',
       title: 'User Management',
+      trailing: ElevatedButton.icon(
+        onPressed: _showCreateUserDialog,
+        icon: const Icon(Icons.person_add_rounded, size: 18),
+        label: const Text('Add User'),
+      ),
       child: Column(
         children: [
           Container(
@@ -190,10 +302,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                           _UserList(
                             users: _allUsers,
                             showActions: false,
+                            canDelete: true,
                             emptyTitle: 'No users yet',
                             emptySubtitle: 'Registered users appear here.',
                             onApprove: _approve,
                             onReject: _reject,
+                            onDelete: _deleteUser,
                           ),
                         ],
                       ),
@@ -207,18 +321,22 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
 class _UserList extends StatelessWidget {
   final List<Map<String, dynamic>> users;
   final bool showActions;
+  final bool canDelete;
   final String emptyTitle;
   final String emptySubtitle;
   final Future<void> Function(Map<String, dynamic>) onApprove;
   final Future<void> Function(Map<String, dynamic>) onReject;
+  final Future<void> Function(Map<String, dynamic>)? onDelete;
 
   const _UserList({
     required this.users,
     required this.showActions,
+    this.canDelete = false,
     required this.emptyTitle,
     required this.emptySubtitle,
     required this.onApprove,
     required this.onReject,
+    this.onDelete,
   });
 
   @override
@@ -322,6 +440,14 @@ class _UserList extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
                   child: const Text('Reject'),
+                ),
+              ],
+              if (canDelete) ...[
+                const SizedBox(width: 12),
+                IconButton(
+                  onPressed: () => onDelete?.call(user),
+                  icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                  tooltip: 'Delete User',
                 ),
               ],
             ],

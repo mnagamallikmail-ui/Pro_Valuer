@@ -9,12 +9,14 @@ class AppLayout extends StatelessWidget {
   final String currentRoute;
   final Widget child;
   final String? title;
+  final Widget? trailing;
 
   const AppLayout({
     super.key,
     required this.currentRoute,
     required this.child,
     this.title,
+    this.trailing,
   });
 
   @override
@@ -38,7 +40,10 @@ class AppLayout extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                if (!isMobile) _TopBar(title: title ?? _getTitle(currentRoute)),
+                if (!isMobile) _TopBar(
+                  title: title ?? _getTitle(currentRoute),
+                  trailing: trailing,
+                ),
                 Expanded(child: child),
               ],
             ),
@@ -252,7 +257,8 @@ class _SidebarItem extends StatelessWidget {
 
 class _TopBar extends StatelessWidget {
   final String title;
-  const _TopBar({required this.title});
+  final Widget? trailing;
+  const _TopBar({required this.title, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -267,6 +273,10 @@ class _TopBar extends StatelessWidget {
         children: [
           Text(title, style: AppTypography.heading3.copyWith(color: AppColors.primaryText)),
           const Spacer(),
+          if (trailing != null) ...[
+            trailing!,
+            const SizedBox(width: 24),
+          ],
           // Streaming status indicator
           StreamBuilder<String>(
             stream: NotificationService().changeStream,

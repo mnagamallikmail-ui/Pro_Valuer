@@ -26,7 +26,7 @@ class BwVrApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'BwVr Report Management System',
+      title: 'Pro Valuer Report Management System',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: appRouter,

@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 48),
           ),
           const SizedBox(height: 32),
-          Text('BwVr', style: AppTypography.heading1.copyWith(fontSize: 48, color: AppColors.primaryText)),
+          Text('Pro Valuer', style: AppTypography.heading1.copyWith(fontSize: 48, color: AppColors.primaryText)),
           const SizedBox(height: 16),
           Text(
             'Precision Valuation & Reporting System',

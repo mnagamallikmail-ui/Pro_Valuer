@@ -224,7 +224,7 @@ class _DashboardContent extends StatelessWidget {
                     children: [
                       const SectionHeader(title: 'Alerts'),
                       _SystemBoardItem(
-                        title: 'Oracle Synchronized',
+                        title: 'Data Synchronized',
                         subtitle: 'Database pulse normal',
                         icon: Icons.check_circle_outline_rounded,
                         color: AppColors.success,
@@ -253,7 +253,7 @@ class _DashboardContent extends StatelessWidget {
             const SizedBox(height: 32),
             const SectionHeader(title: 'System Alerts'),
             _SystemBoardItem(
-              title: 'Oracle Synchronized',
+              title: 'Data Synchronized',
               subtitle: 'Database pulse normal',
               icon: Icons.check_circle_outline_rounded,
               color: AppColors.success,

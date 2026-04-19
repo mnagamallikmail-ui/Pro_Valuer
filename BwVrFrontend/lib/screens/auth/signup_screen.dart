@@ -149,7 +149,7 @@ class _SignupScreenState extends State<SignupScreen>
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Join BwVr Report Management System',
+                        'Join Pro Valuer Report Management System',
                         style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
                       ),
                       const SizedBox(height: 32),

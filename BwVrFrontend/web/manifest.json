@@ -1,6 +1,6 @@
 {
-    "name": "bwvr_frontend",
-    "short_name": "bwvr_frontend",
+    "name": "Pro Valuer",
+    "short_name": "Pro Valuer",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

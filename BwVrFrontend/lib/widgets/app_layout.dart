@@ -104,7 +104,7 @@ class _Sidebar extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'BwVr', 
+                  'Pro Valuer', 
                   style: AppTypography.heading2.copyWith(
                     color: AppColors.primaryText,
                     fontWeight: FontWeight.w600,

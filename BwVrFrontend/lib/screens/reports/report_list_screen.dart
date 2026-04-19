@@ -78,6 +78,40 @@ class _ReportListScreenState extends State<ReportListScreen> {
     }
   }
 
+  Future<void> _deleteReport(ReportModel report) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Delete Valuation', style: AppTypography.heading3),
+        content: Text("Are you sure you want to delete '${report.reportTitle}'? This action cannot be undone.", style: AppTypography.bodyMedium),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _api.deleteReport(report.reportId);
+        _load(silent: true);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Valuation deleted successfully'), backgroundColor: AppColors.textPrimary),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting: $e'), backgroundColor: AppColors.error),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
@@ -215,7 +249,11 @@ class _ReportListScreenState extends State<ReportListScreen> {
                               itemCount: _reports.length,
                               itemBuilder: (context, i) {
                                 final r = _reports[i];
-                                return _ReportListItem(report: r, onTap: () => context.go('/reports/${r.reportId}'));
+                                return _ReportListItem(
+                                  report: r,
+                                  onTap: () => context.go('/reports/${r.reportId}'),
+                                  onDelete: () => _deleteReport(r),
+                                );
                               },
                             ),
             ),
@@ -229,8 +267,9 @@ class _ReportListScreenState extends State<ReportListScreen> {
 class _ReportListItem extends StatelessWidget {
   final ReportModel report;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
-  const _ReportListItem({required this.report, required this.onTap});
+  _ReportListItem({super.key, required this.report, required this.onTap, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -284,6 +323,17 @@ class _ReportListItem extends StatelessWidget {
                       valueColor: AlwaysStoppedAnimation(completion == 100 ? AppColors.success : AppColors.primary),
                       minHeight: 2,
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        onPressed: onDelete,
+                        icon: const Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                        label: Text('Delete', style: AppTypography.label.copyWith(color: AppColors.error)),
+                      ),
+                    ],
                   ),
                 ],
               )
@@ -351,6 +401,12 @@ class _ReportListItem extends StatelessWidget {
                       Text(report.createdAt != null ? DateFormat('dd MMM yyyy').format(report.createdAt!) : '-', 
                         style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textSecondary)),
                     ],
+                  ),
+                  const SizedBox(width: 20),
+                  IconButton(
+                    onPressed: onDelete,
+                    icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 20),
+                    tooltip: 'Delete Valuation',
                   ),
                   const SizedBox(width: 20),
                   const Icon(Icons.chevron_right_rounded, color: AppColors.border, size: 20),

@@ -357,53 +357,54 @@ class _ImageFieldCard extends StatelessWidget {
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: hasImage ? AppColors.secondary : AppColors.border),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 80, height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: hasImage
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      ApiService().getBlobImageUrl(reportId, v.hiddenInternalKey),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.check_circle_rounded, color: AppColors.secondary, size: 32),
-                    ),
-                  )
-                : const Icon(Icons.image_outlined, color: AppColors.textSecondary, size: 32),
+      child: InkWell(
+        onTap: onUpload,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Row(
+            children: [
+              Container(
+                width: 80, height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: hasImage
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          ApiService().getBlobImageUrl(reportId, v.hiddenInternalKey),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.check_circle_rounded, color: AppColors.secondary, size: 32),
+                        ),
+                      )
+                    : const Icon(Icons.image_outlined, color: AppColors.textSecondary, size: 32),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(v.questionText, style: AppTypography.subheading),
+                    if (hasImage) ...[
+                      const SizedBox(height: 8),
+                      Text(uploadedName ?? 'Image Uploaded', style: AppTypography.label.copyWith(color: AppColors.secondary, fontWeight: FontWeight.bold)),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 24),
+              const Icon(Icons.upload_rounded, color: AppColors.primary, size: 24),
+            ],
           ),
-          const SizedBox(width: 24),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(v.questionText, style: AppTypography.subheading),
-                if (hasImage) ...[
-                  const SizedBox(height: 8),
-                  Text(uploadedName ?? 'Image Uploaded', style: AppTypography.label.copyWith(color: AppColors.secondary, fontWeight: FontWeight.bold)),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(width: 24),
-          ElevatedButton.icon(
-            onPressed: onUpload,
-            icon: const Icon(Icons.upload_rounded, size: 18),
-            label: const Text('Choose Image'),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-          ),
-        ],
+        ),
       ),
     );
   }

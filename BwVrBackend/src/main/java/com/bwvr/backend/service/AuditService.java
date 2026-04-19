@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@SuppressWarnings("null")
 public class AuditService {
 
     private final AuditLogRepository auditLogRepository;

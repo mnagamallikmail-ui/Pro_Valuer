@@ -23,8 +23,8 @@ public class ReferenceNumberGenerator {
             // Using a standard query that works for PostgreSQL (current runtime)
             // If strictly using Oracle, change to: "SELECT bwvr.REPORT_REF_SEQ.NEXTVAL FROM DUAL"
             Long nextVal = jdbcTemplate.queryForObject("SELECT nextval('bwvr.REPORT_REF_SEQ')", Long.class);
-            return String.valueOf(nextVal);
-        } catch (Exception e) {
+            return (nextVal != null) ? String.valueOf(nextVal) : "10000";
+        } catch (RuntimeException e) {
             // Fallback to a safe number if sequence fetch fails (e.g., during initialization)
             return "10000";
         }

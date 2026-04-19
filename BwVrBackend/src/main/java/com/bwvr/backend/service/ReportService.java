@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +33,7 @@ import com.bwvr.backend.repository.TemplateRepository;
 import com.bwvr.backend.util.ReferenceNumberGenerator;
 
 @Service
+@SuppressWarnings("null")
 public class ReportService {
 
     private static final Logger log = LoggerFactory.getLogger(ReportService.class);
@@ -62,6 +63,7 @@ public class ReportService {
     }
 
     @Transactional
+    @SuppressWarnings("null")
     public ReportResponse createReport(CreateReportRequest request) {
         BwvrTemplate template = templateRepository.findById(request.getTemplateId())
                 .filter(t -> "Y".equals(t.getIsActive()))

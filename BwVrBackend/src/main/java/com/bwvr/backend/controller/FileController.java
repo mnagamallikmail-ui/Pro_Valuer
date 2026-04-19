@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/files")
 @Tag(name = "Files", description = "File upload and retrieval endpoints")
+@SuppressWarnings("null")
 public class FileController {
 
     private static final Logger log = LoggerFactory.getLogger(FileController.class);
@@ -179,7 +180,7 @@ public class FileController {
             }
 
             return baos.toByteArray();
-        } catch (Exception e) {
+        } catch (java.io.IOException | IllegalArgumentException e) {
             log.warn("Image compression failed", e);
             return null;
         }

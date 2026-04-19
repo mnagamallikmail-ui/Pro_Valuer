@@ -72,7 +72,7 @@ class ReportServiceTest {
                 .templateFileName("t1.docx").isActive("Y").build();
 
         report = BwvrReport.builder()
-                .reportId(10L).referenceNumber("REF-20240315-000001")
+                .reportId(10L).referenceNumber("10001")
                 .template(template).reportTitle("Test Report")
                 .vendorName("Vendor A").location("City")
                 .bankName("TestBank").reportStatus("DRAFT")
@@ -83,7 +83,7 @@ class ReportServiceTest {
     @Test
     void createReport_success() {
         when(templateRepository.findById(1L)).thenReturn(Optional.of(template));
-        when(referenceNumberGenerator.generate()).thenReturn("REF-20240315-000001");
+        when(referenceNumberGenerator.generate()).thenReturn("10001");
         when(reportRepository.save(any())).thenReturn(report);
         when(reportValueRepository.countByReport_ReportId(any())).thenReturn(0L);
         when(placeholderRepository.countByTemplate_TemplateId(any())).thenReturn(5L);
@@ -96,14 +96,14 @@ class ReportServiceTest {
         req.setCreatedBy("user1");
 
         ReportResponse resp = reportService.createReport(req);
-        assertThat(resp.getReferenceNumber()).isEqualTo("REF-20240315-000001");
+        assertThat(resp.getReferenceNumber()).isEqualTo("10001");
         verify(auditService).log(eq("REPORT"), any(), eq("CREATE"), eq("user1"), any(), any(), any(), any());
     }
 
     @Test
     void createReport_nullCreatedBy_defaultsToSYSTEM() {
         when(templateRepository.findById(1L)).thenReturn(Optional.of(template));
-        when(referenceNumberGenerator.generate()).thenReturn("REF-00000001");
+        when(referenceNumberGenerator.generate()).thenReturn("10002");
         when(reportRepository.save(any())).thenReturn(report);
         when(reportValueRepository.countByReport_ReportId(any())).thenReturn(0L);
         when(placeholderRepository.countByTemplate_TemplateId(any())).thenReturn(0L);
@@ -399,7 +399,7 @@ class ReportServiceTest {
         when(placeholderRepository.findByTemplate_TemplateIdOrderByDisplayOrder(any())).thenReturn(List.of());
 
         ReportDetailResponse resp = reportService.getReportByRefNumber("REF-001");
-        assertThat(resp.getReferenceNumber()).isEqualTo("REF-20240315-000001");
+        assertThat(resp.getReferenceNumber()).isEqualTo("10001");
     }
 
     @Test

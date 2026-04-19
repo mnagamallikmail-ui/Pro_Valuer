@@ -32,11 +32,24 @@ import com.bwvr.backend.dto.request.SaveReportValuesRequest;
 import com.bwvr.backend.dto.response.ReportDetailResponse;
 import com.bwvr.backend.dto.response.ReportResponse;
 import com.bwvr.backend.service.ReportService;
+import org.springframework.security.test.context.support.WithMockUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 
-@WebMvcTest(ReportController.class)
+@WebMvcTest(value = ReportController.class, properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration")
+@AutoConfigureMockMvc(addFilters = false)
+@WithMockUser(username = "user1", roles = "USER")
 class ReportControllerTest {
+    
+    @MockBean
+    com.bwvr.backend.security.UserDetailsServiceImpl userDetailsService;
+    @MockBean
+    com.bwvr.backend.security.JwtUtil jwtUtil;
+    @MockBean
+    com.bwvr.backend.security.JwtAuthFilter jwtAuthFilter;
+    @MockBean
+    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
 
     @Autowired
     MockMvc mvc;

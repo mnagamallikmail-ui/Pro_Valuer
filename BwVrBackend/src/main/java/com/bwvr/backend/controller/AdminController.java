@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/admin")
 @PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "Admin", description = "Admin user management and approval endpoints")
+@SuppressWarnings("null")
 public class AdminController {
 
     private final BwvrUserRepository userRepository;

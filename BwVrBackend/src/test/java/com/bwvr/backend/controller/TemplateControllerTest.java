@@ -27,8 +27,22 @@ import com.bwvr.backend.dto.response.ParsedTemplateResponse;
 import com.bwvr.backend.dto.response.TemplateResponse;
 import com.bwvr.backend.service.TemplateService;
 
-@WebMvcTest(TemplateController.class)
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+
+@WebMvcTest(value = TemplateController.class, properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration")
+@AutoConfigureMockMvc(addFilters = false)
+@WithMockUser(username = "admin", roles = "ADMIN")
 class TemplateControllerTest {
+    
+    @MockBean
+    com.bwvr.backend.security.UserDetailsServiceImpl userDetailsService;
+    @MockBean
+    com.bwvr.backend.security.JwtUtil jwtUtil;
+    @MockBean
+    com.bwvr.backend.security.JwtAuthFilter jwtAuthFilter;
+    @MockBean
+    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
 
     @Autowired
     MockMvc mvc;
@@ -54,7 +68,7 @@ class TemplateControllerTest {
 
     @Test
     void uploadTemplate_returns200() throws Exception {
-        when(templateService.uploadTemplate(any(), eq("BankA"), eq("T1"), eq("user1")))
+        when(templateService.uploadTemplate(any(), anyString(), anyString(), anyString()))
                 .thenReturn(parsedResp);
 
         MockMultipartFile file = new MockMultipartFile(

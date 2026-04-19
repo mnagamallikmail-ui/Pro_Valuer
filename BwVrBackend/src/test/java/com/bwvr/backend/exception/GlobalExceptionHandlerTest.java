@@ -26,6 +26,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ApiResponse<Void>> resp
                 = handler.handleConflict(new ConflictException("duplicate name"));
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getError()).contains("duplicate name");
     }
 
@@ -34,6 +35,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ApiResponse<Void>> resp
                 = handler.handleNotFound(new ResourceNotFoundException("Report", 1L));
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getCode()).isEqualTo("RESOURCE_NOT_FOUND");
     }
 
@@ -42,6 +44,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ApiResponse<Void>> resp
                 = handler.handleTemplateParseError(new TemplateParseException("bad docx", null));
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getCode()).isEqualTo("TEMPLATE_PARSE_ERROR");
     }
 
@@ -55,6 +58,7 @@ class GlobalExceptionHandlerTest {
 
         ResponseEntity<ApiResponse<Void>> resp = handler.handleValidation(ex);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getError()).contains("reportTitle");
         assertThat(resp.getBody().getCode()).isEqualTo("VALIDATION_ERROR");
     }
@@ -64,6 +68,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ApiResponse<Void>> resp
                 = handler.handleFileSizeExceeded(new MaxUploadSizeExceededException(1024));
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE);
+        assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getCode()).isEqualTo("FILE_TOO_LARGE");
     }
 
@@ -72,6 +77,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ApiResponse<Void>> resp
                 = handler.handleIllegalArg(new IllegalArgumentException("Only .docx allowed"));
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getError()).contains("Only .docx");
     }
 
@@ -88,6 +94,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ApiResponse<Void>> resp
                 = handler.handleGeneral(new RuntimeException("boom"));
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getCode()).isEqualTo("INTERNAL_ERROR");
     }
 }

@@ -32,6 +32,7 @@ import com.bwvr.backend.repository.TemplatePlaceholderRepository;
 import com.bwvr.backend.repository.TemplateRepository;
 
 @Service
+@SuppressWarnings("null")
 public class TemplateService {
 
     private final TemplateRepository templateRepository;

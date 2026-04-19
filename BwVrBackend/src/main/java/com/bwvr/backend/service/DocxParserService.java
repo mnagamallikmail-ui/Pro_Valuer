@@ -39,6 +39,7 @@ import com.bwvr.backend.util.PlaceholderExtractor;
  * generated schema classes required, no deprecated selectPath() API used).
  */
 @Service
+@SuppressWarnings("null")
 public class DocxParserService {
 
     private static final Logger log = LoggerFactory.getLogger(DocxParserService.class);

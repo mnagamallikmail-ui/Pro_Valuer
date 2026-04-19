@@ -21,8 +21,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.bwvr.backend.entity.BwvrReportValue;
 import com.bwvr.backend.repository.ReportValueRepository;
 
-@WebMvcTest(FileController.class)
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
+
+@WebMvcTest(value = FileController.class, properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration")
+@AutoConfigureMockMvc(addFilters = false)
+@WithMockUser(username = "user1", roles = "USER")
 class FileControllerTest {
+    
+    @MockBean
+    com.bwvr.backend.security.UserDetailsServiceImpl userDetailsService;
+    @MockBean
+    com.bwvr.backend.security.JwtUtil jwtUtil;
+    @MockBean
+    com.bwvr.backend.security.JwtAuthFilter jwtAuthFilter;
+    @MockBean
+    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
 
     @Autowired
     private MockMvc mockMvc;

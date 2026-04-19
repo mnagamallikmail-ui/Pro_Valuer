@@ -8,7 +8,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Disabled;
+
+/**
+ * Integration tests that require a live database connection.
+ * These are excluded from the default unit test run.
+ * Run with: ./gradlew test -Dgroups=integration
+ */
 @SpringBootTest
+@Tag("integration")
+@Disabled("Requires live Railway PostgreSQL database - run only in CI with DB access")
 public class DatabaseCheckTest {
 
     @Autowired

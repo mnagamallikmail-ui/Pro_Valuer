@@ -3,20 +3,20 @@ package com.bwvr.backend.security;
 import com.bwvr.backend.entity.BwvrUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
-    private Long id;
-    private String username;
-    private String password;
-    private String role;
-    private String status;
-    private Collection<? extends GrantedAuthority> authorities;
+    private final Long id;
+    private final String username;
+    private final String password;
+    private final String role;
+    private final String status;
+    private final Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImpl(Long id, String username, String password, String role, String status,
             Collection<? extends GrantedAuthority> authorities) {

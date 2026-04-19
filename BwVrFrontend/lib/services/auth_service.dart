@@ -99,6 +99,9 @@ class AuthService extends ChangeNotifier {
       String msg = 'Signup failed. Please try again.';
       if (serverData is Map) {
         msg = serverData['message'] ?? serverData['error'] ?? msg;
+      } else {
+        // Show specific network/status error if no JSON body exists
+        msg = e.message ?? 'Network error (${e.response?.statusCode ?? "Unknown"})';
       }
       throw Exception(msg);
     }

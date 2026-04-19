@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/src/api/file_picker_types.dart';
+import 'package:file_picker/src/platform/file_picker_platform_interface.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/report_model.dart';
 import '../../services/api_service.dart';
@@ -58,6 +58,7 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
   void _initControllers(ReportDetailModel r) {
     for (var v in r.values) {
       if (!v.isUserVisible) continue;
+      // Always create a controller entry for every visible field (text & image)
       _controllers[v.placeholderId] = TextEditingController(text: v.textValue ?? '');
       if (v.isImage && (v.imageFilePath != null || v.hasImageData)) {
         _uploadedPaths[v.placeholderId] = v.imageOriginalName ?? 'Image Uploaded';
@@ -118,9 +119,12 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
 
   Future<void> _uploadImage(ReportValueModel v) async {
     try {
-      final result = await FilePicker.pickFiles(
+      // file_picker v11: use FilePickerPlatform.instance directly.
+      // This works on Web, Desktop, and Mobile without platform checks.
+      final result = await FilePickerPlatform.instance.pickFiles(
         type: FileType.image,
-        withData: true,
+        withData: true,   // Required on web: reads file bytes into memory.
+        allowMultiple: false,
       );
 
       if (result == null || result.files.isEmpty) return;
@@ -294,9 +298,12 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
             onUpload: () => _uploadImage(v),
           ));
         } else {
+          // Guard: image fields don't have a text controller; skip if missing
+          final ctrl = _controllers[v.placeholderId];
+          if (ctrl == null) continue;
           widgets.add(_FieldCard(
             v: v,
-            controller: _controllers[v.placeholderId]!,
+            controller: ctrl,
             onChanged: () => setState(() => _hasChanges = true),
           ));
         }

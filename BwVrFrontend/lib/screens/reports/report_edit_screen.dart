@@ -386,15 +386,7 @@ class _FieldCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(v.displayLabel, style: AppTypography.subheading),
-              const Spacer(),
-              Text(v.placeholderKey, style: AppTypography.label.copyWith(fontFamily: 'Courier New', fontSize: 10)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(v.questionText, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text(v.questionText, style: AppTypography.subheading),
           const SizedBox(height: 20),
           TextFormField(
             controller: controller,
@@ -485,8 +477,6 @@ class _ImageFieldCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(v.questionText, style: AppTypography.subheading),
-        const SizedBox(height: 4),
-        Text(v.placeholderKey, style: AppTypography.label.copyWith(fontFamily: 'Courier New', fontSize: 10)),
         if (hasImage) ...[
           const SizedBox(height: 8),
           Text(uploadedName ?? 'Image Uploaded', style: AppTypography.label.copyWith(color: AppColors.secondary, fontWeight: FontWeight.bold)),

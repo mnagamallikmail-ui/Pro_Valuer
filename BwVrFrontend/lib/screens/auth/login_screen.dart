@@ -11,8 +11,7 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
-    with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -20,26 +19,8 @@ class _LoginScreenState extends State<LoginScreen>
   bool _isLoading = false;
   String? _errorMessage;
 
-  late final AnimationController _animController;
-  late final Animation<double> _fadeAnim;
-  late final Animation<Offset> _slideAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
-    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
-    _animController.forward();
-  }
-
   @override
   void dispose() {
-    _animController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -75,211 +56,261 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          // Decorative pastel blobs
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [
-                  AppColors.accent.withOpacity(0.4),
-                  AppColors.background.withOpacity(0),
-                ]),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final bool isDesktop = constraints.maxWidth >= 900;
+
+          if (isDesktop) {
+            return Row(
+              children: [
+                // Left Panel: Branding
+                Expanded(
+                  flex: 1,
+                  child: _BrandingPanel(),
+                ),
+                // Right Panel: Login Form
+                Expanded(
+                  flex: 1,
+                  child: _LoginFormPanel(
+                    formKey: _formKey,
+                    usernameController: _usernameController,
+                    passwordController: _passwordController,
+                    obscurePassword: _obscurePassword,
+                    isLoading: _isLoading,
+                    errorMessage: _errorMessage,
+                    onTogglePassword: () => setState(() => _obscurePassword = !_obscurePassword),
+                    onLogin: _login,
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: Column(
+                  children: [
+                    _BrandingPanel(isMobile: true),
+                    _LoginFormPanel(
+                      isMobile: true,
+                      formKey: _formKey,
+                      usernameController: _usernameController,
+                      passwordController: _passwordController,
+                      obscurePassword: _obscurePassword,
+                      isLoading: _isLoading,
+                      errorMessage: _errorMessage,
+                      onTogglePassword: () => setState(() => _obscurePassword = !_obscurePassword),
+                      onLogin: _login,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-          Positioned(
-            bottom: -150,
-            left: -100,
-            child: Container(
-              width: 350,
-              height: 350,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [
-                  AppColors.primary.withOpacity(0.3),
-                  AppColors.background.withOpacity(0),
-                ]),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+class _BrandingPanel extends StatelessWidget {
+  final bool isMobile;
+  const _BrandingPanel({this.isMobile = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.surface,
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (isMobile) const SizedBox(height: 60),
+            Text(
+              'Pro Valuer',
+              style: AppTypography.heading1.copyWith(
+                fontSize: isMobile ? 32 : 48,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
               ),
+              textAlign: TextAlign.center,
             ),
-          ),
+            const SizedBox(height: 16),
+            Text(
+              'Professional Valuation Company, Chartered Engineers, Lenders Independent Engineers',
+              style: AppTypography.bodyLarge.copyWith(
+                color: AppColors.textPrimary,
+                height: 1.6,
+                letterSpacing: 0.2,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (isMobile) const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-          Center(
-            child: FadeTransition(
-              opacity: _fadeAnim,
-              child: SlideTransition(
-                position: _slideAnim,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Logo / Brand
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: const Icon(Icons.shield_rounded,
-                            color: AppColors.textPrimary, size: 40),
+class _LoginFormPanel extends StatelessWidget {
+  final bool isMobile;
+  final GlobalKey<FormState> formKey;
+  final TextEditingController usernameController;
+  final TextEditingController passwordController;
+  final bool obscurePassword;
+  final bool isLoading;
+  final String? errorMessage;
+  final VoidCallback onTogglePassword;
+  final VoidCallback onLogin;
+
+  const _LoginFormPanel({
+    this.isMobile = false,
+    required this.formKey,
+    required this.usernameController,
+    required this.passwordController,
+    required this.obscurePassword,
+    required this.isLoading,
+    this.errorMessage,
+    required this.onTogglePassword,
+    required this.onLogin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.background,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
+            padding: const EdgeInsets.all(40),
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Sign In',
+                    style: AppTypography.heading2.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Access your valuer dashboard',
+                    style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  if (errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.error.withOpacity(0.2)),
                       ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Pro Valuer',
-                        style: AppTypography.heading1,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Report Management System',
-                        style: AppTypography.bodyLarge.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 48),
-
-                      // Card
-                      Container(
-                        constraints: const BoxConstraints(maxWidth: 420),
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(40),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                'Welcome back',
-                                style: AppTypography.heading3,
-                              ),
-                              const SizedBox(height: 32),
-                              
-                              if (_errorMessage != null) ...[
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.error.withOpacity(0.5),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: AppColors.border),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.error_outline_rounded,
-                                          color: AppColors.textPrimary, size: 18),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Text(
-                                          _errorMessage!,
-                                          style: AppTypography.bodyMedium,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                              ],
-
-                              Text('Username', style: AppTypography.label),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                controller: _usernameController,
-                                decoration: const InputDecoration(
-                                  hintText: 'Enter your username',
-                                  prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
-                                ),
-                                validator: (v) => (v == null || v.trim().isEmpty)
-                                    ? 'Username is required'
-                                    : null,
-                              ),
-                              const SizedBox(height: 24),
-
-                              Text('Password', style: AppTypography.label),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: _obscurePassword,
-                                decoration: InputDecoration(
-                                  hintText: 'Enter your password',
-                                  prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined,
-                                      size: 20,
-                                    ),
-                                    onPressed: () => setState(() =>
-                                        _obscurePassword = !_obscurePassword),
-                                  ),
-                                ),
-                                validator: (v) => (v == null || v.isEmpty)
-                                    ? 'Password is required'
-                                    : null,
-                                onFieldSubmitted: (_) => _login(),
-                              ),
-                              const SizedBox(height: 32),
-
-                              SizedBox(
-                                height: 56,
-                                child: ElevatedButton(
-                                  onPressed: _isLoading ? null : _login,
-                                  child: _isLoading
-                                      ? const SizedBox(
-                                          width: 24,
-                                          height: 24,
-                                          child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: AppColors.textPrimary),
-                                        )
-                                      : const Text('Sign In'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      Wrap(
-                        alignment: WrapAlignment.center,
+                      child: Row(
                         children: [
-                          Text(
-                            'Need an account?',
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
+                          const Icon(Icons.error_outline_rounded,
+                              color: AppColors.error, size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              errorMessage!,
+                              style: AppTypography.bodyMedium.copyWith(color: AppColors.error),
                             ),
-                          ),
-                          TextButton(
-                            onPressed: () => context.go('/signup'),
-                            child: const Text('Register here'),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 48),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  Text('Username', style: AppTypography.label),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: usernameController,
+                    decoration: const InputDecoration(
+                      hintText: 'Enter your username',
+                      prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Username is required'
+                        : null,
+                  ),
+                  const SizedBox(height: 24),
+
+                  Text('Password', style: AppTypography.label),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: passwordController,
+                    obscureText: obscurePassword,
+                    decoration: InputDecoration(
+                      hintText: 'Enter your password',
+                      prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          size: 20,
+                        ),
+                        onPressed: onTogglePassword,
+                      ),
+                    ),
+                    validator: (v) => (v == null || v.isEmpty)
+                        ? 'Password is required'
+                        : null,
+                    onFieldSubmitted: (_) => onLogin(),
+                  ),
+                  const SizedBox(height: 32),
+
+                  SizedBox(
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : onLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white),
+                            )
+                          : const Text('Login to Account', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                       Text(
-                        '© 2026 Pro Valuer System',
-                        style: AppTypography.label,
+                        'Need an account?',
+                        style: AppTypography.bodyMedium.copyWith(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                      TextButton(
+                        onPressed: () => context.go('/signup'),
+                        child: const Text('Request Access'),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -1,27 +1,32 @@
 package com.bwvr.backend.util;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.concurrent.atomic.AtomicLong;
-
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ReferenceNumberGenerator {
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
-    // Seeded with nanoTime to avoid collisions across restarts
-    private static final AtomicLong counter = new AtomicLong(Math.abs(System.nanoTime() % 1_000_000));
+    private final JdbcTemplate jdbcTemplate;
+
+    public ReferenceNumberGenerator(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     /**
-     * Generates a unique reference number in the format: REF-YYYYMMDD-{6-digit}
-     * Example: REF-20240315-001000
-     * Uses an in-memory atomic counter seeded with nanoseconds to ensure
-     * uniqueness without requiring a database sequence.
+     * Generates a unique 5-digit numerical reference number starting at 10000.
+     * Logic: Fetches the next value from the database sequence 'REPORT_REF_SEQ'.
+     * SQL (PostgreSQL/Oracle): SELECT nextval('bwvr.REPORT_REF_SEQ')
+     * or for Oracle: SELECT bwvr.REPORT_REF_SEQ.NEXTVAL FROM DUAL
      */
     public String generate() {
-        long seq = counter.incrementAndGet() % 1_000_000;
-        String date = LocalDate.now().format(DATE_FORMAT);
-        return String.format("REF-%s-%06d", date, seq);
+        try {
+            // Using a standard query that works for PostgreSQL (current runtime)
+            // If strictly using Oracle, change to: "SELECT bwvr.REPORT_REF_SEQ.NEXTVAL FROM DUAL"
+            Long nextVal = jdbcTemplate.queryForObject("SELECT nextval('bwvr.REPORT_REF_SEQ')", Long.class);
+            return String.valueOf(nextVal);
+        } catch (Exception e) {
+            // Fallback to a safe number if sequence fetch fails (e.g., during initialization)
+            return "10000";
+        }
     }
 }

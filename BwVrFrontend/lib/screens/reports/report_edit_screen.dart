@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/report_model.dart';
 import '../../services/api_service.dart';
@@ -118,15 +118,16 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
 
   Future<void> _uploadImage(ReportValueModel v) async {
     try {
-      final XFile? image = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1600,
-        maxHeight: 1600,
-        imageQuality: 70,
+      final result = await FilePicker.pickFiles(
+        type: FileType.image,
+        withData: true,
       );
-      if (image == null) return;
 
-      final bytes = await image.readAsBytes();
+      if (result == null || result.files.isEmpty) return;
+      
+      final file = result.files.first;
+      final bytes = file.bytes;
+      if (bytes == null) return;
       
       // Immediate UI Feedback: show preview locally before/during upload
       if (mounted) {
@@ -136,15 +137,15 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
         });
       }
 
-      final result = await _apiService.uploadImage(
+      final uploadResult = await _apiService.uploadImage(
         fileBytes: bytes,
-        fileName: image.name,
+        fileName: file.name,
         reportId: widget.reportId,
         placeholderKey: v.hiddenInternalKey,
       );
         
-      final filePath = result['filePath'] ?? result['imageUrl'];
-      final originalName = result['originalName'] ?? image.name;
+      final filePath = uploadResult['filePath'] ?? uploadResult['imageUrl'];
+      final originalName = uploadResult['originalName'] ?? file.name;
 
       await _apiService.saveReportValues(widget.reportId, [
         {
@@ -375,52 +376,65 @@ class _ImageFieldCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: (hasImage || previewBytes != null) ? AppColors.secondary : AppColors.border),
       ),
-      child: InkWell(
-        onTap: onUpload,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Row(
-            children: [
-              Container(
-                width: 80, height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onUpload,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Row(
+              children: [
+                Container(
+                  width: 80, height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: (previewBytes != null)
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.memory(previewBytes!, fit: BoxFit.cover),
+                        )
+                      : hasImage
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                ApiService().getBlobImageUrl(reportId, v.hiddenInternalKey),
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(Icons.check_circle_rounded, color: AppColors.secondary, size: 32),
+                              ),
+                            )
+                          : const Icon(Icons.image_outlined, color: AppColors.textSecondary, size: 32),
                 ),
-                child: (previewBytes != null)
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.memory(previewBytes!, fit: BoxFit.cover),
-                      )
-                    : hasImage
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              ApiService().getBlobImageUrl(reportId, v.hiddenInternalKey),
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.check_circle_rounded, color: AppColors.secondary, size: 32),
-                            ),
-                          )
-                        : const Icon(Icons.image_outlined, color: AppColors.textSecondary, size: 32),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(v.questionText, style: AppTypography.subheading),
-                    if (hasImage) ...[
+                const SizedBox(width: 24),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(v.sectionName ?? 'Asset Category', style: AppTypography.label.copyWith(color: AppColors.textSecondary)),
+                      const SizedBox(height: 4),
+                      Text(v.questionText, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
-                      Text(uploadedName ?? 'Image Uploaded', style: AppTypography.label.copyWith(color: AppColors.secondary, fontWeight: FontWeight.bold)),
+                      Text(
+                        (previewBytes != null || hasImage) 
+                          ? (uploadedName ?? v.imageOriginalName ?? 'Image Attached') 
+                          : 'Click to upload valuation photo',
+                        style: AppTypography.label.copyWith(
+                          color: (hasImage || previewBytes != null) ? AppColors.secondary : AppColors.textSecondary,
+                          fontWeight: (hasImage || previewBytes != null) ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 24),
-              const Icon(Icons.upload_rounded, color: AppColors.primary, size: 24),
-            ],
+                Icon(
+                  (hasImage || previewBytes != null) ? Icons.check_circle_rounded : Icons.add_a_photo_outlined,
+                  color: (hasImage || previewBytes != null) ? AppColors.secondary : AppColors.textSecondary,
+                ),
+              ],
+            ),
           ),
         ),
       ),

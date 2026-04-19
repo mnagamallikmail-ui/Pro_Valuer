@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
-/// AppTheme — exposes both a ThemeData for MaterialApp AND
-/// static color/chip constants for screens that reference them directly.
+/// AppTheme — implements the "Valuation Emerald" design system.
+/// Maintained static color constants for backward compatibility with existing screens.
 class AppTheme {
   // ──────────────────────────────────────────────
-  // Static color tokens (used directly in screen files)
+  // Static color tokens (Required by existing screens)
   // ──────────────────────────────────────────────
   static const Color primary       = AppColors.primary;
   static const Color secondary     = AppColors.secondary;
@@ -18,20 +18,20 @@ class AppTheme {
   static const Color textSecondary = AppColors.textSecondary;
 
   // Semantic feedback colors
-  static const Color success = AppColors.secondary;        // Pastel Sage for success
-  static const Color warning = AppColors.warning;          // Pastel Amber
-  static const Color danger  = Color(0xFFE57373);          // Subtle red, readable
+  static const Color success = AppColors.success;
+  static const Color warning = AppColors.warning;
   static const Color error   = AppColors.error;
+  static const Color danger  = AppColors.error; // Restored for screen compatibility
 
-  // Chip / badge backgrounds
+  // Chip / badge backgrounds (Restored for screen compatibility)
   static const Color cardBg    = AppColors.surface;
-  static const Color chipGreen = AppColors.secondary;      // Pastel Sage
-  static const Color chipBlue  = AppColors.accent;         // Soft Sky
-  static const Color chipAmber = AppColors.warning;        // Pastel Amber
-  static const Color chipRed   = Color(0xFFF6DDE0);        // Subtle pastel red bg
+  static const Color chipGreen = AppColors.primary;
+  static const Color chipBlue  = AppColors.secondary;
+  static const Color chipAmber = AppColors.warning;
+  static const Color chipRed   = AppColors.error;
 
   // ──────────────────────────────────────────────
-  // ThemeData
+  // ThemeData Configuration
   // ──────────────────────────────────────────────
   static ThemeData get lightTheme {
     return ThemeData(
@@ -40,32 +40,27 @@ class AppTheme {
       colorScheme: const ColorScheme(
         brightness: Brightness.light,
         primary: AppColors.primary,
-        onPrimary: AppColors.textPrimary,
+        onPrimary: Colors.white,
         secondary: AppColors.secondary,
-        onSecondary: AppColors.textPrimary,
+        onSecondary: Colors.white,
         surface: AppColors.surface,
         onSurface: AppColors.textPrimary,
-        // ignore: deprecated_member_use
-        background: AppColors.background,
-        // ignore: deprecated_member_use
-        onBackground: AppColors.textPrimary,
-        error: Color(0xFFE57373),
+        error: AppColors.error,
         onError: Colors.white,
         outline: AppColors.border,
       ),
+      
       textTheme: AppTypography.textTheme,
 
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: false,
-        titleTextStyle: TextStyle(
+        titleTextStyle: AppTypography.heading3.copyWith(
           color: AppColors.textPrimary,
-          fontSize: 20,
           fontWeight: FontWeight.w600,
-          fontFamily: 'Inter',
         ),
       ),
 
@@ -79,40 +74,42 @@ class AppTheme {
         margin: EdgeInsets.zero,
       ),
 
-      buttonTheme: const ButtonThemeData(
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textPrimary,
+          foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
           ),
-          textStyle: AppTypography.subheading,
+          textStyle: AppTypography.bodyLarge.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.textPrimary,
+          foregroundColor: AppColors.primary,
           backgroundColor: Colors.transparent,
-          side: const BorderSide(color: AppColors.border),
+          side: const BorderSide(color: AppColors.primary, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
           ),
-          textStyle: AppTypography.subheading,
+          textStyle: AppTypography.bodyLarge.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.textPrimary,
-          textStyle: AppTypography.subheading,
+          foregroundColor: AppColors.secondary,
+          textStyle: AppTypography.bodyMedium.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
@@ -121,22 +118,22 @@ class AppTheme {
         fillColor: AppColors.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.accent, width: 2),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE57373)),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
-        labelStyle: AppTypography.label,
+        labelStyle: AppTypography.label.copyWith(color: AppColors.textPrimary),
         hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
       ),
 
@@ -147,13 +144,30 @@ class AppTheme {
       ),
 
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.accent,
-        labelStyle: AppTypography.label.copyWith(color: AppColors.textPrimary),
+        backgroundColor: AppColors.surface,
+        labelStyle: AppTypography.label.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(6),
+        ),
+        side: const BorderSide(color: AppColors.border),
+      ),
+
+      dataTableTheme: DataTableThemeData(
+        headingTextStyle: AppTypography.bodyMedium.copyWith(
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+        dataTextStyle: AppTypography.bodyMedium,
+        // Using MaterialStateProperty for compatibility
+        headingRowColor: MaterialStateProperty.all(AppColors.surface),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.border),
           borderRadius: BorderRadius.circular(8),
         ),
-        side: BorderSide.none,
       ),
 
       dialogTheme: DialogThemeData(

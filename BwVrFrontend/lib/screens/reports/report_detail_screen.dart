@@ -119,8 +119,9 @@ class _ReportDetailContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final completion = report.completionPercentage;
-    final filledValues = report.values.where((v) => v.hasValue).length;
-    final totalFields = report.values.length;
+    final visibleValues = report.values.where((v) => v.isUserVisible).toList();
+    final filledValues = visibleValues.where((v) => v.hasValue).length;
+    final totalFields = visibleValues.length;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
@@ -306,6 +307,7 @@ class _ReportDetailContent extends StatelessWidget {
   List<Widget> _buildSections() {
     Map<String, List<ReportValueModel>> sectionsMap = {};
     for (var v in report.values) {
+      if (!v.isUserVisible) continue;
       final sec = (v.sectionName != null && v.sectionName!.isNotEmpty) ? v.sectionName! : 'General';
       sectionsMap.putIfAbsent(sec, () => []).add(v);
     }
@@ -331,9 +333,7 @@ class _ReportDetailContent extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(v.displayLabel, style: AppTypography.subheading.copyWith(fontSize: 14)),
-                      const SizedBox(height: 2),
-                      Text(v.placeholderKey, style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textSecondary, fontFamily: 'Courier New')),
+                      Text(v.questionText, style: AppTypography.subheading.copyWith(fontSize: 14)),
                     ],
                   ),
                 ),
@@ -346,7 +346,7 @@ class _ReportDetailContent extends StatelessWidget {
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
                                   child: Image.network(
-                                    ApiService().getBlobImageUrl(report.reportId, v.placeholderKey),
+                                    ApiService().getBlobImageUrl(report.reportId, v.hiddenInternalKey),
                                     width: 40, height: 40, fit: BoxFit.cover,
                                     errorBuilder: (_, __, ___) => const Icon(Icons.image_rounded, color: AppColors.textSecondary),
                                   ),
@@ -361,7 +361,7 @@ class _ReportDetailContent extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(6)),
-                  child: Text(v.fieldType, style: AppTypography.label.copyWith(fontSize: 9)),
+                  child: Text(v.inputType, style: AppTypography.label.copyWith(fontSize: 9)),
                 ),
               ],
             ),

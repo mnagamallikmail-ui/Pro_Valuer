@@ -70,11 +70,9 @@ class ReportModel {
 class ReportValueModel {
   final int? valueId;
   final int placeholderId;
-  final String placeholderKey;
-  final String placeholderPrefix;
-  final String displayLabel;
+  final String hiddenInternalKey;
   final String questionText;
-  final String fieldType;
+  final String inputType;
   final String? sectionName;
   String? textValue;
   String? imageFilePath;
@@ -84,15 +82,14 @@ class ReportValueModel {
   final String? col1Header;
   final String? col2Header;
   final bool hasImageData;
+  final bool isUserVisible;
 
   ReportValueModel({
     this.valueId,
     required this.placeholderId,
-    required this.placeholderKey,
-    required this.placeholderPrefix,
-    required this.displayLabel,
+    required this.hiddenInternalKey,
     required this.questionText,
-    required this.fieldType,
+    required this.inputType,
     this.sectionName,
     this.textValue,
     this.imageFilePath,
@@ -102,17 +99,16 @@ class ReportValueModel {
     this.col1Header,
     this.col2Header,
     this.hasImageData = false,
+    this.isUserVisible = true,
   });
 
   factory ReportValueModel.fromJson(Map<String, dynamic> json) {
     return ReportValueModel(
       valueId: _parseInt(json['valueId']),
       placeholderId: _parseInt(json['placeholderId']) ?? 0,
-      placeholderKey: json['placeholderKey'] ?? '',
-      placeholderPrefix: json['placeholderPrefix'] ?? 'TEXT',
-      displayLabel: json['displayLabel'] ?? '',
+      hiddenInternalKey: json['hiddenInternalKey'] ?? '',
       questionText: json['questionText'] ?? '',
-      fieldType: json['fieldType'] ?? 'TEXT',
+      inputType: json['inputType'] ?? 'TEXT',
       sectionName: json['sectionName'],
       textValue: json['textValue'],
       imageFilePath: json['imageFilePath'],
@@ -122,6 +118,7 @@ class ReportValueModel {
       col1Header: json['col1Header'],
       col2Header: json['col2Header'],
       hasImageData: json['hasImageData'] ?? false,
+      isUserVisible: json['isUserVisible'] ?? true,
     );
   }
 
@@ -129,13 +126,13 @@ class ReportValueModel {
       (textValue != null && textValue!.isNotEmpty) ||
       imageFilePath != null ||
       hasImageData;
-  bool get isImage => placeholderPrefix == 'IMG';
-  bool get isDate => placeholderPrefix == 'DATE';
+  bool get isImage => inputType == 'IMAGE';
+  bool get isDate => inputType == 'DATE';
   bool get isInTable => tableContext != null && tableContext!.isNotEmpty;
 
   Map<String, dynamic> toJson() => {
         'placeholderId': placeholderId,
-        'placeholderKey': placeholderKey,
+        'placeholderKey': hiddenInternalKey,
         'textValue': textValue,
         'imageFilePath': imageFilePath,
         'imageOriginalName': imageOriginalName,
@@ -203,8 +200,10 @@ class ReportDetailModel extends ReportModel {
   @override
   int get completionPercentage {
     if (values.isEmpty) return super.completionPercentage;
-    final filled = values.where((v) => v.hasValue).length;
-    return ((filled / values.length) * 100).round().clamp(0, 100);
+    final visibleValues = values.where((v) => v.isUserVisible).toList();
+    if (visibleValues.isEmpty) return 100;
+    final filled = visibleValues.where((v) => v.hasValue).length;
+    return ((filled / visibleValues.length) * 100).round().clamp(0, 100);
   }
 }
 

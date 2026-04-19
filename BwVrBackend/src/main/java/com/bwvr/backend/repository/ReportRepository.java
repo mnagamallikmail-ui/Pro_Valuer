@@ -103,4 +103,7 @@ public interface ReportRepository extends JpaRepository<BwvrReport, Long> {
     long countDistinctBanks();
 
     long countByTemplate_TemplateIdAndIsDeleted(Long templateId, String isDeleted);
+
+    @Query(value = "SELECT MAX(CAST(reference_number AS INTEGER)) FROM bwvr.bwvr_report WHERE reference_number ~ '^[0-9]+$'", nativeQuery = true)
+    Long findMaxNumericReferenceNumber();
 }

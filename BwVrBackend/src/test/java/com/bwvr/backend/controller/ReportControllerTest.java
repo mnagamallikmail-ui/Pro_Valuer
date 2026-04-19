@@ -56,7 +56,7 @@ class ReportControllerTest {
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
         sampleResp = ReportResponse.builder()
-                .reportId(1L).referenceNumber("REF-001")
+                .reportId(1L).referenceNumber("10000")
                 .templateId(1L).templateName("T1")
                 .reportTitle("Test").vendorName("V").location("L")
                 .bankName("B").reportStatus("DRAFT")
@@ -65,14 +65,14 @@ class ReportControllerTest {
                 .hasGeneratedFile(false).build();
 
         sampleDetail = ReportDetailResponse.builder()
-                .reportId(1L).referenceNumber("REF-001")
+                .reportId(1L).referenceNumber("10000")
                 .templateId(1L).templateName("T1").templateFileName("t.docx")
                 .reportTitle("Test").vendorName("V").location("L")
                 .bankName("B").reportStatus("DRAFT")
                 .createdBy("user1").hasGeneratedFile(false).values(List.of()).build();
 
         sampleDetailWithFile = ReportDetailResponse.builder()
-                .reportId(1L).referenceNumber("REF-001")
+                .reportId(1L).referenceNumber("10000")
                 .templateId(1L).templateName("T1").templateFileName("t.docx")
                 .reportTitle("Test").vendorName("V").location("L")
                 .bankName("B").reportStatus("COMPLETED")
@@ -94,7 +94,7 @@ class ReportControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.referenceNumber").value("REF-001"));
+                .andExpect(jsonPath("$.data.referenceNumber").value("10000"));
     }
 
     @Test

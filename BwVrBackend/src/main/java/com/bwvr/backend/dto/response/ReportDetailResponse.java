@@ -316,11 +316,10 @@ public class ReportDetailResponse {
 
         private Long valueId;
         private Long placeholderId;
-        private String placeholderKey;
-        private String placeholderPrefix;
-        private String displayLabel;
+        private String hiddenInternalKey;
         private String questionText;
-        private String fieldType;
+        private String inputType;
+        private String sectionName;
         private String textValue;
         private String imageFilePath;
         private String imageOriginalName;
@@ -329,6 +328,7 @@ public class ReportDetailResponse {
         private String col1Header;
         private String col2Header;
         private boolean hasImageData;
+        private boolean isUserVisible;
 
         public ReportValueResponse() {
         }
@@ -336,11 +336,10 @@ public class ReportDetailResponse {
         private ReportValueResponse(Builder b) {
             this.valueId = b.valueId;
             this.placeholderId = b.placeholderId;
-            this.placeholderKey = b.placeholderKey;
-            this.placeholderPrefix = b.placeholderPrefix;
-            this.displayLabel = b.displayLabel;
+            this.hiddenInternalKey = b.hiddenInternalKey;
             this.questionText = b.questionText;
-            this.fieldType = b.fieldType;
+            this.inputType = b.inputType;
+            this.sectionName = b.sectionName;
             this.textValue = b.textValue;
             this.imageFilePath = b.imageFilePath;
             this.imageOriginalName = b.imageOriginalName;
@@ -349,6 +348,7 @@ public class ReportDetailResponse {
             this.col1Header = b.col1Header;
             this.col2Header = b.col2Header;
             this.hasImageData = b.hasImageData;
+            this.isUserVisible = b.isUserVisible;
         }
 
         public static Builder builder() {
@@ -359,11 +359,10 @@ public class ReportDetailResponse {
 
             private Long valueId;
             private Long placeholderId;
-            private String placeholderKey;
-            private String placeholderPrefix;
-            private String displayLabel;
+            private String hiddenInternalKey;
             private String questionText;
-            private String fieldType;
+            private String inputType;
+            private String sectionName;
             private String textValue;
             private String imageFilePath;
             private String imageOriginalName;
@@ -372,6 +371,7 @@ public class ReportDetailResponse {
             private String col1Header;
             private String col2Header;
             private boolean hasImageData;
+            private boolean isUserVisible;
 
             public Builder valueId(Long v) {
                 this.valueId = v;
@@ -383,18 +383,8 @@ public class ReportDetailResponse {
                 return this;
             }
 
-            public Builder placeholderKey(String v) {
-                this.placeholderKey = v;
-                return this;
-            }
-
-            public Builder placeholderPrefix(String v) {
-                this.placeholderPrefix = v;
-                return this;
-            }
-
-            public Builder displayLabel(String v) {
-                this.displayLabel = v;
+            public Builder hiddenInternalKey(String v) {
+                this.hiddenInternalKey = v;
                 return this;
             }
 
@@ -403,8 +393,13 @@ public class ReportDetailResponse {
                 return this;
             }
 
-            public Builder fieldType(String v) {
-                this.fieldType = v;
+            public Builder inputType(String v) {
+                this.inputType = v;
+                return this;
+            }
+
+            public Builder sectionName(String v) {
+                this.sectionName = v;
                 return this;
             }
 
@@ -448,6 +443,11 @@ public class ReportDetailResponse {
                 return this;
             }
 
+            public Builder isUserVisible(boolean v) {
+                this.isUserVisible = v;
+                return this;
+            }
+
             public ReportValueResponse build() {
                 return new ReportValueResponse(this);
             }
@@ -469,28 +469,12 @@ public class ReportDetailResponse {
             this.placeholderId = placeholderId;
         }
 
-        public String getPlaceholderKey() {
-            return placeholderKey;
+        public String getHiddenInternalKey() {
+            return hiddenInternalKey;
         }
 
-        public void setPlaceholderKey(String placeholderKey) {
-            this.placeholderKey = placeholderKey;
-        }
-
-        public String getPlaceholderPrefix() {
-            return placeholderPrefix;
-        }
-
-        public void setPlaceholderPrefix(String placeholderPrefix) {
-            this.placeholderPrefix = placeholderPrefix;
-        }
-
-        public String getDisplayLabel() {
-            return displayLabel;
-        }
-
-        public void setDisplayLabel(String displayLabel) {
-            this.displayLabel = displayLabel;
+        public void setHiddenInternalKey(String hiddenInternalKey) {
+            this.hiddenInternalKey = hiddenInternalKey;
         }
 
         public String getQuestionText() {
@@ -501,12 +485,20 @@ public class ReportDetailResponse {
             this.questionText = questionText;
         }
 
-        public String getFieldType() {
-            return fieldType;
+        public String getInputType() {
+            return inputType;
         }
 
-        public void setFieldType(String fieldType) {
-            this.fieldType = fieldType;
+        public void setInputType(String inputType) {
+            this.inputType = inputType;
+        }
+
+        public String getSectionName() {
+            return sectionName;
+        }
+
+        public void setSectionName(String sectionName) {
+            this.sectionName = sectionName;
         }
 
         public String getTextValue() {
@@ -571,6 +563,14 @@ public class ReportDetailResponse {
 
         public void setHasImageData(boolean hasImageData) {
             this.hasImageData = hasImageData;
+        }
+
+        public boolean isUserVisible() {
+            return isUserVisible;
+        }
+
+        public void setIsUserVisible(boolean isUserVisible) {
+            this.isUserVisible = isUserVisible;
         }
     }
 }

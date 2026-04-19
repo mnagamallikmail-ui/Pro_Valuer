@@ -55,6 +55,7 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
 
   void _initControllers(ReportDetailModel r) {
     for (var v in r.values) {
+      if (!v.isUserVisible) continue;
       _controllers[v.placeholderId] = TextEditingController(text: v.textValue ?? '');
       if (v.isImage && (v.imageFilePath != null || v.hasImageData)) {
         _uploadedPaths[v.placeholderId] = v.imageOriginalName ?? 'Image Uploaded';
@@ -77,12 +78,13 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
     try {
       final List<Map<String, dynamic>> updateValues = [];
       for (var v in _report!.values) {
+        if (!v.isUserVisible) continue;
         if (!v.isImage) {
           final text = _controllers[v.placeholderId]?.text ?? '';
           if (text != (v.textValue ?? '')) {
             updateValues.add({
               'placeholderId': v.placeholderId,
-              'placeholderKey': v.placeholderKey,
+              'placeholderKey': v.hiddenInternalKey,
               'textValue': text,
             });
           }
@@ -127,7 +129,7 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
         fileBytes: bytes,
         fileName: image.name,
         reportId: widget.reportId,
-        placeholderKey: v.placeholderKey,
+        placeholderKey: v.hiddenInternalKey,
       );
         
       final filePath = result['filePath'] ?? result['imageUrl'];
@@ -136,7 +138,7 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
       await _apiService.saveReportValues(widget.reportId, [
         {
           'placeholderId': v.placeholderId,
-          'placeholderKey': v.placeholderKey,
+          'placeholderKey': v.hiddenInternalKey,
           'imageFilePath': filePath,
           'imageOriginalName': originalName,
         }
@@ -259,6 +261,7 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
     final List<ReportValueModel> allImages = [];
 
     for (var v in _report!.values) {
+      if (!v.isUserVisible) continue;
       if (v.isImage) {
         allImages.add(v);
         continue;
@@ -322,15 +325,7 @@ class _FieldCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(v.displayLabel, style: AppTypography.subheading),
-              const Spacer(),
-              Text(v.placeholderKey, style: AppTypography.label.copyWith(fontFamily: 'Courier New', fontSize: 10)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(v.questionText, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
+          Text(v.questionText, style: AppTypography.subheading),
           const SizedBox(height: 20),
           TextFormField(
             controller: controller,
@@ -340,7 +335,7 @@ class _FieldCard extends StatelessWidget {
               fillColor: AppColors.background,
               filled: true,
             ),
-            maxLines: v.fieldType == 'TEXT' ? 1 : 4,
+            maxLines: v.inputType == 'TEXT' ? 1 : 4,
           ),
         ],
       ),
@@ -381,7 +376,7 @@ class _ImageFieldCard extends StatelessWidget {
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.network(
-                      ApiService().getBlobImageUrl(reportId, v.placeholderKey),
+                      ApiService().getBlobImageUrl(reportId, v.hiddenInternalKey),
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => const Icon(Icons.check_circle_rounded, color: AppColors.secondary, size: 32),
                     ),
@@ -394,8 +389,6 @@ class _ImageFieldCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(v.questionText, style: AppTypography.subheading),
-                const SizedBox(height: 4),
-                Text(v.placeholderKey, style: AppTypography.label.copyWith(fontFamily: 'Courier New', fontSize: 10)),
                 if (hasImage) ...[
                   const SizedBox(height: 8),
                   Text(uploadedName ?? 'Image Uploaded', style: AppTypography.label.copyWith(color: AppColors.secondary, fontWeight: FontWeight.bold)),
@@ -422,8 +415,9 @@ class _ProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final filled = report.values.where((v) => v.hasValue).length;
-    final total = report.values.length;
+    final visibleValues = report.values.where((v) => v.isUserVisible).toList();
+    final filled = visibleValues.where((v) => v.hasValue).length;
+    final total = visibleValues.length;
     final pct = total == 0 ? 0.0 : filled / total;
 
     return Column(

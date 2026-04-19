@@ -285,11 +285,10 @@ public class ReportService {
                     return ReportDetailResponse.ReportValueResponse.builder()
                             .valueId(val != null ? val.getValueId() : null)
                             .placeholderId(ph.getPlaceholderId())
-                            .placeholderKey(ph.getPlaceholderKey())
-                            .placeholderPrefix(ph.getPlaceholderPrefix())
-                            .displayLabel(ph.getDisplayLabel())
+                            .hiddenInternalKey(ph.getPlaceholderKey())
+                            .inputType(ph.getPlaceholderPrefix() != null && ph.getPlaceholderPrefix().equals("IMG") ? "IMAGE" : ph.getFieldType())
                             .questionText(ph.getQuestionText())
-                            .fieldType(ph.getFieldType())
+                            .sectionName(ph.getSectionName())
                             .textValue(val != null ? val.getTextValue() : null)
                             .imageFilePath(val != null ? val.getImageFilePath() : null)
                             .imageOriginalName(val != null ? val.getImageOriginalName() : null)
@@ -298,6 +297,7 @@ public class ReportService {
                             .tableContext(ph.getTableContext())
                             .col1Header(ph.getCol1Header())
                             .col2Header(ph.getCol2Header())
+                            .isUserVisible(true)
                             .build();
                 })
                 .collect(Collectors.toList());

@@ -4,7 +4,6 @@ import '../../services/api_service.dart';
 import '../../models/template_model.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_layout.dart';
-import '../../widgets/common_widgets.dart';
 
 class TemplateConfirmScreen extends StatefulWidget {
   final int templateId;
@@ -94,7 +93,7 @@ class _TemplateConfirmScreenState extends State<TemplateConfirmScreen> {
     void flushBlock() {
       if (currentBlockPlaceholders.isNotEmpty && currentSection != null) {
         sectionWidgets.add(_PlaceholderSection(
-          title: currentSection!,
+          title: currentSection,
           color: AppTheme.accent,
           placeholders: currentBlockPlaceholders,
         ));

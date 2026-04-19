@@ -34,6 +34,7 @@ import com.bwvr.backend.repository.TemplateImageSlotRepository;
 import com.bwvr.backend.repository.TemplatePlaceholderRepository;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class DocxParserServiceTest {
 
     @Mock

@@ -22,6 +22,7 @@ import com.bwvr.backend.entity.BwvrReportValue;
 import com.bwvr.backend.repository.ReportValueRepository;
 
 @WebMvcTest(FileController.class)
+@SuppressWarnings("null")
 class FileControllerTest {
 
     @Autowired

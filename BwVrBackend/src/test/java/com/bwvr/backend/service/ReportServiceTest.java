@@ -42,6 +42,7 @@ import com.bwvr.backend.repository.TemplateRepository;
 import com.bwvr.backend.util.ReferenceNumberGenerator;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class ReportServiceTest {
 
     @Mock

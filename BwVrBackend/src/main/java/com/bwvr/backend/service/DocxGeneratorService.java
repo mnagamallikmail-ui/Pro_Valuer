@@ -43,6 +43,7 @@ import com.bwvr.backend.repository.ReportRepository;
 import com.bwvr.backend.repository.ReportValueRepository;
 
 @Service
+@SuppressWarnings("null")
 public class DocxGeneratorService {
 
     private static final Logger log = LoggerFactory.getLogger(DocxGeneratorService.class);

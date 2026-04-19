@@ -28,6 +28,7 @@ import com.bwvr.backend.dto.response.TemplateResponse;
 import com.bwvr.backend.service.TemplateService;
 
 @WebMvcTest(TemplateController.class)
+@SuppressWarnings("null")
 class TemplateControllerTest {
 
     @Autowired

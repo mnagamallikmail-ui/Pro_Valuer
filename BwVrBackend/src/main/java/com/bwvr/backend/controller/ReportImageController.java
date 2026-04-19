@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/report-images")
 @Tag(name = "Report Images", description = "BLOB-based image storage for reports")
+@SuppressWarnings("null")
 public class ReportImageController {
 
     private final ReportImageService reportImageService;

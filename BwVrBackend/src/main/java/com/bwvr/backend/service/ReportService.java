@@ -32,6 +32,7 @@ import com.bwvr.backend.repository.TemplateRepository;
 import com.bwvr.backend.util.ReferenceNumberGenerator;
 
 @Service
+@SuppressWarnings("null")
 public class ReportService {
 
     private static final Logger log = LoggerFactory.getLogger(ReportService.class);

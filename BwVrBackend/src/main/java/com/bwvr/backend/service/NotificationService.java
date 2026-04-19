@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
+@SuppressWarnings("null")
 public class NotificationService {
 
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();

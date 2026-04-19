@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/files")
 @Tag(name = "Files", description = "File upload and retrieval endpoints")
+@SuppressWarnings("null")
 public class FileController {
 
     private static final Logger log = LoggerFactory.getLogger(FileController.class);

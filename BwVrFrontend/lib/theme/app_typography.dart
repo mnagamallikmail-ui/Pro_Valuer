@@ -8,40 +8,41 @@ class AppTypography {
         height: 1.5,
       );
 
-  static TextStyle get heading1 => base.copyWith(
+  static TextStyle get headingBase => GoogleFonts.plusJakartaSans(
+        color: AppColors.primaryText,
+        fontWeight: FontWeight.bold,
+      );
+
+  static TextStyle get heading1 => headingBase.copyWith(
         fontSize: 32,
-        fontWeight: FontWeight.w600, // Semi-Bold
         letterSpacing: -0.5,
       );
 
-  static TextStyle get heading2 => base.copyWith(
+  static TextStyle get heading2 => headingBase.copyWith(
         fontSize: 24,
-        fontWeight: FontWeight.w600, // Semi-Bold
       );
 
-  static TextStyle get heading3 => base.copyWith(
+  static TextStyle get heading3 => headingBase.copyWith(
         fontSize: 20,
-        fontWeight: FontWeight.w600, // Semi-Bold
       );
 
-  static TextStyle get subheading => base.copyWith(
+  static TextStyle get subheading => headingBase.copyWith(
         fontSize: 16,
-        fontWeight: FontWeight.w600, // Semi-Bold
       );
 
   static TextStyle get bodyLarge => base.copyWith(
         fontSize: 16,
-        fontWeight: FontWeight.w500, // Medium
+        fontWeight: FontWeight.w500,
       );
 
   static TextStyle get bodyMedium => base.copyWith(
         fontSize: 14,
-        fontWeight: FontWeight.w500, // Medium
+        fontWeight: FontWeight.w400,
       );
 
   static TextStyle get label => base.copyWith(
         fontSize: 12,
-        fontWeight: FontWeight.w600, // Semi-Bold
+        fontWeight: FontWeight.w600,
         color: AppColors.textSecondary,
       );
 

@@ -12,6 +12,7 @@ import com.bwvr.backend.repository.ReportImageRepository;
 import com.bwvr.backend.repository.ReportRepository;
 
 @Service
+@SuppressWarnings("null")
 public class ReportImageService {
 
     private final ReportImageRepository reportImageRepository;

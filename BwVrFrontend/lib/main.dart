@@ -16,12 +16,11 @@ void main() {
   // Initialize Real-time synchronization service
   NotificationService().init();
 
-  runApp(const BwVrApp());
+  runApp(const ProValuerApp());
 }
 
-
-class BwVrApp extends StatelessWidget {
-  const BwVrApp({super.key});
+class ProValuerApp extends StatelessWidget {
+  const ProValuerApp({super.key});
 
   @override
   Widget build(BuildContext context) {

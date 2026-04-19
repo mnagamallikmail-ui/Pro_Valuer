@@ -13,6 +13,7 @@ import com.bwvr.backend.entity.BwvrAuditLog;
 import com.bwvr.backend.repository.AuditLogRepository;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class AuditServiceTest {
 
     @Mock

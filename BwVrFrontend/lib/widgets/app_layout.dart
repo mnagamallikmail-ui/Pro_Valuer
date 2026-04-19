@@ -97,8 +97,8 @@ class _Sidebar extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.primary, 
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.accent, 
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.analytics_rounded, color: Colors.white, size: 20),
                 ),
@@ -136,8 +136,15 @@ class _Sidebar extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.border, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
@@ -210,28 +217,28 @@ class _SidebarItem extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: InkWell(
         onTap: () => context.go(item.route),
-        borderRadius: BorderRadius.circular(8),
-        hoverColor: AppColors.primary.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        hoverColor: AppColors.accent.withOpacity(0.05),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: isActive ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+            color: isActive ? AppColors.accent.withOpacity(0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
               Icon(
                 item.icon, 
                 size: 20, 
-                color: isActive ? AppColors.primary : AppColors.textSecondary
+                color: isActive ? AppColors.accent : AppColors.textSecondary
               ),
               const SizedBox(width: 12),
               Text(
                 item.label,
                 style: AppTypography.bodyMedium.copyWith(
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                  color: isActive ? AppColors.primary : AppColors.textSecondary,
+                  color: isActive ? AppColors.accent : AppColors.textSecondary,
                 ),
               ),
               if (isActive) ...[
@@ -239,7 +246,7 @@ class _SidebarItem extends StatelessWidget {
                 Container(
                   width: 4,
                   height: 4,
-                  decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
                 ),
               ],
             ],

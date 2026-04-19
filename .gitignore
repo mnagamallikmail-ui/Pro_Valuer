@@ -9,6 +9,8 @@ target/
 bin/
 out/
 .dart_tool/
+*.jar
+!BwVrBackend/gradle/wrapper/gradle-wrapper.jar
 
 # Temporary files
 *.log
@@ -32,7 +34,3 @@ BwVrBackend/out/
 
 # Database (keep SQL files, exclude any potential data files if added later)
 # (currently database/ only has SQL files, so it's fine)
-
-# Java artifacts - ignore large JARs (except Gradle wrapper)
-*.jar
-!BwVrBackend/gradle/wrapper/gradle-wrapper.jar

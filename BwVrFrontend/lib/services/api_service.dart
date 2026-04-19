@@ -1,4 +1,5 @@
-import 'dart:typed_data';
+// import 'dart:typed_data'; // Unnecessary import
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -82,7 +83,8 @@ class ApiService {
 
   Future<bool> _isOnline() async {
     final result = await Connectivity().checkConnectivity();
-    return result != ConnectivityResult.none;
+    // checkConnectivity returns List<ConnectivityResult> in newer versions
+    return result.any((r) => r != ConnectivityResult.none);
   }
 
   // ── Retry helper ────────────────────────────────────────────────────────────
@@ -127,8 +129,9 @@ class ApiService {
 
   String _serverErrorMessage(int statusCode, String body) {
     if (statusCode == 500) return 'Server error — please try again shortly';
-    if (statusCode == 502 || statusCode == 503 || statusCode == 504)
+    if (statusCode == 502 || statusCode == 503 || statusCode == 504) {
       return 'Server is temporarily unavailable — please try again';
+    }
     return 'Unexpected server response ($statusCode)';
   }
 

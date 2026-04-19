@@ -8,6 +8,7 @@ class StatsCard extends StatelessWidget {
   final IconData icon;
   final Color? color;
   final String? trend;
+  final VoidCallback? onTap;
 
   const StatsCard({
     super.key,
@@ -16,49 +17,56 @@ class StatsCard extends StatelessWidget {
     required this.icon,
     this.color,
     this.trend,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final themeColor = color ?? AppColors.primary;
     
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.border, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border, width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: themeColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Icon(icon, color: themeColor, size: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: themeColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, color: themeColor, size: 20),
+                  ),
+                  if (trend != null)
+                    Text(
+                      trend!, 
+                      style: AppTypography.label.copyWith(
+                        color: AppColors.success, 
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600
+                      )
+                    ),
+                ],
               ),
-              if (trend != null)
-                Text(
-                  trend!, 
-                  style: AppTypography.label.copyWith(
-                    color: AppColors.success, 
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600
-                  )
-                ),
+              const Spacer(),
+              Text(value, style: AppTypography.heading1.copyWith(fontSize: 28, color: AppColors.primaryText)),
+              const SizedBox(height: 4),
+              Text(title, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
             ],
           ),
-          const Spacer(),
-          Text(value, style: AppTypography.heading1.copyWith(fontSize: 28, color: AppColors.primaryText)),
-          const SizedBox(height: 4),
-          Text(title, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
-        ],
+        ),
       ),
     );
   }

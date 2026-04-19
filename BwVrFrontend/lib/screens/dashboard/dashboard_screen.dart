@@ -144,7 +144,7 @@ class _DashboardContent extends StatelessWidget {
 
           // Stats Grid
           GridView.count(
-            crossAxisCount: isMobile ? 1 : (width < 1200 ? 2 : 4),
+            crossAxisCount: isMobile ? 1 : (width < 1200 ? 2 : 3),
             shrinkWrap: true,
             crossAxisSpacing: 20,
             mainAxisSpacing: 20,
@@ -157,27 +157,23 @@ class _DashboardContent extends StatelessWidget {
                 icon: Icons.assignment_outlined,
                 color: AppColors.primaryText,
                 trend: '+5%',
+                onTap: () => context.go('/reports'),
               ),
               StatsCard(
-                title: 'Monthly Progress',
+                title: 'Reports This Month',
                 value: stats.reportsThisMonth.toString(),
                 icon: Icons.show_chart_rounded,
                 color: AppColors.primary,
                 trend: 'Active',
+                onTap: () => context.go('/reports'),
               ),
               StatsCard(
-                title: 'Active Blueprints',
+                title: 'Active Reports',
                 value: stats.activeTemplates.toString(),
                 icon: Icons.style_outlined,
-                color: AppColors.action,
-                trend: 'Updated',
-              ),
-              StatsCard(
-                title: 'Financial Partners',
-                value: stats.distinctBanks.toString(),
-                icon: Icons.account_balance_outlined,
-                color: AppColors.textSecondary,
-                trend: 'Verified',
+                color: AppColors.accent,
+                trend: 'Templates',
+                onTap: () => context.go('/templates'),
               ),
             ],
           ),
@@ -296,13 +292,20 @@ class _RecentTable extends StatelessWidget {
         ),
         ...reports.map((r) => TableRow(
               children: [
-                _td(Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(r.reportTitle, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 4),
-                    ReferenceChip(label: r.referenceNumber),
-                  ],
+                _td(InkWell(
+                  onTap: () => context.go('/reports/${r.reportId}'),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(r.reportTitle, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 4),
+                        ReferenceChip(label: r.referenceNumber),
+                      ],
+                    ),
+                  ),
                 )),
                 _td(Text(r.bankName ?? 'Independent',
                     style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary))),

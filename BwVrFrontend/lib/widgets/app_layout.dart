@@ -83,8 +83,8 @@ class _Sidebar extends StatelessWidget {
       width: 280,
       height: double.infinity,
       decoration: const BoxDecoration(
-        color: AppColors.surface, 
-        border: Border(right: BorderSide(color: AppColors.border, width: 1)),
+        color: AppColors.primary, 
+        border: Border(right: BorderSide(color: Colors.white10, width: 1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +106,7 @@ class _Sidebar extends StatelessWidget {
                 Text(
                   'Pro Valuer', 
                   style: AppTypography.heading2.copyWith(
-                    color: AppColors.primaryText,
+                    color: Colors.white,
                     fontWeight: FontWeight.w600,
                   )
                 ),
@@ -135,16 +135,9 @@ class _Sidebar extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border, width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  border: Border.all(color: Colors.white10, width: 1),
                 ),
                 child: Column(
                   children: [
@@ -152,11 +145,11 @@ class _Sidebar extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           radius: 16,
-                          backgroundColor: isAdm ? AppColors.action : AppColors.primary.withOpacity(0.1),
+                          backgroundColor: AppColors.accent,
                           child: Icon(
                             isAdm ? Icons.admin_panel_settings_rounded : Icons.person_rounded, 
                             size: 16, 
-                            color: isAdm ? Colors.white : AppColors.primary
+                            color: Colors.white
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -164,16 +157,16 @@ class _Sidebar extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(displayName, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+                              Text(displayName, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: Colors.white), overflow: TextOverflow.ellipsis),
                               Text(isAdm ? 'Administrator' : 'Valuer', 
-                                style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textSecondary)),
+                                style: AppTypography.label.copyWith(fontSize: 10, color: Colors.white70)),
                             ],
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Divider(color: AppColors.border),
+                    const Divider(color: Colors.white10),
                     const SizedBox(height: 8),
                     TextButton(
                       onPressed: () {
@@ -181,7 +174,7 @@ class _Sidebar extends StatelessWidget {
                         context.go('/login');
                       },
                       style: TextButton.styleFrom(
-                        foregroundColor: AppColors.error,
+                        foregroundColor: Colors.white70,
                         padding: EdgeInsets.zero,
                         minimumSize: const Size(double.infinity, 36),
                       ),
@@ -190,7 +183,7 @@ class _Sidebar extends StatelessWidget {
                         children: [
                           const Icon(Icons.logout_rounded, size: 14),
                           const SizedBox(width: 8),
-                          Text('Sign Out', style: AppTypography.bodyMedium.copyWith(color: AppColors.error, fontWeight: FontWeight.w600)),
+                          Text('Sign Out', style: AppTypography.bodyMedium.copyWith(color: Colors.white70, fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
@@ -218,7 +211,7 @@ class _SidebarItem extends StatelessWidget {
       child: InkWell(
         onTap: () => context.go(item.route),
         borderRadius: BorderRadius.circular(12),
-        hoverColor: AppColors.accent.withOpacity(0.05),
+        hoverColor: Colors.white.withOpacity(0.05),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -231,14 +224,14 @@ class _SidebarItem extends StatelessWidget {
               Icon(
                 item.icon, 
                 size: 20, 
-                color: isActive ? AppColors.accent : AppColors.textSecondary
+                color: isActive ? AppColors.accent : Colors.white60
               ),
               const SizedBox(width: 12),
               Text(
                 item.label,
                 style: AppTypography.bodyMedium.copyWith(
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                  color: isActive ? AppColors.accent : AppColors.textSecondary,
+                  color: isActive ? AppColors.accent : Colors.white60,
                 ),
               ),
               if (isActive) ...[

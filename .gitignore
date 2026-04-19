@@ -10,6 +10,7 @@ bin/
 out/
 .dart_tool/
 *.jar
+!BwVrBackend/BwVrBackend.jar
 !BwVrBackend/gradle/wrapper/gradle-wrapper.jar
 
 # Temporary files

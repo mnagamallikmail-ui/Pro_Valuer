@@ -26,6 +26,7 @@ import com.bwvr.backend.repository.ReportRepository;
 import com.bwvr.backend.repository.ReportValueRepository;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class ReportImageServiceTest {
 
     @Mock
@@ -122,3 +123,4 @@ class ReportImageServiceTest {
                 .hasMessageContaining("Image not found");
     }
 }
+

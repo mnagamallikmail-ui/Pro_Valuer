@@ -44,6 +44,7 @@ import com.bwvr.backend.repository.TemplatePlaceholderRepository;
 import com.bwvr.backend.repository.TemplateRepository;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class TemplateServiceTest {
 
     @Mock
@@ -219,3 +220,4 @@ class TemplateServiceTest {
         assertThat(banks).containsExactly("Bank1", "Bank2");
     }
 }
+

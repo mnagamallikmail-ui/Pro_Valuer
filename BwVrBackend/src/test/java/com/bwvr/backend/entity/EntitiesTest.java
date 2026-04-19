@@ -11,8 +11,8 @@ class EntitiesTest {
 
     @Test
     void testBwvrAuditLogExhaustive() {
-        // Constructor coverage
-        BwvrAuditLog logBase = new BwvrAuditLog();
+        // Constructor coverage coverage
+
 
         LocalDateTime now = LocalDateTime.now();
         BwvrAuditLog log = BwvrAuditLog.builder()
@@ -57,7 +57,6 @@ class EntitiesTest {
 
     @Test
     void testBwvrReportExhaustive() {
-        BwvrReport reportBase = new BwvrReport();
         LocalDateTime now = LocalDateTime.now();
         BwvrTemplate t = new BwvrTemplate();
         List<BwvrReportValue> vals = new ArrayList<>();
@@ -127,7 +126,6 @@ class EntitiesTest {
 
     @Test
     void testBwvrReportValueExhaustive() {
-        BwvrReportValue valBase = new BwvrReportValue();
         LocalDateTime now = LocalDateTime.now();
         BwvrReport r = new BwvrReport();
         BwvrTemplatePlaceholder ph = new BwvrTemplatePlaceholder();
@@ -174,7 +172,6 @@ class EntitiesTest {
 
     @Test
     void testBwvrTemplateExhaustive() {
-        BwvrTemplate templateBase = new BwvrTemplate();
         LocalDateTime now = LocalDateTime.now();
         List<BwvrTemplatePlaceholder> phs = new ArrayList<>();
         List<BwvrTemplateImageSlot> slots = new ArrayList<>();
@@ -232,7 +229,6 @@ class EntitiesTest {
 
     @Test
     void testBwvrTemplatePlaceholderExhaustive() {
-        BwvrTemplatePlaceholder placeholderBase = new BwvrTemplatePlaceholder();
         LocalDateTime now = LocalDateTime.now();
         BwvrTemplate t = new BwvrTemplate();
         BwvrTemplatePlaceholder ph = BwvrTemplatePlaceholder.builder()
@@ -292,7 +288,6 @@ class EntitiesTest {
 
     @Test
     void testBwvrTemplateImageSlotExhaustive() {
-        BwvrTemplateImageSlot slotBase = new BwvrTemplateImageSlot();
         LocalDateTime now = LocalDateTime.now();
         BwvrTemplate t = new BwvrTemplate();
         BwvrTemplateImageSlot s = BwvrTemplateImageSlot.builder()

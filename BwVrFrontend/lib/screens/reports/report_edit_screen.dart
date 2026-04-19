@@ -7,6 +7,7 @@ import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/common_widgets.dart';
+import 'package:intl/intl.dart';
 
 class ReportEditScreen extends StatefulWidget {
   final int reportId;
@@ -392,7 +393,12 @@ class _FieldCard extends StatelessWidget {
             controller: controller,
             readOnly: v.isDate,
             onTap: v.isDate ? () async {
-              DateTime initialDate = DateTime.tryParse(controller.text) ?? DateTime.now();
+              DateTime initialDate;
+              try {
+                initialDate = DateFormat('dd-MMM-yyyy').parse(controller.text);
+              } catch (_) {
+                initialDate = DateTime.now();
+              }
               DateTime? pickedDate = await showDatePicker(
                 context: context,
                 initialDate: initialDate,
@@ -412,7 +418,7 @@ class _FieldCard extends StatelessWidget {
                 },
               );
               if (pickedDate != null) {
-                String formattedDate = "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                String formattedDate = DateFormat('dd-MMM-yyyy').format(pickedDate);
                 controller.text = formattedDate;
                 onChanged();
               }

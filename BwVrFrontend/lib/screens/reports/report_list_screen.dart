@@ -282,7 +282,7 @@ class _ReportListScreenState extends State<ReportListScreen> {
                                             children: [
                                               StatusChip(status: r.reportStatus),
                                               const SizedBox(height: 6),
-                                              Text(r.createdAt != null ? DateFormat('dd MMM yyyy').format(r.createdAt!) : '—', style: AppTypography.label.copyWith(fontSize: 10)),
+                                              Text(r.createdAt != null ? DateFormat('dd-MMM-yyyy').format(r.createdAt!) : '—', style: AppTypography.label.copyWith(fontSize: 10)),
                                             ],
                                           ),
                                           const SizedBox(width: 8),

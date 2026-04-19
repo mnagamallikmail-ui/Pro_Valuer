@@ -47,8 +47,9 @@ import com.bwvr.backend.repository.ReportValueRepository;
 public class DocxGeneratorService {
 
     private static final Logger log = LoggerFactory.getLogger(DocxGeneratorService.class);
-    private static final DateTimeFormatter DISPLAY_DATE_FORMAT = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+    private static final DateTimeFormatter DISPLAY_DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MMM-yyyy", java.util.Locale.ENGLISH);
     private static final DateTimeFormatter ISO_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter ALTERNATE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MMM-yyyy", java.util.Locale.ENGLISH);
 
     private final ReportRepository reportRepository;
     private final ReportValueRepository reportValueRepository;
@@ -476,7 +477,11 @@ public class DocxGeneratorService {
         if ("DATE".equalsIgnoreCase(prefix)) {
             try {
                 return LocalDate.parse(text, ISO_DATE_FORMAT).format(DISPLAY_DATE_FORMAT);
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                try {
+                    return LocalDate.parse(text, ALTERNATE_DATE_FORMAT).format(DISPLAY_DATE_FORMAT);
+                } catch (Exception ignored) {
+                }
             }
         }
         return text;

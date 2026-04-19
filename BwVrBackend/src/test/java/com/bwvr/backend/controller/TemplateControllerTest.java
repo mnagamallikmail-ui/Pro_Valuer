@@ -33,6 +33,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 @WebMvcTest(value = TemplateController.class, properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration")
 @AutoConfigureMockMvc(addFilters = false)
 @WithMockUser(username = "admin", roles = "ADMIN")
+@SuppressWarnings({"unused", "null"})
 class TemplateControllerTest {
     
     @MockBean
@@ -139,3 +140,4 @@ class TemplateControllerTest {
                 .andExpect(jsonPath("$.data[0]").value("BankA"));
     }
 }
+

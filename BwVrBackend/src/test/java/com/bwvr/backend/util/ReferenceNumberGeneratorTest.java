@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class ReferenceNumberGeneratorTest {
 
     @Mock
@@ -55,3 +56,4 @@ class ReferenceNumberGeneratorTest {
         assertThat(ref).isEqualTo("10000");
     }
 }
+

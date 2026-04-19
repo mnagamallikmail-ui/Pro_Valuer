@@ -18,22 +18,30 @@ class AppLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Row(
-        children: [
-          _Sidebar(currentRoute: currentRoute),
-          Expanded(
-            child: Column(
-              children: [
-                _TopBar(title: title ?? _getTitle(currentRoute)),
-                Expanded(child: child),
-              ],
+    return LayoutBuilder(builder: (context, constraints) {
+      final isMobile = constraints.maxWidth < 900;
+
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        drawer: isMobile ? Drawer(child: _Sidebar(currentRoute: currentRoute, isMobile: true)) : null,
+        body: Row(
+          children: [
+            if (!isMobile) _Sidebar(currentRoute: currentRoute, isMobile: false),
+            Expanded(
+              child: Column(
+                children: [
+                  _TopBar(
+                    title: title ?? _getTitle(currentRoute),
+                    showMenu: isMobile,
+                  ),
+                  Expanded(child: child),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   String _getTitle(String route) {
@@ -51,8 +59,9 @@ class AppLayout extends StatelessWidget {
 
 class _Sidebar extends StatelessWidget {
   final String currentRoute;
+  final bool isMobile;
 
-  const _Sidebar({required this.currentRoute});
+  const _Sidebar({required this.currentRoute, required this.isMobile});
 
   @override
   Widget build(BuildContext context) {
@@ -70,11 +79,11 @@ class _Sidebar extends StatelessWidget {
     ];
 
     return Container(
-      width: 250,
+      width: isMobile ? double.infinity : 250,
       height: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
-        border: Border(right: BorderSide(color: AppColors.border)),
+        border: isMobile ? null : const Border(right: BorderSide(color: AppColors.border)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +104,7 @@ class _Sidebar extends StatelessWidget {
                   child: const Icon(Icons.article_rounded, color: AppColors.textPrimary, size: 22),
                 ),
                 const SizedBox(width: 14),
-                Text('BwVr', style: AppTypography.heading3),
+                Text('Pro Valuer', style: AppTypography.heading3),
               ],
             ),
           ),
@@ -106,6 +115,7 @@ class _Sidebar extends StatelessWidget {
               children: navItems.map((item) => _SidebarItem(
                 item: item,
                 isActive: currentRoute == item.route || (item.route != '/' && currentRoute.startsWith(item.route)),
+                onTap: isMobile ? () => Navigator.pop(context) : null,
               )).toList(),
             ),
           ),
@@ -166,15 +176,19 @@ class _Sidebar extends StatelessWidget {
 class _SidebarItem extends StatelessWidget {
   final _NavItem item;
   final bool isActive;
+  final VoidCallback? onTap;
 
-  const _SidebarItem({required this.item, required this.isActive});
+  const _SidebarItem({required this.item, required this.isActive, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: InkWell(
-        onTap: () => context.go(item.route),
+        onTap: () {
+          if (onTap != null) onTap!();
+          context.go(item.route);
+        },
         borderRadius: BorderRadius.circular(10),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -204,7 +218,8 @@ class _SidebarItem extends StatelessWidget {
 
 class _TopBar extends StatelessWidget {
   final String title;
-  const _TopBar({required this.title});
+  final bool showMenu;
+  const _TopBar({required this.title, this.showMenu = false});
 
   @override
   Widget build(BuildContext context) {
@@ -214,12 +229,23 @@ class _TopBar extends StatelessWidget {
         color: AppColors.background,
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: showMenu ? 16 : 32),
       child: Row(
         children: [
-          Text(title, style: AppTypography.heading2),
-          const Spacer(),
-          // Breadcrumbs can go here if needed
+          if (showMenu) ...[
+            IconButton(
+              icon: const Icon(Icons.menu_rounded),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: Text(
+              title,
+              style: AppTypography.heading2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );

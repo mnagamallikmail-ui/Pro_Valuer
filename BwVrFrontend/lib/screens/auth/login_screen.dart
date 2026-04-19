@@ -133,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'BwVr',
+                        'Pro Valuer',
                         style: AppTypography.heading1,
                       ),
                       const SizedBox(height: 6),
@@ -142,12 +142,14 @@ class _LoginScreenState extends State<LoginScreen>
                         style: AppTypography.bodyLarge.copyWith(
                           color: AppColors.textSecondary,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 48),
 
                       // Card
                       Container(
-                        width: 420,
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        width: double.infinity,
                         padding: const EdgeInsets.all(40),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
@@ -251,8 +253,8 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                       const SizedBox(height: 32),
 
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Wrap(
+                        alignment: WrapAlignment.center,
                         children: [
                           Text(
                             'Need an account?',
@@ -268,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                       const SizedBox(height: 48),
                       Text(
-                        '© 2026 BwVr System',
+                        '© 2026 Pro Valuer System',
                         style: AppTypography.label,
                       ),
                     ],

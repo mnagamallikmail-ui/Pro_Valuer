@@ -77,202 +77,231 @@ class _DashboardContent extends StatelessWidget {
     final isAdmin = session?.isAdmin ?? false;
     final displayName = session?.displayName ?? 'User';
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Welcome header
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isAdmin ? 'Admin Dashboard' : 'Welcome back,',
-                        style: AppTypography.subheading.copyWith(color: AppColors.textSecondary),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        displayName,
-                        style: AppTypography.heading1.copyWith(color: AppColors.textPrimary),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () => context.go('/reports/new'),
-                            icon: const Icon(Icons.add_rounded, size: 18),
-                            label: const Text('New Report'),
-                          ),
-                          const SizedBox(width: 16),
-                          OutlinedButton.icon(
-                            onPressed: () => context.go('/templates/upload'),
-                            icon: const Icon(Icons.upload_rounded, size: 18),
-                            label: const Text('Upload Template'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.description_rounded,
-                    size: 100, color: AppColors.textPrimary.withOpacity(0.05)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 40),
+    return LayoutBuilder(builder: (context, constraints) {
+      final isMobile = constraints.maxWidth < 700;
+      final padding = isMobile ? 16.0 : 32.0;
 
-          // Stats cards
-          Text('Overview', style: AppTypography.heading3),
-          const SizedBox(height: 20),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final double spacing = 20;
-              final double cardWidth = (constraints.maxWidth - (3 * spacing)) / 4;
-              
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: [
-                  SizedBox(
-                    width: cardWidth,
-                    child: InkWell(
-                      onTap: () => context.go('/reports'),
-                      borderRadius: BorderRadius.circular(12),
-                      child: StatsCard(
-                        title: 'Total Reports',
-                        value: stats.totalReports.toString(),
-                        icon: Icons.description_rounded,
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: cardWidth,
-                    child: InkWell(
-                      onTap: () => context.go('/reports'),
-                      borderRadius: BorderRadius.circular(12),
-                      child: StatsCard(
-                        title: 'This Month',
-                        value: stats.reportsThisMonth.toString(),
-                        icon: Icons.calendar_today_rounded,
-                        color: AppColors.secondary,
-                        subtitle: 'New reports',
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: cardWidth,
-                    child: InkWell(
-                      onTap: () => context.go('/templates'),
-                      borderRadius: BorderRadius.circular(12),
-                      child: StatsCard(
-                        title: 'Active Templates',
-                        value: stats.activeTemplates.toString(),
-                        icon: Icons.folder_copy_rounded,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: cardWidth,
-                    child: InkWell(
-                      onTap: () {},
-                      borderRadius: BorderRadius.circular(12),
-                      child: StatsCard(
-                        title: 'Banks',
-                        value: stats.distinctBanks.toString(),
-                        icon: Icons.account_balance_rounded,
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 48),
-
-          // Recent reports
-          Row(
-            children: [
-              Text('Recent Reports', style: AppTypography.heading3),
-              const Spacer(),
-              TextButton(
-                onPressed: () => context.go('/reports'),
-                child: const Text('View all →'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          if (recentReports.isEmpty)
-            EmptyState(
-              icon: Icons.description_outlined,
-              title: 'No reports yet',
-              subtitle: 'Create your first report to get started',
-              action: ElevatedButton(
-                onPressed: () => context.go('/reports/new'),
-                child: const Text('Create Report'),
-              ),
-            )
-          else
+      return SingleChildScrollView(
+        padding: EdgeInsets.all(padding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Welcome header
             Container(
+              padding: EdgeInsets.all(padding),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: AppColors.primary,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border),
               ),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: recentReports.length,
-                separatorBuilder: (_, __) => const Divider(),
-                itemBuilder: (context, i) {
-                  final r = recentReports[i];
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    leading: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.description_rounded,
-                          color: AppColors.textPrimary, size: 24),
-                    ),
-                    title: Row(
+              child: isMobile
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ReferenceChip(referenceNumber: r.referenceNumber, fontSize: 12),
-                        const SizedBox(width: 12),
+                        _buildWelcomeInfo(isAdmin, displayName, context, isMobile),
+                      ],
+                    )
+                  : Row(
+                      children: [
                         Expanded(
-                          child: Text(r.reportTitle,
-                              style: AppTypography.subheading,
-                              overflow: TextOverflow.ellipsis),
+                          child: _buildWelcomeInfo(isAdmin, displayName, context, isMobile),
                         ),
+                        Icon(Icons.description_rounded,
+                            size: 100, color: AppColors.textPrimary.withOpacity(0.05)),
                       ],
                     ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text('${r.bankName ?? ''} • ${r.vendorName ?? ''}',
-                          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
-                    ),
-                    trailing: StatusChip(status: r.reportStatus),
-                    onTap: () => context.go('/reports/${r.reportId}'),
-                  );
-                },
-              ),
             ),
-        ],
+            const SizedBox(height: 40),
+
+            // Stats cards
+            Text('Overview', style: AppTypography.heading3),
+            const SizedBox(height: 20),
+            _buildStatsGrid(constraints.maxWidth, context),
+            
+            const SizedBox(height: 48),
+
+            // Recent reports
+            Row(
+              children: [
+                Text('Recent Reports', style: AppTypography.heading3),
+                const Spacer(),
+                TextButton(
+                  onPressed: () => context.go('/reports'),
+                  child: const Text('View all →'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            if (recentReports.isEmpty)
+              EmptyState(
+                icon: Icons.description_outlined,
+                title: 'No reports yet',
+                subtitle: 'Create your first report to get started',
+                action: ElevatedButton(
+                  onPressed: () => context.go('/reports/new'),
+                  child: const Text('Create Report'),
+                ),
+              )
+            else
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: recentReports.length,
+                  separatorBuilder: (_, __) => const Divider(),
+                  itemBuilder: (context, i) {
+                    final r = recentReports[i];
+                    return ListTile(
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: isMobile ? 16 : 24, vertical: 12),
+                      leading: isMobile 
+                        ? null 
+                        : Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: AppColors.accent.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.description_rounded,
+                                color: AppColors.textPrimary, size: 24),
+                          ),
+                      title: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          ReferenceChip(referenceNumber: r.referenceNumber, fontSize: 11),
+                          const SizedBox(width: 8),
+                          Text(r.reportTitle,
+                              style: AppTypography.subheading,
+                              overflow: TextOverflow.ellipsis),
+                        ],
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text('${r.bankName ?? ''} • ${r.vendorName ?? ''}',
+                            style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                            overflow: TextOverflow.ellipsis),
+                      ),
+                      trailing: StatusChip(status: r.reportStatus),
+                      onTap: () => context.go('/reports/${r.reportId}'),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildWelcomeInfo(bool isAdmin, String displayName, BuildContext context, bool isMobile) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          isAdmin ? 'Admin Dashboard' : 'Welcome back,',
+          style: AppTypography.subheading.copyWith(color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          displayName,
+          style: AppTypography.heading1.copyWith(
+            color: AppColors.textPrimary,
+            fontSize: isMobile ? 24 : 32,
+          ),
+        ),
+        const SizedBox(height: 24),
+        Wrap(
+          spacing: 16,
+          runSpacing: 12,
+          children: [
+            ElevatedButton.icon(
+              onPressed: () => context.go('/reports/new'),
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: const Text('New Report'),
+            ),
+            OutlinedButton.icon(
+              onPressed: () => context.go('/templates/upload'),
+              icon: const Icon(Icons.upload_rounded, size: 18),
+              label: const Text('Upload Template'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsGrid(double maxWidth, BuildContext context) {
+    final double spacing = 20;
+    int crossAxisCount = 4;
+    if (maxWidth < 600) crossAxisCount = 1;
+    else if (maxWidth < 1000) crossAxisCount = 2;
+
+    final double cardWidth = (maxWidth - (spacing * (crossAxisCount + 1))) / crossAxisCount;
+
+    return Wrap(
+      spacing: spacing,
+      runSpacing: spacing,
+      children: [
+        _buildStatsCard(
+          cardWidth,
+          context,
+          '/reports',
+          'Total Reports',
+          stats.totalReports.toString(),
+          Icons.description_rounded,
+          AppColors.accent,
+        ),
+        _buildStatsCard(
+          cardWidth,
+          context,
+          '/reports',
+          'This Month',
+          stats.reportsThisMonth.toString(),
+          Icons.calendar_today_rounded,
+          AppColors.secondary,
+          subtitle: 'New reports',
+        ),
+        _buildStatsCard(
+          cardWidth,
+          context,
+          '/templates',
+          'Active Templates',
+          stats.activeTemplates.toString(),
+          Icons.folder_copy_rounded,
+          AppColors.primary,
+        ),
+        _buildStatsCard(
+          cardWidth,
+          context,
+          '',
+          'Banks',
+          stats.distinctBanks.toString(),
+          Icons.account_balance_rounded,
+          AppColors.accent,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsCard(double width, BuildContext context, String route, String title, String value, IconData icon, Color color, {String? subtitle}) {
+    return SizedBox(
+      width: width,
+      child: InkWell(
+        onTap: route.isEmpty ? null : () => context.go(route),
+        borderRadius: BorderRadius.circular(12),
+        child: StatsCard(
+          title: title,
+          value: value,
+          icon: icon,
+          color: color,
+          subtitle: subtitle,
+        ),
       ),
     );
   }

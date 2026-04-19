@@ -149,15 +149,17 @@ class _SignupScreenState extends State<SignupScreen>
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Join BwVr Report Management System',
+                        'Join Pro Valuer Report Management System',
                         style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
 
                       // Card
                       Container(
-                        width: 440,
-                        padding: const EdgeInsets.all(40),
+                        constraints: const BoxConstraints(maxWidth: 440),
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(16),
@@ -287,9 +289,11 @@ class _SignupScreenState extends State<SignupScreen>
                           children: [
                             const Icon(Icons.info_outline_rounded, color: AppColors.textPrimary, size: 16),
                             const SizedBox(width: 8),
-                            Text(
-                              'New accounts require admin approval.',
-                              style: AppTypography.bodyMedium.copyWith(fontSize: 12),
+                            Flexible(
+                              child: Text(
+                                'New accounts require admin approval.',
+                                style: AppTypography.bodyMedium.copyWith(fontSize: 12),
+                              ),
                             ),
                           ],
                         ),
@@ -305,5 +309,3 @@ class _SignupScreenState extends State<SignupScreen>
     );
   }
 }
-
-

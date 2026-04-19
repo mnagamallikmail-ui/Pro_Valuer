@@ -10,16 +10,16 @@ void main() {
     // AuthService.clearSessionOnUnauthorized() is already called in the interceptor.
     // GoRouter listens to AuthService (refreshListenable), so it will auto-redirect to /login.
   };
-  runApp(const BwVrApp());
+  runApp(const ProValuerApp());
 }
 
-class BwVrApp extends StatelessWidget {
-  const BwVrApp({super.key});
+class ProValuerApp extends StatelessWidget {
+  const ProValuerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'BwVr Report Management System',
+      title: 'Pro Valuer Report Management System',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: appRouter,

@@ -70,23 +70,23 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @PostMapping("/register")
+    @PostMapping("/signup")
     @Operation(summary = "Register a new user (pending admin approval)")
     public ResponseEntity<ApiResponse<String>> registerUser(@RequestBody RegisterRequest signUpRequest) {
+        String username = (signUpRequest.email != null) ? signUpRequest.email.trim() : signUpRequest.username;
         
-
-        if (signUpRequest.username == null || signUpRequest.username.isBlank()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_INPUT", "Username is required."));
+        if (username == null || username.isBlank()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_INPUT", "Email/Username is required."));
         }
-        if (userRepository.findByUsername(signUpRequest.username.trim()).isPresent()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("USERNAME_TAKEN", "Username is already taken."));
+        if (userRepository.findByUsername(username).isPresent()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("USERNAME_TAKEN", "An account with this email/username already exists."));
         }
         if (signUpRequest.password == null || signUpRequest.password.length() < 6) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_INPUT", "Password must be at least 6 characters."));
         }
 
         BwvrUser user = new BwvrUser();
-        user.setUsername(signUpRequest.username.trim());
+        user.setUsername(username);
         user.setFullName(signUpRequest.fullName);
         user.setPasswordHash(encoder.encode(signUpRequest.password));
         user.setRole("USER");
@@ -95,6 +95,12 @@ public class AuthController {
         userRepository.save(user);
 
         return ResponseEntity.ok(ApiResponse.success("PENDING_APPROVAL", "Signup request submitted. Awaiting admin approval."));
+    }
+
+    @PostMapping("/register")
+    @Operation(summary = "Legacy register endpoint (aliased to /signup)")
+    public ResponseEntity<ApiResponse<String>> legacyRegister(@RequestBody RegisterRequest signUpRequest) {
+        return registerUser(signUpRequest);
     }
 
     @PostMapping("/change-password")
@@ -126,7 +132,8 @@ public class AuthController {
     }
 
     public static class RegisterRequest {
-        public String username;
+        public String username; // Legacy support
+        public String email;    // Preferred
         public String fullName;
         public String password;
     }

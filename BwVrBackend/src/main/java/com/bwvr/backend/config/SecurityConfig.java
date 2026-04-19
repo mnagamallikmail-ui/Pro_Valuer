@@ -60,6 +60,7 @@ public class SecurityConfig {
                 auth.requestMatchers(
                         "/",
                         "/api/v1/auth/register",
+                        "/api/v1/auth/signup",
                         "/api/v1/auth/login",
                         "/actuator/**",
                         "/swagger-ui/**",

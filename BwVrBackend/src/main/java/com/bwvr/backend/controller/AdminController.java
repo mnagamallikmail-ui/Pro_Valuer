@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,9 +21,11 @@ import java.util.stream.Collectors;
 public class AdminController {
 
     private final BwvrUserRepository userRepository;
+    private final PasswordEncoder encoder;
 
-    public AdminController(BwvrUserRepository userRepository) {
+    public AdminController(BwvrUserRepository userRepository, PasswordEncoder encoder) {
         this.userRepository = userRepository;
+        this.encoder = encoder;
     }
 
     // ── User Listing ──────────────────────────────────────────────────────────
@@ -76,6 +79,39 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(null, "User '" + user.getUsername() + "' rejected."));
     }
 
+    // ── User Management (Add/Delete) ──────────────────────────────────────────
+
+    @PostMapping("/users")
+    @Operation(summary = "Add a new user manually (Pre-Approved)")
+    public ResponseEntity<ApiResponse<String>> addUser(@RequestBody AddUserRequest request) {
+        if (request.username == null || request.username.isBlank()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_INPUT", "Username/Email is required."));
+        }
+        if (userRepository.findByUsername(request.username).isPresent()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("TAKEn", "User already exists."));
+        }
+
+        BwvrUser user = new BwvrUser();
+        user.setUsername(request.username);
+        user.setFullName(request.fullName);
+        user.setPasswordHash(encoder.encode(request.password));
+        user.setRole(request.role != null ? request.role : "USER");
+        user.setStatus("APPROVED"); // Admins add pre-approved users
+
+        userRepository.save(user);
+        return ResponseEntity.ok(ApiResponse.success(null, "User created successfully."));
+    }
+
+    @DeleteMapping("/users/{id}")
+    @Operation(summary = "Delete a user by ID")
+    public ResponseEntity<ApiResponse<String>> deleteUser(@PathVariable Long id) {
+        if (!userRepository.existsById(id)) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("NOT_FOUND", "User not found."));
+        }
+        userRepository.deleteById(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "User deleted successfully."));
+    }
+
     // ── DTO ───────────────────────────────────────────────────────────────────
 
     public static class UserDto {
@@ -96,5 +132,12 @@ public class AdminController {
                 this.createdAt = user.getCreatedAt().toString();
             }
         }
+    }
+
+    public static class AddUserRequest {
+        public String username;
+        public String fullName;
+        public String password;
+        public String role;
     }
 }

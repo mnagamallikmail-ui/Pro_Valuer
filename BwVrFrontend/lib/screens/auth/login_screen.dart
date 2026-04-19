@@ -302,7 +302,7 @@ class _LoginFormPanel extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () => context.go('/signup'),
-                        child: const Text('Request Access'),
+                        child: const Text('Sign Up'),
                       ),
                     ],
                   ),

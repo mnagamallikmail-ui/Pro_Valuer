@@ -12,26 +12,16 @@ class AdminUsersScreen extends StatefulWidget {
   State<AdminUsersScreen> createState() => _AdminUsersScreenState();
 }
 
-class _AdminUsersScreenState extends State<AdminUsersScreen>
-    with SingleTickerProviderStateMixin {
+class _AdminUsersScreenState extends State<AdminUsersScreen> {
   final _api = ApiService();
-  late TabController _tabController;
-  List<Map<String, dynamic>> _allUsers = [];
-  List<Map<String, dynamic>> _pendingUsers = [];
+  List<Map<String, dynamic>> _users = [];
   bool _loading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _load();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   Future<void> _load() async {
@@ -41,10 +31,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     });
     try {
       final all = await _api.getAdminUsers();
-      final pending = await _api.getPendingUsers();
       setState(() {
-        _allUsers = all;
-        _pendingUsers = pending;
+        _users = all;
         _loading = false;
       });
     } catch (e) {
@@ -57,55 +45,105 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     }
   }
 
-  Future<void> _approve(Map<String, dynamic> user) async {
-    try {
-      await _api.approveUser(user['id'] as int);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("User '${user['username']}' approved."),
-        backgroundColor: AppColors.textPrimary,
-      ));
-      _load();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e.toString().replaceAll('Exception: ', '')),
-        backgroundColor: AppColors.error,
-      ));
-    }
-  }
-
-  Future<void> _reject(Map<String, dynamic> user) async {
+  Future<void> _deleteUser(int userId, String username) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Reject User', style: AppTypography.heading3),
-        content: Text("Reject '${user['username']}' permanently?", style: AppTypography.bodyMedium),
+        title: Text('Delete User', style: AppTypography.heading3),
+        content: Text("Are you sure you want to delete user '$username'? This action cannot be undone.", style: AppTypography.bodyMedium),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Reject'),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE11D48)),
+            child: const Text('Delete'),
           ),
         ],
       ),
     );
-    if (confirmed != true) return;
-    try {
-      await _api.rejectUser(user['id'] as int);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("User '${user['username']}' rejected."),
-        backgroundColor: AppColors.textPrimary,
-      ));
-      _load();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e.toString().replaceAll('Exception: ', '')),
-        backgroundColor: AppColors.error,
-      ));
+
+    if (confirmed == true) {
+      try {
+        await _api.deleteUser(userId);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User deleted successfully')));
+        _load();
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error));
+      }
+    }
+  }
+
+  Future<void> _addUser() async {
+    final emailController = TextEditingController();
+    final nameController = TextEditingController();
+    final passwordController = TextEditingController();
+    String role = 'USER';
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text('Add New User', style: AppTypography.heading3),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Full Name', style: AppTypography.label),
+                const SizedBox(height: 8),
+                TextField(controller: nameController, decoration: const InputDecoration(hintText: 'John Doe')),
+                const SizedBox(height: 16),
+                Text('Email / Username', style: AppTypography.label),
+                const SizedBox(height: 8),
+                TextField(controller: emailController, decoration: const InputDecoration(hintText: 'john@example.com')),
+                const SizedBox(height: 16),
+                Text('Initial Password', style: AppTypography.label),
+                const SizedBox(height: 8),
+                TextField(controller: passwordController, decoration: const InputDecoration(hintText: 'Min 6 chars')),
+                const SizedBox(height: 16),
+                Text('Role', style: AppTypography.label),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: role,
+                  decoration: const InputDecoration(),
+                  items: const [
+                    DropdownMenuItem(value: 'USER', child: Text('Standard User')),
+                    DropdownMenuItem(value: 'ADMIN', child: Text('Administrator')),
+                  ],
+                  onChanged: (v) => setDialogState(() => role = v ?? 'USER'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF059669)),
+              child: const Text('Create User'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (result == true) {
+      try {
+        await _api.addAdminUser(
+          email: emailController.text.trim(),
+          fullName: nameController.text.trim(),
+          password: passwordController.text,
+          role: role,
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User created successfully')));
+        _load();
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error));
+      }
     }
   }
 
@@ -114,220 +152,117 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     return AppLayout(
       currentRoute: '/admin/users',
       title: 'User Management',
-      child: Column(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              color: AppColors.background,
-              border: Border(bottom: BorderSide(color: AppColors.border)),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              labelColor: AppColors.textPrimary,
-              unselectedLabelColor: AppColors.textSecondary,
-              indicatorColor: AppColors.primary,
-              indicatorWeight: 3,
-              tabs: [
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Pending Approvals'),
-                      if (_pendingUsers.isNotEmpty) ...[
-                        const SizedBox(width: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: Text(
-                            '${_pendingUsers.length}',
-                            style: AppTypography.label.copyWith(fontSize: 11, color: AppColors.textPrimary, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const Tab(text: 'All Users'),
-              ],
-            ),
-          ),
-
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator(color: AppColors.textPrimary))
-                : _error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+      child: Container(
+        color: Colors.white,
+        child: _loading
+            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            : Column(
+                children: [
+                  // Toolbar
+                  Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Row(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.error_outline, color: AppColors.textPrimary, size: 48),
-                            const SizedBox(height: 16),
-                            Text(_error!, style: AppTypography.bodyMedium),
-                            const SizedBox(height: 24),
-                            ElevatedButton.icon(
-                              onPressed: _load,
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Retry'),
-                            ),
+                            Text('System Users', style: AppTypography.heading2),
+                            Text('Manage accounts and access permissions', style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
                           ],
                         ),
-                      )
-                    : TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _UserList(
-                            users: _pendingUsers,
-                            showActions: true,
-                            emptyTitle: 'No pending approvals',
-                            emptySubtitle: 'All requests have been reviewed.',
-                            onApprove: _approve,
-                            onReject: _reject,
+                        const Spacer(),
+                        ElevatedButton.icon(
+                          onPressed: _addUser,
+                          icon: const Icon(Icons.add_rounded),
+                          label: const Text('Add User'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF059669),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          _UserList(
-                            users: _allUsers,
-                            showActions: false,
-                            emptyTitle: 'No users yet',
-                            emptySubtitle: 'Registered users appear here.',
-                            onApprove: _approve,
-                            onReject: _reject,
-                          ),
-                        ],
-                      ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _UserList extends StatelessWidget {
-  final List<Map<String, dynamic>> users;
-  final bool showActions;
-  final String emptyTitle;
-  final String emptySubtitle;
-  final Future<void> Function(Map<String, dynamic>) onApprove;
-  final Future<void> Function(Map<String, dynamic>) onReject;
-
-  const _UserList({
-    required this.users,
-    required this.showActions,
-    required this.emptyTitle,
-    required this.emptySubtitle,
-    required this.onApprove,
-    required this.onReject,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (users.isEmpty) {
-      return EmptyState(
-        icon: Icons.people_outline,
-        title: emptyTitle,
-        subtitle: emptySubtitle,
-      );
-    }
-    return ListView.separated(
-      padding: const EdgeInsets.all(32),
-      itemCount: users.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
-      itemBuilder: (context, i) {
-        final user = users[i];
-        final status = user['status'] as String? ?? 'PENDING';
-        final role = user['role'] as String? ?? 'USER';
-        final username = user['username'] as String? ?? '';
-        final fullName = user['fullName'] as String?;
-        final createdAt = user['createdAt'] as String?;
-
-        Color statusBg;
-        switch (status) {
-          case 'APPROVED': statusBg = AppColors.secondary; break;
-          case 'REJECTED': statusBg = AppColors.error; break;
-          default: statusBg = AppColors.primary;
-        }
-
-        return Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: role == 'ADMIN' ? AppColors.accent : AppColors.primary,
-                child: Text(
-                  username.isNotEmpty ? username[0].toUpperCase() : '?',
-                  style: AppTypography.heading3.copyWith(color: AppColors.textPrimary),
-                ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(fullName ?? username, style: AppTypography.subheading),
-                        const SizedBox(width: 12),
-                        if (role == 'ADMIN')
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: Text('ADMIN', style: AppTypography.label.copyWith(fontSize: 9, fontWeight: FontWeight.bold)),
-                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text('@$username', style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
-                    if (createdAt != null)
-                      Text('Since ${createdAt.split('T').first}', style: AppTypography.label.copyWith(fontSize: 10)),
-                  ],
-                ),
-              ),
-              
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: statusBg,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Text(status.toUpperCase(), style: AppTypography.label.copyWith(fontSize: 10, color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-              ),
+                  ),
 
-              if (showActions && status == 'PENDING') ...[
-                const SizedBox(width: 20),
-                ElevatedButton(
-                  onPressed: () => onApprove(user),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  // Table
+                  Expanded(
+                    child: _error != null
+                        ? Center(child: Text(_error!, style: AppTypography.bodyMedium.copyWith(color: AppColors.error)))
+                        : _users.isEmpty
+                            ? const EmptyState(icon: Icons.people_outline, title: 'No Users Found', subtitle: 'Start by adding a new user manually.')
+                            : SingleChildScrollView(
+                                padding: const EdgeInsets.symmetric(horizontal: 32),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: AppColors.border),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: DataTable(
+                                      headingRowColor: MaterialStateProperty.all(AppColors.surface),
+                                      dataRowMaxHeight: 70,
+                                      columns: [
+                                        DataColumn(label: Text('USER', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold))),
+                                        DataColumn(label: Text('ROLE', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold))),
+                                        DataColumn(label: Text('STATUS', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold))),
+                                        DataColumn(label: Text('ACTIONS', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold))),
+                                      ],
+                                      rows: _users.map((user) {
+                                        final id = user['id'] as int;
+                                        final username = user['username'] as String;
+                                        final fullName = user['fullName'] as String?;
+                                        final role = user['role'] as String;
+                                        final status = user['status'] as String;
+
+                                        return DataRow(cells: [
+                                          DataCell(
+                                            Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(fullName ?? 'No Name', style: AppTypography.subheading.copyWith(fontSize: 14)),
+                                                Text(username, style: AppTypography.label.copyWith(fontSize: 11)),
+                                              ],
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: role == 'ADMIN' ? AppColors.primary.withOpacity(0.1) : AppColors.surface,
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Text(role, style: AppTypography.label.copyWith(fontSize: 10, color: role == 'ADMIN' ? AppColors.primary : AppColors.textPrimary)),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Text(status, style: AppTypography.bodyMedium),
+                                          ),
+                                          DataCell(
+                                            Row(
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFE11D48), size: 20),
+                                                  tooltip: 'Delete User',
+                                                  onPressed: () => _deleteUser(id, username),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ]);
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ),
+                              ),
                   ),
-                  child: const Text('Approve'),
-                ),
-                const SizedBox(width: 12),
-                OutlinedButton(
-                  onPressed: () => onReject(user),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                  child: const Text('Reject'),
-                ),
-              ],
-            ],
-          ),
-        );
-      },
+                  const SizedBox(height: 32),
+                ],
+              ),
+      ),
     );
   }
 }

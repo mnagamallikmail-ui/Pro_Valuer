@@ -390,4 +390,17 @@ class ApiService {
   Future<void> rejectUser(int userId) async {
     await _withRetry(() => _dio.post('/admin/users/$userId/reject'));
   }
+
+  Future<void> addAdminUser({required String email, required String fullName, required String password, String role = 'USER'}) async {
+    await _withRetry(() => _dio.post('/admin/users', data: {
+      'username': email,
+      'fullName': fullName,
+      'password': password,
+      'role': role,
+    }));
+  }
+
+  Future<void> deleteUser(int userId) async {
+    await _withRetry(() => _dio.delete('/admin/users/$userId'));
+  }
 }

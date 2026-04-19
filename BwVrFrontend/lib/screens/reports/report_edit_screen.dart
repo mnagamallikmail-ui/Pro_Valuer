@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +25,7 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
 
   final Map<int, TextEditingController> _controllers = {};
   final Map<int, String> _uploadedPaths = {};
+  final Map<int, Uint8List> _previewBytes = {};
   bool _saving = false;
   bool _hasChanges = false;
 
@@ -125,6 +127,15 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
       if (image == null) return;
 
       final bytes = await image.readAsBytes();
+      
+      // Immediate UI Feedback: show preview locally before/during upload
+      if (mounted) {
+        setState(() {
+          _previewBytes[v.placeholderId] = bytes;
+          _hasChanges = true; 
+        });
+      }
+
       final result = await _apiService.uploadImage(
         fileBytes: bytes,
         fileName: image.name,
@@ -296,6 +307,7 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
           v: v,
           reportId: widget.reportId,
           uploadedName: _uploadedPaths[v.placeholderId],
+          previewBytes: _previewBytes[v.placeholderId],
           onUpload: () => _uploadImage(v),
         ));
       }
@@ -347,9 +359,10 @@ class _ImageFieldCard extends StatelessWidget {
   final ReportValueModel v;
   final int reportId;
   final String? uploadedName;
+  final Uint8List? previewBytes;
   final VoidCallback onUpload;
 
-  const _ImageFieldCard({required this.v, required this.reportId, this.uploadedName, required this.onUpload});
+  const _ImageFieldCard({required this.v, required this.reportId, this.uploadedName, this.previewBytes, required this.onUpload});
 
   @override
   Widget build(BuildContext context) {
@@ -360,7 +373,7 @@ class _ImageFieldCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: hasImage ? AppColors.secondary : AppColors.border),
+        border: Border.all(color: (hasImage || previewBytes != null) ? AppColors.secondary : AppColors.border),
       ),
       child: InkWell(
         onTap: onUpload,
@@ -376,16 +389,21 @@ class _ImageFieldCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.border),
                 ),
-                child: hasImage
+                child: (previewBytes != null)
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          ApiService().getBlobImageUrl(reportId, v.hiddenInternalKey),
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.check_circle_rounded, color: AppColors.secondary, size: 32),
-                        ),
+                        child: Image.memory(previewBytes!, fit: BoxFit.cover),
                       )
-                    : const Icon(Icons.image_outlined, color: AppColors.textSecondary, size: 32),
+                    : hasImage
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              ApiService().getBlobImageUrl(reportId, v.hiddenInternalKey),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(Icons.check_circle_rounded, color: AppColors.secondary, size: 32),
+                            ),
+                          )
+                        : const Icon(Icons.image_outlined, color: AppColors.textSecondary, size: 32),
               ),
               const SizedBox(width: 24),
               Expanded(

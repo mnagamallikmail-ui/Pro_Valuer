@@ -122,7 +122,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Set new password for '$username'", style: AppTypography.bodySmall),
+            Text("Set new password for '$username'", style: AppTypography.label),
             const SizedBox(height: 16),
             TextField(
               controller: passwordController,

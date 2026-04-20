@@ -5,6 +5,8 @@ import '../../models/template_model.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_layout.dart';
 import '../../widgets/common_widgets.dart';
+import '../../services/auth_service.dart';
+import '../../theme/app_colors.dart';
 import 'package:intl/intl.dart';
 
 class TemplateListScreen extends StatefulWidget {
@@ -267,7 +269,7 @@ class _TemplateTable extends StatelessWidget {
                         iconSize: 18,
                       ),
                     ] else
-                      const Text('View Only', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                      Text('View Only', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                   ],
                 )),
               ],

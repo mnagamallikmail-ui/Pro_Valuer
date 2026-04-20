@@ -24,7 +24,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 @WebMvcTest(value = ReportImageController.class, properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration")
 @AutoConfigureMockMvc(addFilters = false)
 @WithMockUser(username = "user1", roles = "USER")
-@SuppressWarnings({"unused", "null"})
 class ReportImageControllerTest {
     
     @MockBean

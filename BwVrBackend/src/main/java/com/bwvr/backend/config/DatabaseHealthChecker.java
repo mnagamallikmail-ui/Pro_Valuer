@@ -40,8 +40,10 @@ public class DatabaseHealthChecker implements CommandLineRunner {
                 log.info("Sequence 'REPORT_REF_SEQ' confirmed.");
             }
             
+        } catch (org.springframework.dao.DataAccessException e) {
+            log.warn("Database health check failed (DB objects might be missing or DB not ready): {}", e.getMessage());
         } catch (Exception e) {
-            log.warn("Database health check encountered an error (DB might not be fully ready): {}", e.getMessage());
+            log.error("Unexpected error during database health check: {}", e.getMessage(), e);
         }
     }
 }

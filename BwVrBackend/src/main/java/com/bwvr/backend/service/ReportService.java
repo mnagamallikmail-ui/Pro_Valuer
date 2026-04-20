@@ -63,7 +63,6 @@ public class ReportService {
     }
 
     @Transactional
-    @SuppressWarnings("null")
     public ReportResponse createReport(CreateReportRequest request) {
         BwvrTemplate template = templateRepository.findById(request.getTemplateId())
                 .filter(t -> "Y".equals(t.getIsActive()))

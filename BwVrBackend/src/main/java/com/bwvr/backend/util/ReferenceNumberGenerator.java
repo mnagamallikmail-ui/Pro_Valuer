@@ -23,7 +23,7 @@ public class ReferenceNumberGenerator {
         try {
             Long nextVal = jdbcTemplate.queryForObject("SELECT nextval('BWVR.REPORT_REF_SEQ')", Long.class);
             return (nextVal != null) ? String.valueOf(nextVal) : "10000";
-        } catch (Exception e) {
+        } catch (org.springframework.dao.DataAccessException e) {
             // Fallback: Find the max numerical reference number and increment it
             // Only runs if sequence fetch fails (e.g. sequence missing/corrupted)
             try {
@@ -32,7 +32,7 @@ public class ReferenceNumberGenerator {
                     Long.class
                 );
                 return String.valueOf((maxVal != null && maxVal >= 10000) ? maxVal + 1 : 10000);
-            } catch (Exception ex) {
+            } catch (org.springframework.dao.DataAccessException ex) {
                 throw new com.bwvr.backend.exception.ReportCreationException(
                     "Critical failure: Unable to generate unique reference number. " +
                     "Both DB sequence 'BWVR.REPORT_REF_SEQ' and table fallback failed.", ex);

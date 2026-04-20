@@ -32,7 +32,7 @@ class ReferenceNumberGeneratorTest {
     void generate_fallbackToMax_whenSequenceFails() {
         // First call fails, second call (MAX) succeeds
         when(jdbcTemplate.queryForObject(anyString(), eq(Long.class)))
-                .thenThrow(new RuntimeException("Sequence error"))
+                .thenThrow(new org.springframework.dao.DataRetrievalFailureException("Sequence error"))
                 .thenReturn(10123L);
 
         String ref = generator.generate();
@@ -44,12 +44,13 @@ class ReferenceNumberGeneratorTest {
     void generate_throwsException_whenAllFail() {
         // Both calls fail
         when(jdbcTemplate.queryForObject(anyString(), eq(Long.class)))
-                .thenThrow(new RuntimeException("Total database failure"));
+                .thenThrow(new org.springframework.dao.DataRetrievalFailureException("Total database failure"));
 
-        org.junit.jupiter.api.Assertions.assertThrows(
+        var ex = org.junit.jupiter.api.Assertions.assertThrows(
             com.bwvr.backend.exception.ReportCreationException.class,
             () -> generator.generate()
         );
+        assertThat(ex.getMessage()).contains("Critical failure");
     }
 }
 

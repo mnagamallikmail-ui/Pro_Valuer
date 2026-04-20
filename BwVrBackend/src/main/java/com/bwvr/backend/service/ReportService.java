@@ -287,6 +287,12 @@ public class ReportService {
                 })
                 .collect(Collectors.toList());
 
+        boolean fileExistsOnDisk = false;
+        if (report.getGeneratedFilePath() != null) {
+            java.io.File file = new java.io.File(report.getGeneratedFilePath());
+            fileExistsOnDisk = file.exists();
+        }
+
         return ReportDetailResponse.builder()
                 .reportId(report.getReportId())
                 .referenceNumber(report.getReferenceNumber())
@@ -303,7 +309,7 @@ public class ReportService {
                 .createdAt(report.getCreatedAt())
                 .updatedBy(report.getUpdatedBy())
                 .updatedAt(report.getUpdatedAt())
-                .hasGeneratedFile(report.getGeneratedFilePath() != null)
+                .hasGeneratedFile(fileExistsOnDisk)
                 .values(valueResponses)
                 .build();
     }
@@ -311,6 +317,13 @@ public class ReportService {
     private ReportResponse toReportResponse(BwvrReport r) {
         long valuesCount = reportValueRepository.countByReport_ReportId(r.getReportId());
         long totalPlaceholders = placeholderRepository.countByTemplate_TemplateId(r.getTemplate().getTemplateId());
+        
+        boolean fileExistsOnDisk = false;
+        if (r.getGeneratedFilePath() != null) {
+            java.io.File file = new java.io.File(r.getGeneratedFilePath());
+            fileExistsOnDisk = file.exists();
+        }
+
         return ReportResponse.builder()
                 .reportId(r.getReportId())
                 .referenceNumber(r.getReferenceNumber())
@@ -327,7 +340,7 @@ public class ReportService {
                 .updatedAt(r.getUpdatedAt())
                 .valuesCount(valuesCount)
                 .totalPlaceholders(totalPlaceholders)
-                .hasGeneratedFile(r.getGeneratedFilePath() != null)
+                .hasGeneratedFile(fileExistsOnDisk)
                 .build();
     }
 

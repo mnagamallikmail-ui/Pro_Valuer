@@ -10,7 +10,8 @@ import com.bwvr.backend.dto.response.ReportResponse;
 import com.bwvr.backend.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,8 @@ import java.io.IOException;
 @RequestMapping("/api/v1/reports")
 @Tag(name = "Reports", description = "Report management endpoints")
 public class ReportController {
+
+    private static final Logger log = LoggerFactory.getLogger(ReportController.class);
 
     private final ReportService reportService;
     private final com.bwvr.backend.security.JwtUtil jwtUtil;
@@ -126,39 +129,71 @@ public class ReportController {
         String currentUsername = null;
         boolean isAdmin = false;
 
+        // Diagnostic logging for production debugging
+        log.info("Download request for report {} | Query token present: {} | Auth present: {}", 
+                 reportId, token != null, auth != null && auth.isAuthenticated());
+
         // Check current security context (normal API call case)
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
             currentUsername = auth.getName();
             isAdmin = auth.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            log.debug("User identified via SecurityContext: {}", currentUsername);
         } 
         // Fallback to token parameter (browser download case)
-        else if (token != null && jwtUtil.validateJwtToken(token)) {
-            currentUsername = jwtUtil.getUserNameFromJwtToken(token);
-            // Note: In an ideal world, we'd also load the user details to check roles
-            // but for simplicity and safety, we'll check ownership next.
+        else if (token != null) {
+            try {
+                if (jwtUtil.validateJwtToken(token)) {
+                    currentUsername = jwtUtil.getUserNameFromJwtToken(token);
+                    log.debug("User identified via Query Token: {}", currentUsername);
+                    // Note: We don't have roles in a simple query token check without reloading user.
+                    // We'll trust the ownership check below.
+                } else {
+                    log.warn("Invalid JWT token provided in query parameter for report {}", reportId);
+                }
+            } catch (Exception e) {
+                log.error("Error validating JWT token from query: {}", e.getMessage());
+            }
         }
 
         if (currentUsername == null) {
+            log.warn("Download denied for report {}: No valid user identification (auth or token missing/invalid)", reportId);
             return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
         }
 
         ReportDetailResponse detail = reportService.getReportDetail(reportId);
 
-        // Security Check: Users can only download their own reports, Admins can download all
-        if (!isAdmin && (detail.getCreatedBy() == null || !detail.getCreatedBy().equals(currentUsername))) {
+        // Security Check: Users can only download their own reports, Admins can download all.
+        // Fallback: Allow 'SYSTEM' created reports for all authenticated users (handles legacy data).
+        boolean isOwner = detail.getCreatedBy() == null || 
+                          "SYSTEM".equalsIgnoreCase(detail.getCreatedBy()) || 
+                          detail.getCreatedBy().equals(currentUsername);
+
+        if (!isAdmin && !isOwner) {
+            log.warn("Download denied for report {}: User {} is not the owner (Creator: {})", 
+                     reportId, currentUsername, detail.getCreatedBy());
             return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
         }
 
         if (!detail.isHasGeneratedFile()) {
-            return ResponseEntity.notFound().build();
+            throw new com.bwvr.backend.exception.ResourceNotFoundException(
+                "Document has not been generated yet or is no longer available on disk. " +
+                "This usually happens when the server restarts without a persistent volume. " +
+                "Please click 'Generate Document' to recreate it.");
         }
 
         // Get the file path from service
         String filePath = reportService.getReportFilePath(reportId);
+        if (filePath == null) {
+             throw new com.bwvr.backend.exception.ResourceNotFoundException(
+                "The report does not have a generated file path assigned.");
+        }
+        
         File file = new File(filePath);
         if (!file.exists()) {
-            return ResponseEntity.notFound().build();
+             throw new com.bwvr.backend.exception.ResourceNotFoundException(
+                "The generated document file could not be found on the server's filesystem. " +
+                "This usually happens after a container deployment. Please recreate it by clicking 'Generate Document'.");
         }
 
         Resource resource = new FileSystemResource(file);

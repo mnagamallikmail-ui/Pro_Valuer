@@ -236,16 +236,31 @@ class ApiService {
     required String reportTitle,
     String? vendorName,
     String? location,
-    String createdBy = 'SYSTEM',
+    String? createdBy,
   }) async {
-    final response = await _dio.post('reports', data: {
-      'templateId': templateId,
-      'reportTitle': reportTitle,
-      'vendorName': vendorName,
-      'location': location,
-      'createdBy': createdBy,
-    });
-    return ReportModel.fromJson(response.data['data']);
+    // Use the authenticated user's username, not a hardcoded 'SYSTEM'
+    final username = createdBy ?? AuthService().session?.username ?? 'SYSTEM';
+    try {
+      final response = await _dio.post('reports', data: {
+        'templateId': templateId,
+        'reportTitle': reportTitle,
+        'vendorName': vendorName,
+        'location': location,
+        'createdBy': username,
+      });
+      return ReportModel.fromJson(response.data['data']);
+    } on DioException catch (e) {
+      // Extract the backend's specific message (e.g. REPORT_CREATION_ERROR)
+      final serverData = e.response?.data;
+      String msg = 'Failed to create report. Please try again.';
+      if (serverData is Map) {
+        msg = serverData['message']?.toString() ??
+              serverData['error']?.toString() ?? msg;
+      } else if (e.error != null) {
+        msg = e.error.toString();
+      }
+      throw Exception(msg);
+    }
   }
 
   Future<Map<String, dynamic>> searchReports(
@@ -314,7 +329,13 @@ class ApiService {
   }
 
   String getDownloadUrl(int reportId) {
-    final url = '${AppConfig.apiBaseUrl}/reports/$reportId/download';
+    // Remove trailing slash from apiBaseUrl if it exists to avoid double slashes
+    String baseUrl = AppConfig.apiBaseUrl;
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+    }
+    
+    final url = '$baseUrl/reports/$reportId/download';
     final token = AuthService().token;
     return (token != null && token.isNotEmpty) ? '$url?token=$token' : url;
   }
@@ -403,5 +424,13 @@ class ApiService {
 
   Future<void> deleteUser(int userId) async {
     await _withRetry(() => _dio.delete('admin/users/$userId'));
+  }
+
+  Future<void> updateUserRole(int userId, String role) async {
+    await _withRetry(() => _dio.patch('admin/users/$userId/role', queryParameters: {'role': role}));
+  }
+
+  Future<void> updateUserPassword(int userId, String newPassword) async {
+    await _withRetry(() => _dio.patch('admin/users/$userId/password', queryParameters: {'newPassword': newPassword}));
   }
 }

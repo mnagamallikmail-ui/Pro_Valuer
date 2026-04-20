@@ -10,6 +10,9 @@ public class ApiResponse<T> {
     private T data;
     private String error;
     private String code;
+    private String timestamp;
+    private String path;
+    private String details;
 
     public ApiResponse() {
     }
@@ -42,6 +45,18 @@ public class ApiResponse<T> {
         r.success = false;
         r.error = error;
         r.code = code;
+        r.timestamp = java.time.Instant.now().toString();
+        return r;
+    }
+
+    public static <T> ApiResponse<T> error(String error, String code, String path, String details) {
+        ApiResponse<T> r = new ApiResponse<>();
+        r.success = false;
+        r.error = error;
+        r.code = code;
+        r.timestamp = java.time.Instant.now().toString();
+        r.path = path;
+        r.details = details;
         return r;
     }
 
@@ -83,5 +98,29 @@ public class ApiResponse<T> {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
     }
 }

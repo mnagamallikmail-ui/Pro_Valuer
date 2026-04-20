@@ -3,6 +3,7 @@ package com.bwvr.backend.exception;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -21,32 +23,42 @@ import com.bwvr.backend.dto.response.ApiResponse;
 class GlobalExceptionHandlerTest {
 
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+    private WebRequest request;
+
+    @BeforeEach
+    void setUp() {
+        request = mock(WebRequest.class);
+        when(request.getDescription(false)).thenReturn("uri=/test/path");
+    }
 
     @Test
     void handleConflict_returns409() {
         ResponseEntity<ApiResponse<Void>> resp
-                = handler.handleConflict(new ConflictException("duplicate name"));
+                = handler.handleConflict(new ConflictException("duplicate name"), request);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getError()).contains("duplicate name");
+        assertThat(resp.getBody().getPath()).isEqualTo("/test/path");
     }
 
     @Test
     void handleNotFound_returns404() {
         ResponseEntity<ApiResponse<Void>> resp
-                = handler.handleNotFound(new ResourceNotFoundException("Report", 1L));
+                = handler.handleNotFound(new ResourceNotFoundException("Report", 1L), request);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getCode()).isEqualTo("RESOURCE_NOT_FOUND");
+        assertThat(resp.getBody().getPath()).isEqualTo("/test/path");
     }
 
     @Test
     void handleTemplateParseError_returns422() {
         ResponseEntity<ApiResponse<Void>> resp
-                = handler.handleTemplateParseError(new TemplateParseException("bad docx", null));
+                = handler.handleTemplateParseError(new TemplateParseException("bad docx", null), request);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
         assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getCode()).isEqualTo("TEMPLATE_PARSE_ERROR");
+        assertThat(resp.getBody().getPath()).isEqualTo("/test/path");
     }
 
     @Test
@@ -57,29 +69,32 @@ class GlobalExceptionHandlerTest {
         when(br.getFieldErrors()).thenReturn(
                 List.of(new FieldError("obj", "reportTitle", "must not be blank")));
 
-        ResponseEntity<ApiResponse<Void>> resp = handler.handleValidation(ex);
+        ResponseEntity<ApiResponse<Void>> resp = handler.handleValidation(ex, request);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getError()).contains("reportTitle");
         assertThat(resp.getBody().getCode()).isEqualTo("VALIDATION_ERROR");
+        assertThat(resp.getBody().getPath()).isEqualTo("/test/path");
     }
 
     @Test
     void handleFileSizeExceeded_returns413() {
         ResponseEntity<ApiResponse<Void>> resp
-                = handler.handleFileSizeExceeded(new MaxUploadSizeExceededException(1024));
+                = handler.handleFileSizeExceeded(new MaxUploadSizeExceededException(1024), request);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE);
         assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getCode()).isEqualTo("FILE_TOO_LARGE");
+        assertThat(resp.getBody().getPath()).isEqualTo("/test/path");
     }
 
     @Test
     void handleIllegalArg_returns400() {
         ResponseEntity<ApiResponse<Void>> resp
-                = handler.handleIllegalArg(new IllegalArgumentException("Only .docx allowed"));
+                = handler.handleIllegalArg(new IllegalArgumentException("Only .docx allowed"), request);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getError()).contains("Only .docx");
+        assertThat(resp.getBody().getPath()).isEqualTo("/test/path");
     }
 
     @Test
@@ -93,9 +108,10 @@ class GlobalExceptionHandlerTest {
     @Test
     void handleGeneral_returns500() {
         ResponseEntity<ApiResponse<Void>> resp
-                = handler.handleGeneral(new RuntimeException("boom"));
+                = handler.handleGeneral(new RuntimeException("boom"), request);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().getCode()).isEqualTo("INTERNAL_ERROR");
+        assertThat(resp.getBody().getPath()).isEqualTo("/test/path");
     }
 }

@@ -75,6 +75,84 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     }
   }
 
+  Future<void> _approveUser(int userId, String username) async {
+    try {
+      await _api.approveUser(userId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User '$username' approved successfully")));
+      _load();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error));
+    }
+  }
+
+  Future<void> _rejectUser(int userId, String username) async {
+    try {
+      await _api.rejectUser(userId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User '$username' rejected")));
+      _load();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error));
+    }
+  }
+
+  Future<void> _toggleRole(int userId, String currentRole) async {
+    final newRole = currentRole == 'ADMIN' ? 'USER' : 'ADMIN';
+    try {
+      await _api.updateUserRole(userId, newRole);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User role updated to $newRole")));
+      _load();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error));
+    }
+  }
+
+  Future<void> _changePassword(int userId, String username) async {
+    final passwordController = TextEditingController();
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Reset Password', style: AppTypography.heading3),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Set new password for '$username'", style: AppTypography.bodySmall),
+            const SizedBox(height: 16),
+            TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(labelText: 'New Password', hintText: 'Min 6 characters'),
+              obscureText: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Reset Password'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && passwordController.text.isNotEmpty) {
+      try {
+        await _api.updateUserPassword(userId, passwordController.text);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password updated successfully')));
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error));
+      }
+    }
+  }
+
   Future<void> _addUser() async {
     final emailController = TextEditingController();
     final nameController = TextEditingController();
@@ -239,13 +317,43 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                             ),
                                           ),
                                           DataCell(
-                                            Text(status, style: AppTypography.bodyMedium),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: status == 'APPROVED' ? const Color(0xFFDCFCE7) : status == 'PENDING' ? const Color(0xFFFEF9C3) : const Color(0xFFFEE2E2),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Text(status, style: AppTypography.label.copyWith(fontSize: 10, color: status == 'APPROVED' ? const Color(0xFF166534) : status == 'PENDING' ? const Color(0xFF854D0E) : const Color(0xFF991B1B))),
+                                            ),
                                           ),
                                           DataCell(
                                             Row(
                                               children: [
+                                                if (status == 'PENDING') ...[
+                                                  IconButton(
+                                                    icon: const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF059669), size: 20),
+                                                    tooltip: 'Approve User',
+                                                    onPressed: () => _approveUser(id, username),
+                                                  ),
+                                                  IconButton(
+                                                    icon: const Icon(Icons.highlight_off_rounded, color: Color(0xFFE11D48), size: 20),
+                                                    tooltip: 'Reject User',
+                                                    onPressed: () => _rejectUser(id, username),
+                                                  ),
+                                                ],
                                                 IconButton(
-                                                  icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFE11D48), size: 20),
+                                                  icon: Icon(role == 'ADMIN' ? Icons.shield_outlined : Icons.shield_rounded, 
+                                                    color: role == 'ADMIN' ? Colors.orange : Colors.blue, size: 20),
+                                                  tooltip: role == 'ADMIN' ? 'Demote to User' : 'Promote to Admin',
+                                                  onPressed: () => _toggleRole(id, role),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(Icons.lock_reset_rounded, color: Colors.indigo, size: 20),
+                                                  tooltip: 'Change Password',
+                                                  onPressed: () => _changePassword(id, username),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFF64748B), size: 20),
                                                   tooltip: 'Delete User',
                                                   onPressed: () => _deleteUser(id, username),
                                                 ),

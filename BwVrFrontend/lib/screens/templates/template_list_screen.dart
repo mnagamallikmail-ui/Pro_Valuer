@@ -110,14 +110,15 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
                         ),
                 ),
                 const SizedBox(width: 16),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    await context.push('/templates/upload');
-                    _load();
-                  },
-                  icon: const Icon(Icons.upload_rounded, size: 16),
-                  label: const Text('Upload Template'),
-                ),
+                if (AuthService().session?.isAdmin ?? false)
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      await context.push('/templates/upload');
+                      _load();
+                    },
+                    icon: const Icon(Icons.upload_rounded, size: 16),
+                    label: const Text('Upload Template'),
+                  ),
               ],
             ),
             const SizedBox(height: 20),
@@ -134,14 +135,16 @@ class _TemplateListScreenState extends State<TemplateListScreen> {
                               title: 'No templates found',
                               subtitle:
                                   'Upload a .docx template to get started',
-                              action: ElevatedButton(
-                                onPressed: () async {
-                                  await context.push('/templates/upload');
-                                  _load();
-                                },
-                                child: const Text('Upload Template'),
-                              ),
-                            )
+                                  action: (AuthService().session?.isAdmin ?? false)
+                                      ? ElevatedButton(
+                                          onPressed: () async {
+                                            await context.push('/templates/upload');
+                                            _load();
+                                          },
+                                          child: const Text('Upload Template'),
+                                        )
+                                      : null,
+                                )
                           : Container(
                               decoration: BoxDecoration(
                                 color: AppTheme.cardBg,
@@ -247,21 +250,24 @@ class _TemplateTable extends StatelessWidget {
                         fontSize: 12, color: AppTheme.textSecondary))),
                 _cell(Row(
                   children: [
-                    if (!t.isConfirmed)
+                    if (AuthService().session?.isAdmin ?? false) ...[
+                      if (!t.isConfirmed)
+                        IconButton(
+                          onPressed: () => onConfirm(t),
+                          icon: const Icon(Icons.check_circle_outline_rounded),
+                          tooltip: 'Confirm Placeholders',
+                          color: AppTheme.success,
+                          iconSize: 18,
+                        ),
                       IconButton(
-                        onPressed: () => onConfirm(t),
-                        icon: const Icon(Icons.check_circle_outline_rounded),
-                        tooltip: 'Confirm Placeholders',
-                        color: AppTheme.success,
+                        onPressed: () => onDelete(t),
+                        icon: const Icon(Icons.delete_outline_rounded),
+                        tooltip: 'Delete',
+                        color: AppTheme.danger,
                         iconSize: 18,
                       ),
-                    IconButton(
-                      onPressed: () => onDelete(t),
-                      icon: const Icon(Icons.delete_outline_rounded),
-                      tooltip: 'Delete',
-                      color: AppTheme.danger,
-                      iconSize: 18,
-                    ),
+                    ] else
+                      const Text('View Only', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                   ],
                 )),
               ],

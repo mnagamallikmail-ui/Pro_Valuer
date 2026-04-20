@@ -24,36 +24,32 @@ class ReferenceNumberGeneratorTest {
     @Test
     void generate_success_returnsSequenceValue() {
         when(jdbcTemplate.queryForObject(anyString(), eq(Long.class))).thenReturn(10005L);
-
         String ref = generator.generate();
-
         assertThat(ref).isEqualTo("10005");
     }
 
     @Test
-    void generate_fallback_whenExceptionOccurs() {
+    void generate_fallbackToMax_whenSequenceFails() {
+        // First call fails, second call (MAX) succeeds
         when(jdbcTemplate.queryForObject(anyString(), eq(Long.class)))
-                .thenThrow(new RuntimeException("Database error"));
+                .thenThrow(new RuntimeException("Sequence error"))
+                .thenReturn(10123L);
 
         String ref = generator.generate();
 
-        assertThat(ref).isEqualTo("10000");
+        assertThat(ref).isEqualTo("10124"); // 10123 + 1
     }
 
     @Test
-    void generate_fallback_whenNullReturned() {
-        when(jdbcTemplate.queryForObject(anyString(), eq(Long.class))).thenReturn(null);
+    void generate_throwsException_whenAllFail() {
+        // Both calls fail
+        when(jdbcTemplate.queryForObject(anyString(), eq(Long.class)))
+                .thenThrow(new RuntimeException("Total database failure"));
 
-        // Since queryForObject might return null if not careful, or throw EmptyResultDataAccessException
-        // In our current implementation, String.valueOf(null) would be "null".
-        // Wait, JdbcTemplate.queryForObject(sql, Long.class) with null return might throw or return null.
-        // If it returns null, String.valueOf(null) is "null".
-        // Let's check how ReferenceNumberGenerator handles it.
-        // It returns String.valueOf(nextVal).
-        
-        String ref = generator.generate();
-        
-        assertThat(ref).isEqualTo("10000");
+        org.junit.jupiter.api.Assertions.assertThrows(
+            com.bwvr.backend.exception.ReportCreationException.class,
+            () -> generator.generate()
+        );
     }
 }
 

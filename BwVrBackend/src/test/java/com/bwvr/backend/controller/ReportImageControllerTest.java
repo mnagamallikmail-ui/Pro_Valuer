@@ -24,17 +24,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 @WebMvcTest(value = ReportImageController.class, properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration")
 @AutoConfigureMockMvc(addFilters = false)
 @WithMockUser(username = "user1", roles = "USER")
+@SuppressWarnings("null")
 class ReportImageControllerTest {
     
-    @MockBean
-    com.bwvr.backend.security.UserDetailsServiceImpl userDetailsService;
-    @MockBean
-    com.bwvr.backend.security.JwtUtil jwtUtil;
-    @MockBean
-    com.bwvr.backend.security.JwtAuthFilter jwtAuthFilter;
-    @MockBean
-    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
-
     @Autowired
     MockMvc mvc;
     @MockBean

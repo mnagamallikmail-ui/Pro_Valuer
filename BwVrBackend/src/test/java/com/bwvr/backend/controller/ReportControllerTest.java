@@ -40,15 +40,20 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 @WebMvcTest(value = ReportController.class, properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration")
 @AutoConfigureMockMvc(addFilters = false)
 @WithMockUser(username = "user1", roles = "USER")
+@SuppressWarnings("null")
 class ReportControllerTest {
     
     @MockBean
+    @SuppressWarnings("unused")
     com.bwvr.backend.security.UserDetailsServiceImpl userDetailsService;
     @MockBean
+    @SuppressWarnings("unused")
     com.bwvr.backend.security.JwtUtil jwtUtil;
     @MockBean
+    @SuppressWarnings("unused")
     com.bwvr.backend.security.JwtAuthFilter jwtAuthFilter;
     @MockBean
+    @SuppressWarnings("unused")
     org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
 
     @Autowired
@@ -65,7 +70,7 @@ class ReportControllerTest {
     private ReportDetailResponse sampleDetailWithFile;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
         sampleResp = ReportResponse.builder()
@@ -215,14 +220,4 @@ class ReportControllerTest {
 
     @Test
     void getDashboardStats_returns200() throws Exception {
-        var stats = com.bwvr.backend.dto.response.DashboardStatsResponse.builder()
-                .totalReports(5L).reportsThisMonth(2L)
-                .activeTemplates(3L).distinctBanks(2L).build();
-        when(reportService.getDashboardStats(any(), anyBoolean())).thenReturn(stats);
-
-        mvc.perform(get("/api/v1/reports/dashboard/stats"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.totalReports").value(5));
-    }
-}
-
+        var stats = com.

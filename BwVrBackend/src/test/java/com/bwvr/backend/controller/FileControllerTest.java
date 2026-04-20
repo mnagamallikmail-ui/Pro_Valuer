@@ -27,28 +27,14 @@ import org.springframework.security.test.context.support.WithMockUser;
 @WebMvcTest(value = FileController.class, properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration")
 @AutoConfigureMockMvc(addFilters = false)
 @WithMockUser(username = "user1", roles = "USER")
+@SuppressWarnings("null")
 class FileControllerTest {
     
-    @MockBean
-    com.bwvr.backend.security.UserDetailsServiceImpl userDetailsService;
-    @MockBean
-    com.bwvr.backend.security.JwtUtil jwtUtil;
-    @MockBean
-    com.bwvr.backend.security.JwtAuthFilter jwtAuthFilter;
-    @MockBean
-    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
-
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private ReportValueRepository reportValueRepository;
-
-    @MockBean
-    private com.bwvr.backend.repository.ReportRepository reportRepository;
-
-    @MockBean
-    private com.bwvr.backend.repository.TemplatePlaceholderRepository templatePlaceholderRepository;
 
     @Test
     void uploadImage_success() throws Exception {

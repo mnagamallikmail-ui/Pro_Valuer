@@ -33,17 +33,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 @WebMvcTest(value = TemplateController.class, properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration")
 @AutoConfigureMockMvc(addFilters = false)
 @WithMockUser(username = "admin", roles = "ADMIN")
+@SuppressWarnings("null")
 class TemplateControllerTest {
     
-    @MockBean
-    com.bwvr.backend.security.UserDetailsServiceImpl userDetailsService;
-    @MockBean
-    com.bwvr.backend.security.JwtUtil jwtUtil;
-    @MockBean
-    com.bwvr.backend.security.JwtAuthFilter jwtAuthFilter;
-    @MockBean
-    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
-
     @Autowired
     MockMvc mvc;
     @MockBean
@@ -53,7 +45,7 @@ class TemplateControllerTest {
     private ParsedTemplateResponse parsedResp;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         sampleTemplate = TemplateResponse.builder()
                 .templateId(1L).bankName("B").templateName("T1")
                 .templateFileName("t.docx").parsedStatus("PARSED")

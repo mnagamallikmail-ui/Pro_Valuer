@@ -25,7 +25,7 @@ public class ReferenceNumberGenerator {
             return (nextVal != null) ? String.valueOf(nextVal) : "10000";
         } catch (Exception e) {
             // Fallback: Find the max numerical reference number and increment it
-            // Only runs if sequence fetch fails (e.g. sequence missing)
+            // Only runs if sequence fetch fails (e.g. sequence missing/corrupted)
             try {
                 Long maxVal = jdbcTemplate.queryForObject(
                     "SELECT MAX(CAST(reference_number AS BIGINT)) FROM BWVR.BWVR_REPORT WHERE reference_number ~ '^[0-9]+$'", 
@@ -33,8 +33,9 @@ public class ReferenceNumberGenerator {
                 );
                 return String.valueOf((maxVal != null && maxVal >= 10000) ? maxVal + 1 : 10000);
             } catch (Exception ex) {
-                // Secondary fallback
-                return "10000";
+                throw new com.bwvr.backend.exception.ReportCreationException(
+                    "Critical failure: Unable to generate unique reference number. " +
+                    "Both DB sequence 'BWVR.REPORT_REF_SEQ' and table fallback failed.", ex);
             }
         }
     }

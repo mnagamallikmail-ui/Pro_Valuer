@@ -96,6 +96,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ReportCreationException.class)
     public ResponseEntity<ApiResponse<Void>> handleReportCreation(ReportCreationException ex) {
+        // Log root cause — the DataAccessException will be in ex.getCause()
+        log.error("Report creation failed: {} | Root cause: {}",
+                ex.getMessage(),
+                ex.getCause() != null ? ex.getCause().getMessage() : "none",
+                ex);
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(ApiResponse.error(ex.getMessage(), "REPORT_CREATION_ERROR"));
     }

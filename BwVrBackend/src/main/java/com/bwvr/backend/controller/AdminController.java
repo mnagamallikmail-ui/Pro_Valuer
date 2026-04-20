@@ -124,6 +124,18 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(null, "User role updated to " + role));
     }
 
+    @PatchMapping("/users/{id}/password")
+    @Operation(summary = "Reset or change user password")
+    public ResponseEntity<ApiResponse<String>> updatePassword(@PathVariable Long id, @RequestParam String newPassword) {
+        BwvrUser user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("NOT_FOUND", "User not found."));
+        }
+        user.setPasswordHash(encoder.encode(newPassword));
+        userRepository.save(user);
+        return ResponseEntity.ok(ApiResponse.success(null, "Password updated successfully."));
+    }
+
     // ── DTO ───────────────────────────────────────────────────────────────────
 
     public static class UserDto {

@@ -20,13 +20,20 @@ public class ReferenceNumberGenerator {
      */
     public String generate() {
         try {
-            // Using a standard query that works for PostgreSQL (current runtime)
-            // If strictly using Oracle, change to: "SELECT bwvr.REPORT_REF_SEQ.NEXTVAL FROM DUAL"
-            Long nextVal = jdbcTemplate.queryForObject("SELECT nextval('bwvr.REPORT_REF_SEQ')", Long.class);
+            // Using uppercase schema 'BWVR' to match the entity definition
+            Long nextVal = jdbcTemplate.queryForObject("SELECT nextval('BWVR.REPORT_REF_SEQ')", Long.class);
             return (nextVal != null) ? String.valueOf(nextVal) : "10000";
         } catch (RuntimeException e) {
-            // Fallback to a safe number if sequence fetch fails (e.g., during initialization)
-            return "10000";
+            // Fallback: Find the max numerical reference number and increment it
+            try {
+                Long maxVal = jdbcTemplate.queryForObject(
+                    "SELECT MAX(CAST(reference_number AS BIGINT)) FROM BWVR.BWVR_REPORT WHERE reference_number ~ '^[0-9]+$'", 
+                    Long.class
+                );
+                return String.valueOf((maxVal != null && maxVal >= 10000) ? maxVal + 1 : 10000);
+            } catch (Exception ex) {
+                return "10000";
+            }
         }
     }
 }

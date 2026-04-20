@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +30,7 @@ public class TemplateController {
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Upload a .docx template and parse placeholders")
     public ResponseEntity<ApiResponse<ParsedTemplateResponse>> uploadTemplate(
         @RequestPart("file") MultipartFile file,
@@ -63,6 +65,7 @@ public class TemplateController {
     }
 
     @PostMapping("/{templateId}/confirm-placeholders")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Confirm and finalize placeholder question mappings")
     public ResponseEntity<ApiResponse<Void>> confirmPlaceholders(
         @PathVariable Long templateId,
@@ -73,6 +76,7 @@ public class TemplateController {
     }
 
     @DeleteMapping("/{templateId}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Soft-delete a template")
     public ResponseEntity<ApiResponse<Void>> deleteTemplate(
         @PathVariable Long templateId,

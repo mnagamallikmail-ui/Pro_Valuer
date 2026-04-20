@@ -4,6 +4,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/app_layout.dart';
 import '../../widgets/common_widgets.dart';
+import '../../services/auth_service.dart';
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});

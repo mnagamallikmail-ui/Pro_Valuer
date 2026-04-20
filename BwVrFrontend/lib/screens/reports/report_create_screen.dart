@@ -29,7 +29,7 @@ class _ReportCreateScreenState extends State<ReportCreateScreen> {
 
   @override
   void initState() {
-    super.initState();;
+    super.initState();
     _loadTemplates();
   }
 

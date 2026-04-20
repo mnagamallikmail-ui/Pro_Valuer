@@ -30,11 +30,32 @@ import org.springframework.security.test.context.support.WithMockUser;
 @SuppressWarnings("null")
 class FileControllerTest {
     
+    @MockBean
+    @SuppressWarnings("unused")
+    com.bwvr.backend.security.UserDetailsServiceImpl userDetailsService;
+    @MockBean
+    @SuppressWarnings("unused")
+    com.bwvr.backend.security.JwtUtil jwtUtil;
+    @MockBean
+    @SuppressWarnings("unused")
+    com.bwvr.backend.security.JwtAuthFilter jwtAuthFilter;
+    @MockBean
+    @SuppressWarnings("unused")
+    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
+
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private ReportValueRepository reportValueRepository;
+
+    @MockBean
+    @SuppressWarnings("unused")
+    private com.bwvr.backend.repository.ReportRepository reportRepository;
+
+    @MockBean
+    @SuppressWarnings("unused")
+    private com.bwvr.backend.repository.TemplatePlaceholderRepository templatePlaceholderRepository;
 
     @Test
     void uploadImage_success() throws Exception {

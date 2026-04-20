@@ -36,6 +36,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 @SuppressWarnings("null")
 class TemplateControllerTest {
     
+    @MockBean
+    @SuppressWarnings("unused")
+    com.bwvr.backend.security.UserDetailsServiceImpl userDetailsService;
+    @MockBean
+    @SuppressWarnings("unused")
+    com.bwvr.backend.security.JwtUtil jwtUtil;
+    @MockBean
+    @SuppressWarnings("unused")
+    com.bwvr.backend.security.JwtAuthFilter jwtAuthFilter;
+    @MockBean
+    @SuppressWarnings("unused")
+    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
+
     @Autowired
     MockMvc mvc;
     @MockBean

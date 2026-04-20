@@ -220,4 +220,14 @@ class ReportControllerTest {
 
     @Test
     void getDashboardStats_returns200() throws Exception {
-        var stats = com.
+        var stats = com.bwvr.backend.dto.response.DashboardStatsResponse.builder()
+                .totalReports(5L).reportsThisMonth(2L)
+                .activeTemplates(3L).distinctBanks(2L).build();
+        when(reportService.getDashboardStats(any(), anyBoolean())).thenReturn(stats);
+
+        mvc.perform(get("/api/v1/reports/dashboard/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalReports").value(5));
+    }
+}
+

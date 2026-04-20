@@ -27,6 +27,19 @@ import org.springframework.security.test.context.support.WithMockUser;
 @SuppressWarnings("null")
 class ReportImageControllerTest {
     
+    @MockBean
+    @SuppressWarnings("unused")
+    com.bwvr.backend.security.UserDetailsServiceImpl userDetailsService;
+    @MockBean
+    @SuppressWarnings("unused")
+    com.bwvr.backend.security.JwtUtil jwtUtil;
+    @MockBean
+    @SuppressWarnings("unused")
+    com.bwvr.backend.security.JwtAuthFilter jwtAuthFilter;
+    @MockBean
+    @SuppressWarnings("unused")
+    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
+
     @Autowired
     MockMvc mvc;
     @MockBean

@@ -30,9 +30,11 @@ import java.io.IOException;
 public class ReportController {
 
     private final ReportService reportService;
+    private final com.bwvr.backend.security.JwtUtil jwtUtil;
 
-    public ReportController(ReportService reportService) {
+    public ReportController(ReportService reportService, com.bwvr.backend.security.JwtUtil jwtUtil) {
         this.reportService = reportService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping
@@ -116,8 +118,38 @@ public class ReportController {
 
     @GetMapping("/{reportId}/download")
     @Operation(summary = "Download the generated .docx report file")
-    public ResponseEntity<Resource> downloadReport(@PathVariable Long reportId) throws IOException {
+    public ResponseEntity<Resource> downloadReport(
+            @PathVariable Long reportId,
+            @RequestParam(required = false) String token) throws IOException {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = null;
+        boolean isAdmin = false;
+
+        // Check current security context (normal API call case)
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+            currentUsername = auth.getName();
+            isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        } 
+        // Fallback to token parameter (browser download case)
+        else if (token != null && jwtUtil.validateJwtToken(token)) {
+            currentUsername = jwtUtil.getUserNameFromJwtToken(token);
+            // Note: In an ideal world, we'd also load the user details to check roles
+            // but for simplicity and safety, we'll check ownership next.
+        }
+
+        if (currentUsername == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
+
         ReportDetailResponse detail = reportService.getReportDetail(reportId);
+
+        // Security Check: Users can only download their own reports, Admins can download all
+        if (!isAdmin && (detail.getCreatedBy() == null || !detail.getCreatedBy().equals(currentUsername))) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
+
         if (!detail.isHasGeneratedFile()) {
             return ResponseEntity.notFound().build();
         }

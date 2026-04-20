@@ -61,6 +61,7 @@ public class SecurityConfig {
                     .requestMatchers(
                         "/",
                         "/api/v1/auth/**",
+                        "/api/v1/reports/*/download", // Allow browser-initiated downloads
                         "/actuator/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html",

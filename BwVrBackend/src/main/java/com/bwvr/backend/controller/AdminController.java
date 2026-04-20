@@ -112,6 +112,18 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(null, "User deleted successfully."));
     }
 
+    @PatchMapping("/users/{id}/role")
+    @Operation(summary = "Update user role")
+    public ResponseEntity<ApiResponse<String>> updateRole(@PathVariable Long id, @RequestParam String role) {
+        BwvrUser user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("NOT_FOUND", "User not found."));
+        }
+        user.setRole(role);
+        userRepository.save(user);
+        return ResponseEntity.ok(ApiResponse.success(null, "User role updated to " + role));
+    }
+
     // ── DTO ───────────────────────────────────────────────────────────────────
 
     public static class UserDto {

@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: bwvr-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db-dump:/docker-entrypoint-initdb.d
+    networks:
+      - bwvr-network
+
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/pro_valuer-backend:latest
+    container_name: bwvr-backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: bwvr
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      BWVR_UPLOAD_DIR: /app/data/uploads
+      BWVR_TEMPLATE_DIR: /app/data/templates
+      BWVR_REPORT_OUTPUT_DIR: /app/data/reports
+    volumes:
+      - /opt/provaluer-vr/storage/uploads:/app/data/uploads
+      - /opt/provaluer-vr/storage/templates:/app/data/templates
+      - /opt/provaluer-vr/storage/reports:/app/data/reports
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - bwvr-network
+
+  frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/pro_valuer-frontend:latest
+    container_name: bwvr-frontend
+    restart: always
+    ports:
+      - "127.0.0.1:8081:80"
+    networks:
+      - bwvr-network
+
+networks:
+  bwvr-network:
+    driver: bridge
+
+volumes:
+  db_data:

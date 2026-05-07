@@ -1,0 +1,59 @@
+# ─── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+
+# ─── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Backend (Java/Gradle) ────────────────────────────────────────────────────
+**/build/
+**/.gradle/
+**/bin/
+**/*.jar
+**/*.war
+**/out/
+.gradle/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# ─── Frontend (Flutter/Dart) ──────────────────────────────────────────────────
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/build/
+**/.pub-cache/
+**/.pub/
+**/web/index.html_bootstrap.js
+**/web/index.html_main.dart.js
+**/web/index.html_main.dart.js.map
+**/web/index.html_main.dart.js.deps
+**/web/index.html_main.dart.js.tar.gz
+
+# ─── Environment & Secrets ────────────────────────────────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.secret
+*.pem
+*.key
+
+# ─── Railway (Cleanup) ────────────────────────────────────────────────────────
+.railway/
+railway.json
+nixpacks.toml
+
+# ─── Deployment ───────────────────────────────────────────────────────────────
+vps-deploy-package/
+db-dump/
+storage/
+bwvr_prod.sql
+bwvr_prod.custom.dump

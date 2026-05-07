@@ -1,0 +1,9 @@
+-- Migration: Add FULL_NAME column to BWVR_USER table
+-- Run this against the Oracle DB as the BWVR schema user
+
+ALTER TABLE BWVR.BWVR_USER 
+  ADD COLUMN FULL_NAME VARCHAR(150);
+
+-- Verify
+-- SELECT COLUMN_NAME, DATA_TYPE, DATA_LENGTH FROM ALL_TAB_COLUMNS 
+-- WHERE TABLE_NAME = 'BWVR_USER' AND OWNER = 'BWVR';

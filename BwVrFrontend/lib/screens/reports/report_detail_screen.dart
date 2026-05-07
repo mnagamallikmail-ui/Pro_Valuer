@@ -8,10 +8,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/app_layout.dart';
 import '../../widgets/common_widgets.dart';
-<<<<<<< HEAD
-=======
 import '../../services/auth_service.dart';
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 
 class ReportDetailScreen extends StatefulWidget {
   final int reportId;
@@ -75,8 +72,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     }
   }
 
-<<<<<<< HEAD
-=======
   Future<void> _submit() async {
     setState(() => _loading = true);
     try {
@@ -107,7 +102,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     }
   }
 
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
   @override
   Widget build(BuildContext context) {
     return AppLayout(
@@ -131,11 +125,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                   report: _report!,
                   onEdit: () => context.go('/reports/${widget.reportId}/edit'),
                   onGenerate: _generate,
-<<<<<<< HEAD
-=======
                   onSubmit: _submit,
                   onApprove: _approve,
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
                   generating: _generating,
                   downloadUrl: _api.getDownloadUrl(widget.reportId),
                 ),
@@ -147,11 +138,8 @@ class _ReportDetailContent extends StatelessWidget {
   final ReportDetailModel report;
   final VoidCallback onEdit;
   final VoidCallback onGenerate;
-<<<<<<< HEAD
-=======
   final VoidCallback onSubmit;
   final VoidCallback onApprove;
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
   final bool generating;
   final String downloadUrl;
 
@@ -159,11 +147,8 @@ class _ReportDetailContent extends StatelessWidget {
     required this.report,
     required this.onEdit,
     required this.onGenerate,
-<<<<<<< HEAD
-=======
     required this.onSubmit,
     required this.onApprove,
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     required this.generating,
     required this.downloadUrl,
   });
@@ -303,37 +288,6 @@ class _ReportDetailContent extends StatelessWidget {
   }
 
   Widget _buildSidebarActions(bool isMobile) {
-<<<<<<< HEAD
-    return Column(
-      children: [
-        _ActionTile(
-          title: 'Capture Data',
-          subtitle: 'Update field values and images',
-          icon: Icons.edit_note_rounded,
-          color: AppColors.primary,
-          onTap: onEdit,
-        ),
-        const SizedBox(height: 16),
-        _ActionTile(
-          title: 'Generate Build',
-          subtitle: report.completionPercentage < 100 ? 'Warning: Incomplete' : 'Ready to export .docx',
-          icon: Icons.bolt_rounded,
-          color: report.completionPercentage < 100 ? AppColors.primary : AppColors.secondary,
-          loading: generating,
-          onTap: onGenerate,
-        ),
-        if (report.hasGeneratedFile) ...[
-          const SizedBox(height: 16),
-          _ActionTile(
-            title: 'Download DOCX',
-            subtitle: 'Save final report to device',
-            icon: Icons.download_rounded,
-            color: AppColors.accent,
-            onTap: () async {
-              final url = Uri.parse(downloadUrl);
-              if (await canLaunchUrl(url)) await launchUrl(url);
-            },
-=======
     final role = AuthService().session?.role ?? 'USER';
     final isAdmin = role == 'ADMIN';
     final isValidator = role == 'VALIDATOR';
@@ -373,44 +327,37 @@ class _ReportDetailContent extends StatelessWidget {
           ),
         ],
         // GENERATE BUTTON LOGIC
-        // Visible for all. But for USER/VALIDATOR, it's dormant if not APPROVED.
-        if (true) ...[
-          const SizedBox(height: 16),
-          _ActionTile(
-            title: 'Generate Build',
-            subtitle: canGenerate 
-                ? (report.completionPercentage < 100 ? 'Warning: Incomplete' : 'Ready to export .docx')
-                : 'Awaiting Approval',
-            icon: Icons.bolt_rounded,
-            color: canGenerate 
-                ? (report.completionPercentage < 100 ? AppColors.primary : AppColors.secondary)
-                : AppColors.textSecondary.withOpacity(0.5),
-            loading: generating,
-            onTap: canGenerate ? onGenerate : null,
-          ),
-        ],
+        const SizedBox(height: 16),
+        _ActionTile(
+          title: 'Generate Build',
+          subtitle: canGenerate 
+              ? (report.completionPercentage < 100 ? 'Warning: Incomplete' : 'Ready to export .docx')
+              : 'Awaiting Approval',
+          icon: Icons.bolt_rounded,
+          color: canGenerate 
+              ? (report.completionPercentage < 100 ? AppColors.primary : AppColors.secondary)
+              : AppColors.textSecondary.withOpacity(0.5),
+          loading: generating,
+          onTap: canGenerate ? onGenerate : null,
+        ),
         // DOWNLOAD BUTTON LOGIC
-        // Visible for all. Dormant if not GENERATED.
-        if (true) ...[
-          const SizedBox(height: 16),
-          _ActionTile(
-            title: 'Download DOCX',
-            subtitle: (report.hasGeneratedFile && (status == 'GENERATED' || isAdmin)) 
-                ? 'Save final report to device' 
-                : 'Not Generated Yet',
-            icon: Icons.download_rounded,
-            color: (report.hasGeneratedFile && (status == 'GENERATED' || isAdmin))
-                ? AppColors.accent 
-                : AppColors.textSecondary.withOpacity(0.5),
-            onTap: (report.hasGeneratedFile && (status == 'GENERATED' || isAdmin))
-                ? () async {
-                    final url = Uri.parse(downloadUrl);
-                    if (await canLaunchUrl(url)) await launchUrl(url);
-                  }
-                : null,
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
-          ),
-        ],
+        const SizedBox(height: 16),
+        _ActionTile(
+          title: 'Download DOCX',
+          subtitle: (report.hasGeneratedFile && (status == 'GENERATED' || isAdmin)) 
+              ? 'Save final report to device' 
+              : 'Not Generated Yet',
+          icon: Icons.download_rounded,
+          color: (report.hasGeneratedFile && (status == 'GENERATED' || isAdmin))
+              ? AppColors.accent 
+              : AppColors.textSecondary.withOpacity(0.5),
+          onTap: (report.hasGeneratedFile && (status == 'GENERATED' || isAdmin))
+              ? () async {
+                  final url = Uri.parse(downloadUrl);
+                  if (await canLaunchUrl(url)) await launchUrl(url);
+                }
+              : null,
+        ),
         if (!isMobile) ...[
           const SizedBox(height: 32),
           _buildSystemInfoPanel(),

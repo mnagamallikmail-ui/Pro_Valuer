@@ -19,14 +19,11 @@ class AuthSession {
 
   bool get isAdmin => roles.contains('ROLE_ADMIN');
 
-<<<<<<< HEAD
-=======
   String get role {
     if (roles.isEmpty) return 'USER';
     return roles.first.replaceFirst('ROLE_', '');
   }
 
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
   String get displayName => (fullName != null && fullName!.isNotEmpty) ? fullName! : username;
 }
 

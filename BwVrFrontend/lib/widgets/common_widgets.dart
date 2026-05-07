@@ -126,7 +126,6 @@ class StatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cardColor = color ?? AppColors.primary;
     return Container(
-<<<<<<< HEAD
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.background,
@@ -137,18 +136,6 @@ class StatsCard extends StatelessWidget {
             color: cardColor.withOpacity(0.08),
             blurRadius: 24,
             offset: const Offset(0, 8),
-=======
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: cardColor.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
           ),
         ],
       ),
@@ -157,28 +144,16 @@ class StatsCard extends StatelessWidget {
         children: [
           // Left accent bar
           Positioned(
-<<<<<<< HEAD
             left: -24,
             top: -24,
             bottom: -24,
             width: 4,
-=======
-            left: -16,
-            top: -16,
-            bottom: -16,
-            width: 3,
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
             child: Container(
               decoration: BoxDecoration(
                 color: cardColor,
                 borderRadius: const BorderRadius.only(
-<<<<<<< HEAD
                   topLeft: Radius.circular(12),
                   bottomLeft: Radius.circular(12),
-=======
-                  topLeft: Radius.circular(8),
-                  bottomLeft: Radius.circular(8),
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
                 ),
               ),
             ),
@@ -190,7 +165,6 @@ class StatsCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-<<<<<<< HEAD
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
@@ -205,38 +179,17 @@ class StatsCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: cardColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
-=======
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: cardColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(icon, color: cardColor, size: 18),
-                  ),
-                  if (subtitle != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: cardColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
                       ),
                       child: Text(
                         subtitle!,
                         style: AppTypography.label.copyWith(
                           color: cardColor,
-<<<<<<< HEAD
-=======
-                          fontSize: 10,
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                 ],
               ),
-<<<<<<< HEAD
               const SizedBox(height: 24),
               Text(
                 value,
@@ -250,20 +203,6 @@ class StatsCard extends StatelessWidget {
               Text(
                 title,
                 style: AppTypography.bodyMedium.copyWith(
-=======
-              const SizedBox(height: 12),
-              Text(
-                value,
-                style: AppTypography.heading2.copyWith(
-                  color: AppColors.textPrimary,
-                  height: 1.1,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                style: AppTypography.label.copyWith(
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),

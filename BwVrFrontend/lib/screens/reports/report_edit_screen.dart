@@ -1,17 +1,10 @@
-<<<<<<< HEAD
-import 'dart:convert';
-=======
 ﻿import 'dart:convert';
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/report_model.dart';
 import '../../services/api_service.dart';
-<<<<<<< HEAD
-=======
 import '../../services/auth_service.dart';
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/common_widgets.dart';
@@ -122,8 +115,6 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
     }
   }
 
-<<<<<<< HEAD
-=======
   Future<void> _submit() async {
     if (_report == null) return;
     setState(() => _saving = true);
@@ -147,7 +138,6 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
     }
   }
 
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
   Future<void> _uploadImage(ReportValueModel v) async {
     try {
       final XFile? image = await ImagePicker().pickImage(
@@ -244,12 +234,9 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
   }
 
   Widget _buildToolbar(ReportDetailModel r, bool isMobile) {
-<<<<<<< HEAD
-=======
     final role = AuthService().session?.role ?? 'USER';
     final isUser = role == 'USER';
 
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     return Container(
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 32, vertical: 16),
       decoration: const BoxDecoration(
@@ -273,19 +260,6 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
               padding: const EdgeInsets.only(right: 20),
               child: Text('Unsaved changes', style: AppTypography.label.copyWith(color: AppColors.textSecondary)),
             ),
-<<<<<<< HEAD
-          ElevatedButton.icon(
-            onPressed: _saving ? null : _save,
-            icon: _saving 
-                ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary)) 
-                : const Icon(Icons.check_rounded, size: 18),
-            label: Text(_saving ? 'Saving...' : (isMobile ? 'Save' : 'Save Changes')),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondary,
-              padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 12),
-            ),
-          ),
-=======
           if (!isUser) // Hide top Save button for regular users
             ElevatedButton.icon(
               onPressed: _saving ? null : _save,
@@ -298,7 +272,6 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
                 padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 12),
               ),
             ),
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         ],
       ),
     );
@@ -395,8 +368,6 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
       }
     }
 
-<<<<<<< HEAD
-=======
     final role = AuthService().session?.role ?? 'USER';
     if (role == 'USER') {
       widgets.add(const SizedBox(height: 32));
@@ -417,7 +388,6 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
       ));
     }
 
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     return widgets;
   }
 }

@@ -44,14 +44,11 @@ class AppTypography {
         fontSize: 14,
         fontWeight: FontWeight.w400,
       );
-<<<<<<< HEAD
-=======
       
   static TextStyle get bodySmall => base.copyWith(
         fontSize: 12,
         fontWeight: FontWeight.w400,
       );
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 
   static TextStyle get label => base.copyWith(
         fontSize: 12,

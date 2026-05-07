@@ -100,14 +100,6 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     }
   }
 
-<<<<<<< HEAD
-  Future<void> _toggleRole(int userId, String currentRole) async {
-    final newRole = currentRole == 'ADMIN' ? 'USER' : 'ADMIN';
-    try {
-      await _api.updateUserRole(userId, newRole);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User role updated to $newRole")));
-=======
   Future<void> _updateRole(int userId, String role) async {
     try {
       await _api.updateUserRole(userId, role);
@@ -125,7 +117,6 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       await _api.updateUserValidator(userId, validatorUsername);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Validator updated")));
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
       _load();
     } catch (e) {
       if (!mounted) return;
@@ -178,10 +169,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     final emailController = TextEditingController();
     final nameController = TextEditingController();
     final passwordController = TextEditingController();
-<<<<<<< HEAD
-=======
     final validatorController = TextEditingController();
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     String role = 'USER';
 
     final result = await showDialog<bool>(
@@ -213,23 +201,17 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   decoration: const InputDecoration(),
                   items: const [
                     DropdownMenuItem(value: 'USER', child: Text('Standard User')),
-<<<<<<< HEAD
-=======
                     DropdownMenuItem(value: 'VALIDATOR', child: Text('Validator')),
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
                     DropdownMenuItem(value: 'ADMIN', child: Text('Administrator')),
                   ],
                   onChanged: (v) => setDialogState(() => role = v ?? 'USER'),
                 ),
-<<<<<<< HEAD
-=======
                 if (role == 'USER') ...[
                   const SizedBox(height: 16),
                   Text('Assigned Validator (Username)', style: AppTypography.label),
                   const SizedBox(height: 8),
                   TextField(controller: validatorController, decoration: const InputDecoration(hintText: 'validator@example.com')),
                 ],
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
               ],
             ),
           ),
@@ -253,15 +235,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           password: passwordController.text,
           role: role,
         );
-<<<<<<< HEAD
-=======
         // We'd also need to set the validator if provided. Since our addAdminUser doesn't accept it, we'll do an update.
         if (role == 'USER' && validatorController.text.trim().isNotEmpty) {
           final users = await _api.getAdminUsers();
           final newUser = users.firstWhere((usr) => usr['username'] == emailController.text.trim());
           await _api.updateUserValidator(newUser['id'], validatorController.text.trim());
         }
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User created successfully')));
         _load();
@@ -348,14 +327,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                                     children: [
                                                       Text(fullName ?? 'No Name', style: AppTypography.subheading),
                                                       Text(username, style: AppTypography.label.copyWith(color: AppColors.textSecondary)),
-<<<<<<< HEAD
-=======
                                                       if (role == 'USER') 
                                                         Padding(
                                                           padding: const EdgeInsets.only(top: 4.0),
                                                           child: _validatorEditor(id, user['validatorUsername'] as String?),
                                                         ),
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
                                                     ],
                                                   ),
                                                 ),
@@ -394,21 +370,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                           DataColumn(label: Text('STATUS', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold))),
                                           DataColumn(label: Text('ACTIONS', style: AppTypography.label.copyWith(fontWeight: FontWeight.bold))),
                                         ],
-<<<<<<< HEAD
-                                        rows: _users.map((u) {
-                                          final id = u['id'] as int;
-                                          final username = u['username'] as String;
-                                          final fullName = u['fullName'] as String?;
-                                          final role = u['role'] as String;
-                                          final status = u['status'] as String;
-=======
                                         rows: _users.map((user) {
                                           final id = user['id'] as int;
                                           final username = user['username'] as String;
                                           final fullName = user['fullName'] as String?;
                                           final role = user['role'] as String;
                                           final status = user['status'] as String;
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 
                                           return DataRow(cells: [
                                             DataCell(
@@ -418,14 +385,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                                 children: [
                                                   Text(fullName ?? 'No Name', style: AppTypography.subheading.copyWith(fontSize: 14)),
                                                   Text(username, style: AppTypography.label.copyWith(fontSize: 11)),
-<<<<<<< HEAD
-=======
                                                   if (role == 'USER') 
                                                     Padding(
                                                       padding: const EdgeInsets.only(top: 2.0),
                                                       child: _validatorEditor(id, user['validatorUsername'] as String?),
                                                     ),
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
                                                 ],
                                               ),
                                             ),
@@ -467,19 +431,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           ),
           onChanged: (String? newRole) {
             if (newRole != null && newRole != currentRole) {
-<<<<<<< HEAD
-              _toggleRole(id, currentRole); // _toggleRole just flips the role in backend
-=======
               _updateRole(id, newRole);
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
             }
           },
           items: const [
             DropdownMenuItem(value: 'ADMIN', child: Text('ADMIN')),
-<<<<<<< HEAD
-=======
             DropdownMenuItem(value: 'VALIDATOR', child: Text('VALIDATOR')),
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
             DropdownMenuItem(value: 'USER', child: Text('USER')),
           ],
         ),
@@ -498,8 +455,6 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
-<<<<<<< HEAD
-=======
   Widget _validatorEditor(int userId, String? currentValidator) {
     return InkWell(
       onTap: () async {
@@ -542,7 +497,6 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
   Widget _actionButtons(int id, String username, String role, String status) {
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),

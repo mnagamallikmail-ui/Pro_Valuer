@@ -232,73 +232,6 @@ class _DashboardContent extends StatelessWidget {
   }
 
   Widget _buildStatsGrid(double maxWidth, BuildContext context) {
-<<<<<<< HEAD
-    final double spacing = 20;
-    int crossAxisCount = 4;
-    if (maxWidth < 600) crossAxisCount = 1;
-    else if (maxWidth < 1000) crossAxisCount = 2;
-
-    final double cardWidth = (maxWidth - (spacing * (crossAxisCount + 1))) / crossAxisCount;
-
-    return Wrap(
-      spacing: spacing,
-      runSpacing: spacing,
-      children: [
-        _buildStatsCard(
-          cardWidth,
-          context,
-          '/reports',
-          'Total Reports',
-          stats.totalReports.toString(),
-          Icons.description_rounded,
-          AppColors.accent,
-        ),
-        _buildStatsCard(
-          cardWidth,
-          context,
-          '/reports',
-          'This Month',
-          stats.reportsThisMonth.toString(),
-          Icons.calendar_today_rounded,
-          AppColors.secondary,
-          subtitle: 'New reports',
-        ),
-        _buildStatsCard(
-          cardWidth,
-          context,
-          '/templates',
-          'Active Templates',
-          stats.activeTemplates.toString(),
-          Icons.folder_copy_rounded,
-          AppColors.primary,
-        ),
-        _buildStatsCard(
-          cardWidth,
-          context,
-          '',
-          'Banks',
-          stats.distinctBanks.toString(),
-          Icons.account_balance_rounded,
-          AppColors.accent,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatsCard(double width, BuildContext context, String route, String title, String value, IconData icon, Color color, {String? subtitle}) {
-    return SizedBox(
-      width: width,
-      child: InkWell(
-        onTap: route.isEmpty ? null : () => context.go(route),
-        borderRadius: BorderRadius.circular(12),
-        child: StatsCard(
-          title: title,
-          value: value,
-          icon: icon,
-          color: color,
-          subtitle: subtitle,
-        ),
-=======
     final bool isMobile = maxWidth < 800;
     
     final cards = [
@@ -334,7 +267,6 @@ class _DashboardContent extends StatelessWidget {
         icon: icon,
         color: color,
         subtitle: subtitle,
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
       ),
     );
   }

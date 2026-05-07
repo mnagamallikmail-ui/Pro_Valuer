@@ -87,16 +87,31 @@ public class AdminController {
         if (request.username == null || request.username.isBlank()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_INPUT", "Username/Email is required."));
         }
+<<<<<<< HEAD
         if (userRepository.findByUsername(request.username).isPresent()) {
+=======
+        
+        String normalizedUsername = request.username.trim().toLowerCase();
+        
+        if (userRepository.findByUsername(normalizedUsername).isPresent()) {
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
             return ResponseEntity.badRequest().body(ApiResponse.error("TAKEN", "User already exists."));
         }
 
         BwvrUser user = new BwvrUser();
+<<<<<<< HEAD
         user.setUsername(request.username);
+=======
+        user.setUsername(normalizedUsername);
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         user.setFullName(request.fullName);
         user.setPasswordHash(encoder.encode(request.password));
         user.setRole(request.role != null ? request.role : "USER");
         user.setStatus("APPROVED"); // Admins add pre-approved users
+<<<<<<< HEAD
+=======
+        user.setValidatorUsername(request.validatorUsername);
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 
         userRepository.save(user);
         return ResponseEntity.ok(ApiResponse.success(null, "User created successfully."));
@@ -136,6 +151,21 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(null, "Password updated successfully."));
     }
 
+<<<<<<< HEAD
+=======
+    @PatchMapping("/users/{id}/validator")
+    @Operation(summary = "Update user's assigned validator")
+    public ResponseEntity<ApiResponse<String>> updateValidator(@PathVariable Long id, @RequestParam(required = false) String validatorUsername) {
+        BwvrUser user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("NOT_FOUND", "User not found."));
+        }
+        user.setValidatorUsername(validatorUsername);
+        userRepository.save(user);
+        return ResponseEntity.ok(ApiResponse.success(null, "Validator assigned successfully."));
+    }
+
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     // ── DTO ───────────────────────────────────────────────────────────────────
 
     public static class UserDto {
@@ -145,6 +175,10 @@ public class AdminController {
         public String role;
         public String status;
         public String createdAt;
+<<<<<<< HEAD
+=======
+        public String validatorUsername;
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 
         public UserDto(BwvrUser user) {
             this.id = user.getId();
@@ -152,6 +186,10 @@ public class AdminController {
             this.fullName = user.getFullName();
             this.role = user.getRole();
             this.status = user.getStatus();
+<<<<<<< HEAD
+=======
+            this.validatorUsername = user.getValidatorUsername();
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
             if (user.getCreatedAt() != null) {
                 this.createdAt = user.getCreatedAt().toString();
             }
@@ -163,5 +201,9 @@ public class AdminController {
         public String fullName;
         public String password;
         public String role;
+<<<<<<< HEAD
+=======
+        public String validatorUsername;
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     }
 }

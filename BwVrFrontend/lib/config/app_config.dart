@@ -1,4 +1,5 @@
 class AppConfig {
+<<<<<<< HEAD
   /// Base API URL for the backend.
   /// Override at build time with: --dart-define=API_BASE_URL=https://your-backend.com/api/v1/
   static const String baseUrl = String.fromEnvironment(
@@ -29,3 +30,13 @@ class AppConfig {
   static const int defaultPageSize = 20;
   static const int maxFileSizeMb = 50;
 }
+=======
+  static const String baseUrl =
+      String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: '/api/v1',
+      );
+
+  static const String apiBaseUrl = baseUrl;
+}
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238

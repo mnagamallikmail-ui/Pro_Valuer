@@ -6,7 +6,11 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
+<<<<<<< HEAD
 @Table(name = "BWVR_AUDIT_LOG", schema = "BWVR")
+=======
+@Table(name = "BWVR_AUDIT_LOG", schema = "bwvr")
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 public class BwvrAuditLog {
 
     @Id

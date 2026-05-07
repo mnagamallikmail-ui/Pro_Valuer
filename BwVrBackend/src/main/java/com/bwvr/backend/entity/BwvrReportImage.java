@@ -15,7 +15,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
+<<<<<<< HEAD
 @Table(name = "BWVR_REPORT_IMAGE", schema = "BWVR")
+=======
+@Table(name = "BWVR_REPORT_IMAGE", schema = "bwvr")
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 public class BwvrReportImage {
 
     @Id

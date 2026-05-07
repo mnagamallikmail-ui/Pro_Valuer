@@ -17,7 +17,11 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 @Entity
+<<<<<<< HEAD
 @Table(name = "BWVR_TEMPLATE", schema = "BWVR",
+=======
+@Table(name = "BWVR_TEMPLATE", schema = "bwvr",
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         uniqueConstraints = @UniqueConstraint(columnNames = {"BANK_NAME", "TEMPLATE_NAME"}))
 public class BwvrTemplate {
 

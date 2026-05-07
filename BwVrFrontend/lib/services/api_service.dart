@@ -321,6 +321,24 @@ class ApiService {
     return ReportModel.fromJson(response.data['data']);
   }
 
+<<<<<<< HEAD
+=======
+  Future<ReportModel> submitReport(int reportId) async {
+    final response = await _dio.post('reports/$reportId/submit');
+    return ReportModel.fromJson(response.data['data']);
+  }
+
+  Future<ReportModel> reviewReport(int reportId) async {
+    final response = await _dio.post('reports/$reportId/review');
+    return ReportModel.fromJson(response.data['data']);
+  }
+
+  Future<ReportModel> approveReport(int reportId) async {
+    final response = await _dio.post('reports/$reportId/approve');
+    return ReportModel.fromJson(response.data['data']);
+  }
+
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
   Future<void> saveReportValues(int reportId, List<Map<String, dynamic>> values,
       {String updatedBy = 'SYSTEM'}) async {
     await _dio.post('reports/$reportId/values', data: {
@@ -341,6 +359,13 @@ class ApiService {
       baseUrl = baseUrl.substring(0, baseUrl.length - 1);
     }
     
+<<<<<<< HEAD
+=======
+    if (baseUrl.startsWith('/')) {
+      baseUrl = Uri.base.origin + baseUrl;
+    }
+
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     final url = '$baseUrl/reports/$reportId/download';
     final token = AuthService().token;
     return (token != null && token.isNotEmpty) ? '$url?token=$token' : url;
@@ -391,7 +416,18 @@ class ApiService {
 
 
   String getBlobImageUrl(int reportId, String placeholderKey) {
+<<<<<<< HEAD
     final url = '${AppConfig.apiBaseUrl}/report-images/$reportId/$placeholderKey';
+=======
+    String baseUrl = AppConfig.apiBaseUrl;
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+    }
+    if (baseUrl.startsWith('/')) {
+      baseUrl = Uri.base.origin + baseUrl;
+    }
+    final url = '$baseUrl/report-images/$reportId/$placeholderKey';
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     final token = AuthService().token;
     return (token != null && token.isNotEmpty) ? '$url?token=$token' : url;
   }
@@ -436,6 +472,13 @@ class ApiService {
     await _withRetry(() => _dio.patch('admin/users/$userId/role', queryParameters: {'role': role}));
   }
 
+<<<<<<< HEAD
+=======
+  Future<void> updateUserValidator(int userId, String validatorUsername) async {
+    await _withRetry(() => _dio.patch('admin/users/$userId/validator', queryParameters: {'validatorUsername': validatorUsername}));
+  }
+
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
   Future<void> updateUserPassword(int userId, String newPassword) async {
     await _withRetry(() => _dio.patch('admin/users/$userId/password', queryParameters: {'newPassword': newPassword}));
   }

@@ -1,0 +1,38 @@
+name: Flutter Web Build CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'BwVrFrontend/**'
+      - '.github/workflows/flutter.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'BwVrFrontend/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./BwVrFrontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Build Web
+        run: flutter build web --release

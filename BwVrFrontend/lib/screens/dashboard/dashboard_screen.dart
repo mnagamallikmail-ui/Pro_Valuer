@@ -232,6 +232,7 @@ class _DashboardContent extends StatelessWidget {
   }
 
   Widget _buildStatsGrid(double maxWidth, BuildContext context) {
+<<<<<<< HEAD
     final double spacing = 20;
     int crossAxisCount = 4;
     if (maxWidth < 600) crossAxisCount = 1;
@@ -297,6 +298,43 @@ class _DashboardContent extends StatelessWidget {
           color: color,
           subtitle: subtitle,
         ),
+=======
+    final bool isMobile = maxWidth < 800;
+    
+    final cards = [
+      _buildStatsCard(context, '/reports', 'Total Reports', stats.totalReports.toString(), Icons.description_rounded, AppColors.accent),
+      _buildStatsCard(context, '/reports', 'This Month', stats.reportsThisMonth.toString(), Icons.calendar_today_rounded, AppColors.secondary, subtitle: 'New reports'),
+      _buildStatsCard(context, '/templates', 'Active Templates', stats.activeTemplates.toString(), Icons.folder_copy_rounded, AppColors.primary),
+      _buildStatsCard(context, '', 'Banks', stats.distinctBanks.toString(), Icons.account_balance_rounded, AppColors.accent),
+    ];
+
+    if (isMobile) {
+      return Column(
+        children: cards.map((c) => Padding(padding: const EdgeInsets.only(bottom: 16), child: c)).toList(),
+      );
+    }
+
+    return Row(
+      children: cards.map((c) => Expanded(
+        child: Padding(
+          padding: EdgeInsets.only(right: c == cards.last ? 0 : 16),
+          child: c,
+        ),
+      )).toList(),
+    );
+  }
+
+  Widget _buildStatsCard(BuildContext context, String route, String title, String value, IconData icon, Color color, {String? subtitle}) {
+    return InkWell(
+      onTap: route.isEmpty ? null : () => context.go(route),
+      borderRadius: BorderRadius.circular(12),
+      child: StatsCard(
+        title: title,
+        value: value,
+        icon: icon,
+        color: color,
+        subtitle: subtitle,
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
       ),
     );
   }

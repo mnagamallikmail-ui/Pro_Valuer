@@ -7,7 +7,11 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
+<<<<<<< HEAD
 @Table(name = "BWVR_USER")
+=======
+@Table(name = "BWVR_USER", schema = "bwvr")
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 public class BwvrUser {
 
     @Id
@@ -33,6 +37,12 @@ public class BwvrUser {
     @Column(name = "MUST_CHANGE_PASSWORD", nullable = false)
     private boolean mustChangePassword = false;
 
+<<<<<<< HEAD
+=======
+    @Column(name = "VALIDATOR_USERNAME", length = 100)
+    private String validatorUsername;
+
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     @CreationTimestamp
     @Column(name = "CREATED_AT", updatable = false)
     private LocalDateTime createdAt;
@@ -65,6 +75,12 @@ public class BwvrUser {
     public boolean isMustChangePassword() { return mustChangePassword; }
     public void setMustChangePassword(boolean mustChangePassword) { this.mustChangePassword = mustChangePassword; }
     
+<<<<<<< HEAD
+=======
+    public String getValidatorUsername() { return validatorUsername; }
+    public void setValidatorUsername(String validatorUsername) { this.validatorUsername = validatorUsername; }
+
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     

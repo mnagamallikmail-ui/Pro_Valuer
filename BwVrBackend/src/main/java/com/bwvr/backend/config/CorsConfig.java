@@ -21,6 +21,7 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         
+<<<<<<< HEAD
         if ("*".equals(allowedOrigins)) {
             config.setAllowedOriginPatterns(List.of("*"));
         } else {
@@ -31,6 +32,13 @@ public class CorsConfig {
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Content-Disposition", "Content-Type", "x-auth-token", "Authorization"));
         config.setAllowCredentials(true);
+=======
+        config.setAllowedOrigins(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Content-Disposition", "Content-Type", "x-auth-token", "Authorization"));
+        config.setAllowCredentials(false);
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -38,9 +46,12 @@ public class CorsConfig {
         return source;
     }
 
+<<<<<<< HEAD
     // Explicit CorsFilter bean to ensure it runs early in the filter chain
     @Bean
     public CorsFilter corsFilter() {
         return new CorsFilter(corsConfigurationSource());
     }
+=======
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 }

@@ -31,14 +31,18 @@ public class DatabaseCheckTest {
     public void testAdminUserExists() {
         Optional<BwvrUser> user = bwvrUserRepository.findByUsername("admin");
         assertTrue(user.isPresent(), "Admin user should exist in the database!");
+<<<<<<< HEAD
         if (user.isPresent()) {
             System.out.println("====== DB CHECK PASSED ======");
             System.out.println("Admin user found: " + user.get().getUsername() + " / Role: " + user.get().getRole());
         }
+=======
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     }
 
     @Test
     public void testAuditLogTableExists() {
+<<<<<<< HEAD
         try {
             // Check if the audit log table is accessible
             auditLogRepository.count();
@@ -48,5 +52,9 @@ public class DatabaseCheckTest {
             // This is acceptable if we're only seeding users for now, 
             // but let's see if it's there.
         }
+=======
+        // Check if the audit log table is accessible
+        auditLogRepository.count();
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     }
 }

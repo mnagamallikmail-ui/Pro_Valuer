@@ -8,7 +8,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
+<<<<<<< HEAD
 @Table(name = "BWVR_REPORT", schema = "BWVR")
+=======
+@Table(name = "BWVR_REPORT", schema = "bwvr")
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 public class BwvrReport {
 
     @Id
@@ -41,6 +45,12 @@ public class BwvrReport {
     @Column(name = "GENERATED_FILE_PATH", length = 1000)
     private String generatedFilePath;
 
+<<<<<<< HEAD
+=======
+    @Column(name = "VALIDATOR_USERNAME", length = 100)
+    private String validatorUsername;
+
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     @Column(name = "GENERATED_AT")
     private LocalDateTime generatedAt;
 
@@ -91,6 +101,10 @@ public class BwvrReport {
         this.isDeleted = b.isDeleted != null ? b.isDeleted : "N";
         this.deletedAt = b.deletedAt;
         this.deletedBy = b.deletedBy;
+<<<<<<< HEAD
+=======
+        this.validatorUsername = b.validatorUsername;
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         this.reportValues = b.reportValues;
     }
 
@@ -117,6 +131,10 @@ public class BwvrReport {
         private String isDeleted = "N";
         private LocalDateTime deletedAt;
         private String deletedBy;
+<<<<<<< HEAD
+=======
+        private String validatorUsername;
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         private List<BwvrReportValue> reportValues;
 
         public Builder reportId(Long v) {
@@ -204,6 +222,14 @@ public class BwvrReport {
             return this;
         }
 
+<<<<<<< HEAD
+=======
+        public Builder validatorUsername(String v) {
+            this.validatorUsername = v;
+            return this;
+        }
+
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         public Builder reportValues(List<BwvrReportValue> v) {
             this.reportValues = v;
             return this;
@@ -350,6 +376,17 @@ public class BwvrReport {
         this.deletedBy = deletedBy;
     }
 
+<<<<<<< HEAD
+=======
+    public String getValidatorUsername() {
+        return validatorUsername;
+    }
+
+    public void setValidatorUsername(String validatorUsername) {
+        this.validatorUsername = validatorUsername;
+    }
+
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     public List<BwvrReportValue> getReportValues() {
         return reportValues;
     }

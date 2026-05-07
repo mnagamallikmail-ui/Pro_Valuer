@@ -45,6 +45,7 @@ gradle-app.setting
 *.secret
 *.pem
 *.key
+*.env
 
 # ─── Railway (Cleanup) ────────────────────────────────────────────────────────
 .railway/
@@ -57,3 +58,11 @@ db-dump/
 storage/
 bwvr_prod.sql
 bwvr_prod.custom.dump
+*.docx
+*.log
+*.tmp
+*.temp
+structure.txt
+REPO_FILE_TREE.txt
+*.md
+!README.md

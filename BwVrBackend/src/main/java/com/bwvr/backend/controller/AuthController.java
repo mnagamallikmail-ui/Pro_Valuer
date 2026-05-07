@@ -17,6 +17,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+<<<<<<< HEAD
+=======
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +30,11 @@ import java.util.stream.Collectors;
 @Tag(name = "Authentication", description = "Auth endpoints for register, login and password management")
 public class AuthController {
 
+<<<<<<< HEAD
+=======
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     private final AuthenticationManager authenticationManager;
     private final BwvrUserRepository userRepository;
     private final PasswordEncoder encoder;
@@ -41,9 +51,16 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "Authenticate user and return JWT token")
     public ResponseEntity<ApiResponse<LoginResponse>> authenticateUser(@RequestBody LoginRequest loginRequest) {
+<<<<<<< HEAD
         System.out.println("Login attempt for user: " + loginRequest.username);
         
         BwvrUser user = userRepository.findByUsername(loginRequest.username).orElse(null);
+=======
+        String normalizedUsername = (loginRequest.username != null) ? loginRequest.username.trim().toLowerCase() : "";
+        log.info("Login attempt for user: {}", normalizedUsername);
+        
+        BwvrUser user = userRepository.findByUsername(normalizedUsername).orElse(null);
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         if (user != null && "PENDING".equals(user.getStatus())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                                  .body(ApiResponse.error("PENDING_APPROVAL", "Your account is pending admin approval."));
@@ -54,7 +71,11 @@ public class AuthController {
 
         try {
             Authentication authentication = authenticationManager.authenticate(
+<<<<<<< HEAD
                     new UsernamePasswordAuthenticationToken(loginRequest.username, loginRequest.password));
+=======
+                    new UsernamePasswordAuthenticationToken(normalizedUsername, loginRequest.password));
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtUtil.generateJwtToken(authentication);
@@ -70,11 +91,19 @@ public class AuthController {
 
         return ResponseEntity.ok(ApiResponse.success(response));
         } catch (org.springframework.security.authentication.BadCredentialsException e) {
+<<<<<<< HEAD
             System.out.println("Invalid credentials for user: " + loginRequest.username);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                                  .body(ApiResponse.error("BAD_CREDENTIALS", "Invalid username or password."));
         } catch (Exception e) {
             System.err.println("Authentication error for user " + loginRequest.username + ": " + e.getMessage());
+=======
+            log.warn("Invalid credentials for user: {}", normalizedUsername);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                 .body(ApiResponse.error("BAD_CREDENTIALS", "Invalid username or password."));
+        } catch (Exception e) {
+            log.error("Authentication error for user {}: {}", normalizedUsername, e.getMessage());
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                  .body(ApiResponse.error("AUTH_ERROR", "An error occurred during authentication."));
         }
@@ -83,7 +112,12 @@ public class AuthController {
     @PostMapping("/signup")
     @Operation(summary = "Register a new user (pending admin approval)")
     public ResponseEntity<ApiResponse<String>> registerUser(@RequestBody RegisterRequest signUpRequest) {
+<<<<<<< HEAD
         String username = (signUpRequest.email != null) ? signUpRequest.email.trim() : signUpRequest.username;
+=======
+        String inputUsername = (signUpRequest.email != null) ? signUpRequest.email : signUpRequest.username;
+        String username = (inputUsername != null) ? inputUsername.trim().toLowerCase() : null;
+>>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         
         if (username == null || username.isBlank()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_INPUT", "Email/Username is required."));

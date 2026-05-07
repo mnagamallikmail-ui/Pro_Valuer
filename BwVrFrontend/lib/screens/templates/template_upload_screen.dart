@@ -34,7 +34,7 @@ class _TemplateUploadScreenState extends State<TemplateUploadScreen> {
   }
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.pickFiles(
+    final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['docx'],
       withData: true,
@@ -226,14 +226,13 @@ class _TemplateUploadScreenState extends State<TemplateUploadScreen> {
                         GestureDetector(
                           onTap: _uploading ? null : _pickFile,
                           child: DottedBorder(
-                            options: RoundedRectDottedBorderOptions(
-                              color: _selectedFile != null
-                                  ? AppTheme.success
-                                  : AppTheme.accent,
-                              strokeWidth: 2,
-                              dashPattern: const [8, 4],
-                              radius: const Radius.circular(12),
-                            ),
+                            color: _selectedFile != null
+                                ? AppTheme.success
+                                : AppTheme.accent,
+                            strokeWidth: 2,
+                            dashPattern: const [8, 4],
+                            borderType: BorderType.RRect,
+                            radius: const Radius.circular(12),
                             child: Container(
                               width: double.infinity,
                               padding: EdgeInsets.symmetric(
@@ -305,7 +304,7 @@ class _TemplateUploadScreenState extends State<TemplateUploadScreen> {
                               color: AppTheme.chipRed,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                  color: AppTheme.danger.withValues(alpha: 0.3)),
+                                  color: AppTheme.danger.withOpacity(0.3)),
                             ),
                             child: Row(
                               children: [

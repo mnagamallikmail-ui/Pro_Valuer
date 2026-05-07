@@ -47,6 +47,8 @@ class AppTheme {
         onSecondary: AppColors.textPrimary,
         surface: AppColors.background,
         onSurface: AppColors.textPrimary,
+        background: Colors.white,
+        onBackground: Colors.black,
         error: AppColors.error,
         onError: Colors.white,
         outline: AppColors.border,
@@ -77,7 +79,7 @@ class AppTheme {
         elevation: 0,
       ),
 
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: AppColors.background,
         elevation: 0,
         shape: RoundedRectangleBorder(

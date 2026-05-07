@@ -94,7 +94,7 @@ class _TemplateConfirmScreenState extends State<TemplateConfirmScreen> {
     void flushBlock() {
       if (currentBlockPlaceholders.isNotEmpty && currentSection != null) {
         sectionWidgets.add(_PlaceholderSection(
-          title: currentSection!,
+          title: currentSection,
           color: AppTheme.accent,
           placeholders: currentBlockPlaceholders,
         ));

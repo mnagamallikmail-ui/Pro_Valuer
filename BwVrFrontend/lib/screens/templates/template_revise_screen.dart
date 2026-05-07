@@ -56,7 +56,7 @@ class _TemplateReviseScreenState extends State<TemplateReviseScreen> {
   }
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.pickFiles(
+    final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['docx'],
       withData: true,
@@ -216,14 +216,13 @@ class _TemplateReviseScreenState extends State<TemplateReviseScreen> {
                         GestureDetector(
                           onTap: _uploading ? null : _pickFile,
                           child: DottedBorder(
-                            options: RoundedRectDottedBorderOptions(
-                              color: _selectedFile != null
-                                  ? AppTheme.success
-                                  : AppTheme.accent,
-                              strokeWidth: 2,
-                              dashPattern: const [8, 4],
-                              radius: const Radius.circular(12),
-                            ),
+                            color: _selectedFile != null
+                                ? AppTheme.success
+                                : AppTheme.accent,
+                            strokeWidth: 2,
+                            dashPattern: const [8, 4],
+                            borderType: BorderType.RRect,
+                            radius: const Radius.circular(12),
                             child: Container(
                               width: double.infinity,
                               padding: EdgeInsets.symmetric(

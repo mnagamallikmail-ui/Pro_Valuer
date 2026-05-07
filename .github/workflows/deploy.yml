@@ -91,10 +91,9 @@ jobs:
             echo "DB_PASSWORD=\"${{ secrets.DB_PASSWORD }}\"" >> .env
             echo "JWT_SECRET=\"${{ secrets.JWT_SECRET }}\"" >> .env
             echo "CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}" >> .env
-            echo "GITHUB_REPOSITORY_OWNER=${{ github.repository_owner }}" >> .env
-            
-            # Pull and Restart
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "GITHUB_REPOSITORY_OWNER=mnagamallikmail-ui" >> .env
+
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u mnagamallikmail-ui --password-stdin
             docker compose pull
             docker compose up -d
             docker image prune -f

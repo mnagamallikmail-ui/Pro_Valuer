@@ -17,11 +17,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 @Entity
-<<<<<<< HEAD
-@Table(name = "BWVR_REPORT_VALUE", schema = "BWVR",
-=======
 @Table(name = "BWVR_REPORT_VALUE", schema = "bwvr",
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         uniqueConstraints = @UniqueConstraint(columnNames = {"REPORT_ID", "PLACEHOLDER_ID"}))
 public class BwvrReportValue {
 

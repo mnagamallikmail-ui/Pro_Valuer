@@ -118,7 +118,7 @@ public class DocxGeneratorService {
         }
 
         try {
-            // ── Step 1: load template bytes ──────────────────────────────────────────
+            // â”€â”€ Step 1: load template bytes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             byte[] templateBytes;
             if (report.getTemplate().getTemplateContent() != null
                     && report.getTemplate().getTemplateContent().length > 0) {
@@ -127,7 +127,7 @@ public class DocxGeneratorService {
                 templateBytes = Files.readAllBytes(Paths.get(templatePath));
             }
 
-            // ── Step 2: text replacement via Apache POI (preserves run formatting) ──
+            // â”€â”€ Step 2: text replacement via Apache POI (preserves run formatting) â”€â”€
             byte[] afterTextReplacement;
             try (XWPFDocument doc = new XWPFDocument(new ByteArrayInputStream(templateBytes))) {
 
@@ -158,7 +158,7 @@ public class DocxGeneratorService {
                     }
                 }
 
-                // Missing data summary – appended at END (safe; no XML-level insertion)
+                // Missing data summary â€“ appended at END (safe; no XML-level insertion)
                 if (filled < total) {
                     appendMissingSummary(doc, missingTextFields, missingImages, filled, total);
                 }
@@ -168,7 +168,7 @@ public class DocxGeneratorService {
                 afterTextReplacement = bos.toByteArray();
             }
 
-            // ── Step 3: image replacement via docx4j (handles shape Alt-Text placeholders) ─
+            // â”€â”€ Step 3: image replacement via docx4j (handles shape Alt-Text placeholders) â”€
             byte[] finalBytes;
             if (!imageMap.isEmpty()) {
                 WordprocessingMLPackage pkg = WordprocessingMLPackage
@@ -181,7 +181,7 @@ public class DocxGeneratorService {
                 finalBytes = afterTextReplacement;
             }
 
-            // ── Step 4: write output file ─────────────────────────────────────────────
+            // â”€â”€ Step 4: write output file â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             Path outputDir = Paths.get(reportOutputDir, String.valueOf(reportId));
             Files.createDirectories(outputDir);
             Path outputPath = outputDir.resolve("output.docx");
@@ -267,7 +267,7 @@ public class DocxGeneratorService {
 
     /**
      * Safely appends a missing-data summary at the END of the document. Uses
-     * only doc.createParagraph() – NO XML-level CTBody manipulation.
+     * only doc.createParagraph() â€“ NO XML-level CTBody manipulation.
      */
     private void appendMissingSummary(XWPFDocument doc, List<String> missingText,
             List<String> missingImages, int filled, int total) {
@@ -467,7 +467,7 @@ public class DocxGeneratorService {
         String text = val.getTextValue();
         if (text == null || text.isBlank()) {
             String prefix = val.getPlaceholder() != null ? val.getPlaceholder().getPlaceholderPrefix() : "TEXT";
-            return "IMG".equalsIgnoreCase(prefix) ? "" : "—";
+            return "IMG".equalsIgnoreCase(prefix) ? "" : "â€”";
         }
 
         // Broad sanitization for XML safety

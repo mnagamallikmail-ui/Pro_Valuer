@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  * This ensures we verify the post-migration state, not just pre-migration.
  *
  * <p>On failure: logs a CRITICAL error with remediation instructions.
- * Does NOT prevent startup — the app still starts, but report creation will fail
+ * Does NOT prevent startup â€” the app still starts, but report creation will fail
  * with a clear error message (from ReferenceNumberGenerator) rather than a
  * confusing "transaction aborted" cascade.
  */
@@ -70,7 +70,7 @@ public class DatabaseHealthChecker {
             if (healthy) {
                 try {
                     // Use currval would fail if not called yet; use nextval in a sub-transaction
-                    // but we don't want to consume a value — just verify it responds
+                    // but we don't want to consume a value â€” just verify it responds
                     Long seqVal = jdbcTemplate.queryForObject(
                         "SELECT last_value FROM bwvr.report_ref_seq", Long.class);
                     log.info("  [OK] Sequence 'bwvr.report_ref_seq' is accessible. Last value: {}", seqVal);
@@ -89,7 +89,7 @@ public class DatabaseHealthChecker {
         if (healthy) {
             log.info("=== Database Schema Validation: PASSED ===");
         } else {
-            log.error("=== Database Schema Validation: FAILED — report creation will be impaired ===");
+            log.error("=== Database Schema Validation: FAILED â€” report creation will be impaired ===");
         }
     }
 }

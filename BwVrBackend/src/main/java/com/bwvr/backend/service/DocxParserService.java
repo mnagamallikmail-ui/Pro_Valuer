@@ -35,7 +35,7 @@ import com.bwvr.backend.util.PlaceholderExtractor;
  * Parses an uploaded .docx template and extracts: 1. All placeholders matching
  * the <<PREFIX_NAME>> pattern from body paragraphs, table cells, headers, and
  * footers. 2. Image slot dimensions (EMU width/height) from inline drawings
- * using raw XML cursor traversal — fully compatible with poi-ooxml-lite (no
+ * using raw XML cursor traversal â€” fully compatible with poi-ooxml-lite (no
  * generated schema classes required, no deprecated selectPath() API used).
  */
 @Service
@@ -59,7 +59,7 @@ public class DocxParserService {
         this.intelligenceService = intelligenceService;
     }
 
-    // ─────────────────────────── public API ─────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     /**
      * Main entry: parses the template .docx file and persists all placeholders
      * and image dimension slots.
@@ -78,7 +78,7 @@ public class DocxParserService {
             Map<String, BwvrTemplatePlaceholder> seen = new LinkedHashMap<>();
             int order = 0;
 
-            // 1 ─ Body elements (Paragraphs & Tables in order)
+            // 1 â”€ Body elements (Paragraphs & Tables in order)
             String currentSection = "General Information";
             int tableIdx = 0;
 
@@ -110,21 +110,21 @@ public class DocxParserService {
                 }
             }
 
-            // 2 ─ Headers
+            // 2 â”€ Headers
             for (XWPFHeader header : document.getHeaderList()) {
                 for (XWPFParagraph para : header.getParagraphs()) {
                     order = scanText(para.getText(), template, seen, order, "Header", null, null, null);
                 }
             }
 
-            // 3 ─ Footers
+            // 3 â”€ Footers
             for (XWPFFooter footer : document.getFooterList()) {
                 for (XWPFParagraph para : footer.getParagraphs()) {
                     order = scanText(para.getText(), template, seen, order, "Footer", null, null, null);
                 }
             }
 
-            // 5 ─ Image dimensions and replacement
+            // 5 â”€ Image dimensions and replacement
             extractImageDimensionsAndReplace(document, template, seen, order);
 
             placeholderRepository.saveAll(seen.values());
@@ -140,7 +140,7 @@ public class DocxParserService {
         }
     }
 
-    // ─────────────────────────── private helpers ─────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ private helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private int scanText(String text, BwvrTemplate template,
             Map<String, BwvrTemplatePlaceholder> seen,
             int order, String sectionName, String tableCtx, String col1, String col2) {
@@ -186,7 +186,7 @@ public class DocxParserService {
      * Traverse run XML with XmlCursor looking for wp:extent elements. Reads cx
      * and cy to determine image dimensions in EMU.
      *
-     * Compatible with poi-ooxml-lite — avoids CTDrawing/CTInline schema classes
+     * Compatible with poi-ooxml-lite â€” avoids CTDrawing/CTInline schema classes
      * and the deprecated XmlObject.selectPath() method.
      */
     private int extractImageDimensionsAndReplace(XWPFDocument document, BwvrTemplate template,

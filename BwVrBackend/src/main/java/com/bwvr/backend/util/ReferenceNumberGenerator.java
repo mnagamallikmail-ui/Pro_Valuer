@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  *       the outer report-creation transaction. Without this, a failed nextval() inside a
  *       @Transactional method marks the transaction as "aborted", making every subsequent
  *       SQL in that transaction fail with "current transaction is aborted".</li>
- *   <li>Uses lowercase {@code bwvr.report_ref_seq} — PostgreSQL folds unquoted identifiers
+ *   <li>Uses lowercase {@code bwvr.report_ref_seq} â€” PostgreSQL folds unquoted identifiers
  *       to lowercase. The previous code used uppercase {@code BWVR.REPORT_REF_SEQ} which
  *       can fail depending on PostgreSQL JDBC driver configuration.</li>
  *   <li>Throws {@link ReportCreationException} on failure so the global exception handler
@@ -47,7 +47,7 @@ public class ReferenceNumberGenerator {
      *
      * <p>Primary strategy: fetch next value from {@code bwvr.report_ref_seq}.
      * Fallback strategy: MAX(reference_number) + 1 from the report table.
-     * If both fail: throws {@link ReportCreationException} — report creation is aborted cleanly.
+     * If both fail: throws {@link ReportCreationException} â€” report creation is aborted cleanly.
      *
      * @return a string like "10001", "10002", etc.
      * @throws ReportCreationException if neither strategy succeeds
@@ -76,7 +76,7 @@ public class ReferenceNumberGenerator {
                     "Sequence error: table 'bwvr.bwvr_report' or sequence 'bwvr.report_ref_seq' may be missing.", ex);
             throw new ReportCreationException(
                     "Report creation is currently unavailable: the database reference sequence is missing. " +
-                    "This is a configuration issue — please contact an administrator. " +
+                    "This is a configuration issue â€” please contact an administrator. " +
                     "(Technical detail: bwvr.report_ref_seq does not exist)"
             );
         }

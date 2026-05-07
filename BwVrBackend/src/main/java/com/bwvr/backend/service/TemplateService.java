@@ -193,7 +193,7 @@ public class TemplateService {
 
     /**
      * Soft-archives a template by setting isActive='N'.
-     * Reports linked to this template are NOT affected — they retain their
+     * Reports linked to this template are NOT affected â€” they retain their
      * original template reference for document generation integrity.
      * The template will no longer appear in the active template list.
      */
@@ -213,7 +213,7 @@ public class TemplateService {
         return templateRepository.findDistinctBankNames();
     }
 
-    // ──────────────────────────── Private Helpers ────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Private Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private BwvrTemplate findActiveTemplate(Long templateId) {
         return templateRepository.findById(templateId)
                 .filter(t -> "Y".equals(t.getIsActive()))

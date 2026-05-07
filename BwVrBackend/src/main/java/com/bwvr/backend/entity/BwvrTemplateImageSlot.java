@@ -6,11 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-<<<<<<< HEAD
-@Table(name = "BWVR_TEMPLATE_IMAGE_SLOT", schema = "BWVR")
-=======
 @Table(name = "BWVR_TEMPLATE_IMAGE_SLOT", schema = "bwvr")
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 public class BwvrTemplateImageSlot {
 
     @Id

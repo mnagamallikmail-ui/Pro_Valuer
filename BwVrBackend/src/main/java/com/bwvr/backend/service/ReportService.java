@@ -26,21 +26,15 @@ import com.bwvr.backend.entity.BwvrReportValue;
 import com.bwvr.backend.entity.BwvrTemplate;
 import com.bwvr.backend.entity.BwvrTemplatePlaceholder;
 import com.bwvr.backend.exception.ResourceNotFoundException;
-<<<<<<< HEAD
-=======
 import com.bwvr.backend.repository.BwvrUserRepository;
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 import com.bwvr.backend.repository.ReportRepository;
 import com.bwvr.backend.repository.ReportValueRepository;
 import com.bwvr.backend.repository.TemplatePlaceholderRepository;
 import com.bwvr.backend.repository.TemplateRepository;
 import com.bwvr.backend.util.ReferenceNumberGenerator;
-<<<<<<< HEAD
-=======
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.AccessDeniedException;
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 
 @Service
 @SuppressWarnings("null")
@@ -55,10 +49,7 @@ public class ReportService {
     private final ReferenceNumberGenerator referenceNumberGenerator;
     private final DocxGeneratorService docxGeneratorService;
     private final AuditService auditService;
-<<<<<<< HEAD
-=======
     private final BwvrUserRepository userRepository;
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 
     public ReportService(ReportRepository reportRepository,
             ReportValueRepository reportValueRepository,
@@ -66,12 +57,8 @@ public class ReportService {
             TemplatePlaceholderRepository placeholderRepository,
             ReferenceNumberGenerator referenceNumberGenerator,
             DocxGeneratorService docxGeneratorService,
-<<<<<<< HEAD
-            AuditService auditService) {
-=======
             AuditService auditService,
             BwvrUserRepository userRepository) {
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         this.reportRepository = reportRepository;
         this.reportValueRepository = reportValueRepository;
         this.templateRepository = templateRepository;
@@ -79,10 +66,7 @@ public class ReportService {
         this.referenceNumberGenerator = referenceNumberGenerator;
         this.docxGeneratorService = docxGeneratorService;
         this.auditService = auditService;
-<<<<<<< HEAD
-=======
         this.userRepository = userRepository;
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     }
 
     @Transactional
@@ -116,14 +100,6 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public Page<ReportResponse> searchReports(String search, String vendorName, String location,
-<<<<<<< HEAD
-            String bankName, String status, int page, int size, String createdByFilter) {
-        PageRequest pageable = PageRequest.of(page, size); // ORDER BY is inside the native SQL query
-        if (createdByFilter != null) {
-            // User can only see their own reports
-            return reportRepository.searchReportsFiltered(
-                    createdByFilter,
-=======
             String bankName, String status, int page, int size, String usernameFilter) {
         PageRequest pageable = PageRequest.of(page, size);
         
@@ -149,20 +125,11 @@ public class ReportService {
             String username = auth.getName();
             return reportRepository.searchReportsFiltered(
                     username,
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
                     nullIfBlank(search), nullIfBlank(vendorName),
                     nullIfBlank(location), nullIfBlank(bankName),
                     nullIfBlank(status), pageable)
                     .map(this::toReportResponse);
         }
-<<<<<<< HEAD
-        return reportRepository.searchReports(
-                nullIfBlank(search), nullIfBlank(vendorName),
-                nullIfBlank(location), nullIfBlank(bankName),
-                nullIfBlank(status), pageable)
-                .map(this::toReportResponse);
-=======
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     }
 
     @Transactional(readOnly = true)
@@ -183,11 +150,8 @@ public class ReportService {
     @Transactional
     public ReportResponse updateReport(Long reportId, UpdateReportRequest req) {
         BwvrReport report = findActiveReport(reportId);
-<<<<<<< HEAD
-=======
         checkEditPermission(report);
         
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         String oldStatus = report.getReportStatus();
 
         if (req.getReportTitle() != null) {
@@ -219,10 +183,7 @@ public class ReportService {
     @Transactional
     public void saveReportValues(Long reportId, SaveReportValuesRequest request) {
         BwvrReport report = findActiveReport(reportId);
-<<<<<<< HEAD
-=======
         checkEditPermission(report);
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 
         for (var dto : request.getValues()) {
             BwvrTemplatePlaceholder placeholder = placeholderRepository.findById(dto.getPlaceholderId())
@@ -248,11 +209,6 @@ public class ReportService {
             reportValueRepository.save(value);
         }
 
-<<<<<<< HEAD
-        // Update report status if it's still DRAFT
-        if ("DRAFT".equals(report.getReportStatus())) {
-            report.setReportStatus("IN_PROGRESS");
-=======
         // If USER edits, it stays DRAFT.
         // If VALIDATOR edits, it goes to UNDER_REVIEW (unless ADMIN overrides).
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -261,7 +217,6 @@ public class ReportService {
         
         if (!isAdmin && isValidator && ("SUBMITTED".equals(report.getReportStatus()) || "DRAFT".equals(report.getReportStatus()))) {
             report.setReportStatus("UNDER_REVIEW");
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
             reportRepository.save(report);
         }
 
@@ -270,15 +225,6 @@ public class ReportService {
     }
 
     @Transactional
-<<<<<<< HEAD
-    public String generateDocument(Long reportId) {
-        String outputPath = docxGeneratorService.generateDocument(reportId);
-
-        BwvrReport report = findActiveReport(reportId);
-        report.setGeneratedFilePath(outputPath);
-        report.setGeneratedAt(LocalDateTime.now());
-        report.setReportStatus("COMPLETED");
-=======
     public ReportResponse submitReport(Long reportId) {
         BwvrReport report = findActiveReport(reportId);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -359,7 +305,6 @@ public class ReportService {
         report.setGeneratedFilePath(outputPath);
         report.setGeneratedAt(LocalDateTime.now());
         report.setReportStatus("GENERATED");
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
         reportRepository.save(report);
 
         auditService.log("REPORT", reportId, "GENERATE", "SYSTEM",
@@ -406,11 +351,11 @@ public class ReportService {
         }
     }
 
-    // ──────────────────────────── Private Helpers ────────────────────────────
-<<<<<<< HEAD
-=======
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Private Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private void checkEditPermission(BwvrReport report) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return;
+        
         boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         boolean isValidator = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_VALIDATOR"));
         boolean isUser = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"));
@@ -428,7 +373,6 @@ public class ReportService {
         }
     }
 
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     private BwvrReport findActiveReport(Long reportId) {
         return reportRepository.findById(reportId)
                 .filter(r -> "N".equals(r.getIsDeleted()))

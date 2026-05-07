@@ -89,8 +89,6 @@ public interface ReportRepository extends JpaRepository<BwvrReport, Long> {
             Pageable pageable
     );
 
-<<<<<<< HEAD
-=======
     @Query(value = """
         SELECT r.* FROM bwvr.bwvr_report r
         WHERE r.is_deleted = 'N'
@@ -130,7 +128,6 @@ public interface ReportRepository extends JpaRepository<BwvrReport, Long> {
             Pageable pageable
     );
 
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     long countByIsDeleted(String isDeleted);
 
     long countByCreatedByAndIsDeleted(String createdBy, String isDeleted);

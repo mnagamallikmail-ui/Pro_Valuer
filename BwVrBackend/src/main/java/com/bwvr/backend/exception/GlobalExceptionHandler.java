@@ -89,7 +89,7 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage(), "BAD_REQUEST", extractPath(request), ex.toString()));
     }
 
-    // Handles favicon.ico and other missing static resources — return 404, not 500
+    // Handles favicon.ico and other missing static resources â€” return 404, not 500
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Void> handleNoResource(NoResourceFoundException ex) {
         return ResponseEntity.notFound().build();

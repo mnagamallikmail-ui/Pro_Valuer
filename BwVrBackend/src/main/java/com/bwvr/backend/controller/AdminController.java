@@ -28,7 +28,7 @@ public class AdminController {
         this.encoder = encoder;
     }
 
-    // ── User Listing ──────────────────────────────────────────────────────────
+    // â”€â”€ User Listing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @GetMapping("/users")
     @Operation(summary = "Get all users")
@@ -53,7 +53,7 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(count));
     }
 
-    // ── User Approval ─────────────────────────────────────────────────────────
+    // â”€â”€ User Approval â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @PostMapping("/users/{userId}/approve")
     @Operation(summary = "Approve a pending user")
@@ -79,7 +79,7 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(null, "User '" + user.getUsername() + "' rejected."));
     }
 
-    // ── User Management (Add/Delete) ──────────────────────────────────────────
+    // â”€â”€ User Management (Add/Delete) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @PostMapping("/users")
     @Operation(summary = "Add a new user manually (Pre-Approved)")
@@ -150,7 +150,7 @@ public class AdminController {
         userRepository.save(user);
         return ResponseEntity.ok(ApiResponse.success(null, "Validator assigned successfully."));
     }
-    // ── DTO ───────────────────────────────────────────────────────────────────
+    // â”€â”€ DTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public static class UserDto {
         public Long id;

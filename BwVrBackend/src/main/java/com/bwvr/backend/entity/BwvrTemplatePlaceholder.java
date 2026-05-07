@@ -15,11 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-<<<<<<< HEAD
-@Table(name = "BWVR_TEMPLATE_PLACEHOLDER", schema = "BWVR")
-=======
 @Table(name = "BWVR_TEMPLATE_PLACEHOLDER", schema = "bwvr")
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 public class BwvrTemplatePlaceholder {
 
     @Id

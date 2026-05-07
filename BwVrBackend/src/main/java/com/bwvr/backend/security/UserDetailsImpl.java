@@ -65,9 +65,5 @@ public class UserDetailsImpl implements UserDetails {
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-<<<<<<< HEAD
-    public boolean isEnabled() { return "APPROVED".equals(status); }
-=======
     public boolean isEnabled() { return "APPROVED".equals(status) || "ACTIVE".equals(status); }
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
 }

@@ -8,8 +8,8 @@ public class PlaceholderExtractor {
     public static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("<<([^>]*)>>");
 
     /**
-     * Extracts the prefix from a placeholder key. Examples: IMG_COVER_PAGE →
-     * IMG DATE_AUDIT_START → DATE VENDOR_NAME → TEXT NUMBER_PAGES → NUMBER
+     * Extracts the prefix from a placeholder key. Examples: IMG_COVER_PAGE â†’
+     * IMG DATE_AUDIT_START â†’ DATE VENDOR_NAME â†’ TEXT NUMBER_PAGES â†’ NUMBER
      */
     public static String extractPrefix(String placeholderKey) {
         String upper = placeholderKey.trim().toUpperCase();
@@ -51,7 +51,7 @@ public class PlaceholderExtractor {
 
     /**
      * Converts snake_case placeholder key to a human-readable label. E.g.
-     * VENDOR_NAME → "Vendor Name"
+     * VENDOR_NAME â†’ "Vendor Name"
      */
     public static String toDisplayLabel(String placeholderKey) {
         String cleaned = placeholderKey.trim()

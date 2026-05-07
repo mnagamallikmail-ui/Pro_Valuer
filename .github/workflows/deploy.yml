@@ -59,6 +59,7 @@ jobs:
       - name: Build Frontend for Web
         run: |
           cd BwVrFrontend
+          flutter clean
           flutter pub get
           flutter build web --release --pwa-strategy=none \
             --dart-define=API_BASE_URL=https://provaluer.in/api/v1/

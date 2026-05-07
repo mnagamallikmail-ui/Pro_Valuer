@@ -38,7 +38,7 @@ dependencies:
   flutter_animate: ^4.5.0
 
   # Typography
-  google_fonts: ^8.0.2
+  google_fonts: ^6.1.0
 
   # URL launching
   url_launcher: ^6.2.0

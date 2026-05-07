@@ -76,23 +76,22 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to VPS via SSH
+      - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.VPS_IP }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: 66.116.235.165
+          username: root
+          password: ${{ secrets.VPS_PASSWORD }}
           port: 22
           script: |
             cd /opt/provaluer-vr/app
-            # Create/Update .env file from secrets
             echo "DB_NAME=${{ secrets.DB_NAME }}" > .env
             echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-            echo "DB_PASSWORD=\"${{ secrets.DB_PASSWORD }}\"" >> .env
-            echo "JWT_SECRET=\"${{ secrets.JWT_SECRET }}\"" >> .env
+            echo "DB_PASSWORD='${{ secrets.DB_PASSWORD }}'" >> .env
+            echo "JWT_SECRET='${{ secrets.JWT_SECRET }}'" >> .env
             echo "CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}" >> .env
             echo "GITHUB_REPOSITORY_OWNER=mnagamallikmail-ui" >> .env
-
+            
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u mnagamallikmail-ui --password-stdin
             docker compose pull
             docker compose up -d

@@ -44,7 +44,7 @@ jobs:
       - name: Build and push Backend Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./BwVrBackend
+          context: .
           file: ./BwVrBackend/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BACKEND }}:latest
@@ -66,7 +66,7 @@ jobs:
       - name: Build and push Frontend Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./BwVrFrontend
+          context: .
           file: ./BwVrFrontend/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_FRONTEND }}:latest

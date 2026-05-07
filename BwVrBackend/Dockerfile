@@ -2,8 +2,9 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# The JAR is built in GitHub Actions and passed here
-COPY build/libs/*.jar app.jar
+# The JAR is built in GitHub Actions (BwVrBackend/build/libs/BwVrBackend.jar)
+# With context set to root (.), we must specify the subfolder path.
+COPY BwVrBackend/build/libs/*.jar app.jar
 
 # Create the data directories for persistence
 RUN mkdir -p /app/data/uploads /app/data/templates /app/data/reports \

@@ -112,8 +112,6 @@ public class ReportController {
         return ResponseEntity.ok(ApiResponse.success(null, "Values saved successfully"));
     }
 
-<<<<<<< HEAD
-=======
     @PostMapping("/{reportId}/submit")
     @Operation(summary = "Submit a DRAFT report for review")
     public ResponseEntity<ApiResponse<ReportResponse>> submitReport(@PathVariable Long reportId) {
@@ -134,8 +132,6 @@ public class ReportController {
         return ResponseEntity.ok(ApiResponse.success(
                 reportService.approveReport(reportId), "Report approved successfully"));
     }
-
->>>>>>> 84141aa47c8b58ff717d8d2c62f72a0cee589238
     @PostMapping("/{reportId}/generate")
     @Operation(summary = "Generate the final .docx report document")
     public ResponseEntity<ApiResponse<String>> generateReport(@PathVariable Long reportId) {
